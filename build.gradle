@@ -65,7 +65,9 @@ test {
     maxHeapSize = "8192m"  // Provides an 8GB ceiling for handling heavy asset streams (Traces/Screenshots)
 
     // Explicitly forces Gradle to forward command line property switches (-Dbrowser=firefox)
-    systemProperties System.getProperties() as Map<String, ?>
+    systemProperties = [
+            "user.dir": project.projectDir.absolutePath
+    ] + (System.getProperties() as Map<String, ?>)
 
     testLogging {
         events "passed", "skipped", "failed", "standardOut", "standardError"
