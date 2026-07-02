@@ -45,5 +45,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Extent-Regression-Report-Artifact
-          path: build/reports/extent/**
+          path: build/reports/extent/
           retention-days: 14
