@@ -2,6 +2,7 @@ package com.framework.stepdefinitions;
 
 import com.framework.pages.LoginPage;
 import com.framework.pages.TransferPage;
+import com.framework.utils.ConfigReader;
 import com.framework.utils.ExcelReader;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -14,7 +15,7 @@ public class TransferSteps {
 
     private final LoginPage loginPage;
     private final TransferPage transferPage;
-    private final String excelPath = "src/test/resources/testdata/ParaBankTestData.xlsx";
+    String excelFilePath = ConfigReader.getExcelPath();
     private static final Logger LOG = LoggerFactory.getLogger(TransferSteps.class);
 
     // Thread-safe runtime variables scoped exclusively to this specific execution thread
@@ -36,7 +37,7 @@ public class TransferSteps {
     @And("executes a transfer using data from excel row {string} sheet {string}")
     public void executes_a_transfer_using_data_from_excel_row_sheet(String rowNumber, String sheetName) {
         int rowIndex = Integer.parseInt(rowNumber) - 1;
-        List<Map<String, String>> testData = ExcelReader.getSheetData(excelPath, sheetName);
+        List<Map<String, String>> testData = ExcelReader.getSheetData(excelFilePath, sheetName);
         Map<String, String> rowData = testData.get(rowIndex);
 
         // Store values locally for evaluation in the assertion step

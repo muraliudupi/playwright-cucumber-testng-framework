@@ -1,6 +1,7 @@
 package com.framework.stepdefinitions;
 
 import com.framework.pages.LoginPage;
+import com.framework.utils.ConfigReader;
 import com.framework.utils.ExcelReader;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -12,7 +13,7 @@ import static org.testng.Assert.assertTrue;
 public class LoginSteps {
 
     private final LoginPage loginPage;
-    private final String excelPath = "src/test/resources/testdata/ParaBankTestData.xlsx";
+    String excelFilePath = ConfigReader.getExcelPath();
 
     public LoginSteps(LoginPage loginPage) {
         this.loginPage = loginPage;
@@ -33,7 +34,7 @@ public class LoginSteps {
         // Convert Scenario Outline string row parameter to zero-indexed data pointer
         int rowIndex = Integer.parseInt(rowNumber) - 1;
 
-        List<Map<String, String>> testData = ExcelReader.getSheetData(excelPath, sheetName);
+        List<Map<String, String>> testData = ExcelReader.getSheetData(excelFilePath, sheetName);
         Map<String, String> rowData = testData.get(rowIndex);
 
         String username = rowData.get("Username");

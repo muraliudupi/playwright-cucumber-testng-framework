@@ -1,37 +1,34 @@
 package com.framework.utils;
 
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 
-/**
- * Loads src/test/resources/config/config.properties once at classload time, then layers System properties (-DbaseUrl=..., set from build.gradle) on
- * top so CI can override any value without touching the properties file.
- */
-public final class ConfigReader {
+public class ConfigReader {
+    private static Properties properties;
 
-    private static final Properties PROPERTIES = new Properties();
-
-    static {
-        try (InputStream in = ConfigReader.class.getClassLoader()
-                .getResourceAsStream("config/config.properties")) {
-            if (in != null) {
-                PROPERTIES.load(in);
-            }
+    public static void loadProperties() {
+        try (FileInputStream fis = new FileInputStream("src/test/resources/config/config.properties")) {
+            properties = new Properties();
+            properties.load(fis);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to load config.properties", e);
+            throw new RuntimeException("Critical Failure: Could not load config.properties file configuration context", e);
         }
     }
 
-    private ConfigReader() {
+    public static String getProperty(String key) {
+        if (properties == null) {
+            loadProperties();
+        }
+        return properties.getProperty(key);
+    }
+
+    // ARCHITECTURAL ACCESSOR: Resolves the fully qualified path dynamically across OS layers
+    public static String getExcelPath() {
+        return System.getProperty("user.dir") + "/" + getProperty("excel.path");
     }
 
     public static String get(String key) {
-        // System property (set via -D or Gradle systemProperty) always wins
-        String override = System.getProperty(key);
-        if (override != null && !override.isBlank()) {
-            return override;
-        }
-        return PROPERTIES.getProperty(key);
+        return getProperty(key);
     }
 }

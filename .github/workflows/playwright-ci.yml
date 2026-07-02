@@ -5,7 +5,7 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  workflow_dispatch: # Allows manual trigger from the GitHub UI
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -24,23 +24,23 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-          cache: 'gradle' # Automatically caches gradle wrappers to speed up subsequent runs
+          cache: 'gradle'
 
       - name: Validate Gradle Wrapper Execution Permissions
         run: chmod +x gradlew
 
       - name: Install Playwright Core System Dependencies & Browser Binaries
-        # This downloads the required isolated browser engines directly into the runner instance
         run: ./gradlew testCodeClasses && ./gradlew run --args="install --with-deps"
 
-      - name: Execute Test Suite via Parallel Worker Threads
-        # Triggers TestNGRunner running parallel workers safely in headless mode inside the container
-        run: ./gradlew test --no-daemon
+      - name: Execute Test Suite via Parallel Worker Threads (Linux Headless Safe)
+        # xvfb-run provides a virtual display server to prevent initialization crashes on Linux
+        run: xvfb-run ./gradlew test --no-daemon
 
       - name: Publish Interactive Extent Automation Reports
-        if: always() # Guarantees execution reports are saved even if a test scenario fails
+        if: always() # Ensures logs are uploaded even if tests crash or fail
         uses: actions/upload-artifact@v4
         with:
           name: Extent-Regression-Report-Artifact
-          path: build/reports/extent/
-          retention-days: 14 # Keeps the storage footprint tidy by auto-purging old builds
+          # FIX: Uses a wildcard pattern '**' so GitHub can find files inside our dynamic timestamped folders
+          path: build/reports/extent/**
+          retention-days: 14
