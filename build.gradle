@@ -1,0 +1,204 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.framework'
+version = '1.0-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+// Global version management block
+ext {
+    playwrightVersion = '1.60.0'
+    cucumberVersion   = '7.18.0' // Adjusted to the highest verified stable 7.x line for compatibility
+    testngVersion     = '7.10.2' // Optimized stable 7.x runner line
+    slf4jVersion      = '2.0.13'
+    logbackVersion    = '1.5.13'
+    log4jVersion      = '2.23.1'
+    poiVersion        = '5.4.0'
+    extentAdapterVersion = '1.14.0' // Stable adapter line for Cucumber 7
+}
+
+dependencies {
+    // Playwright Core Engine - Fixed string interpolation with double-quotes
+    testImplementation "com.microsoft.playwright:playwright:${playwrightVersion}"
+
+    // Cucumber Engine & TestNG Integration with Picocontainer DI
+    testImplementation "io.cucumber:cucumber-java:${cucumberVersion}"
+    testImplementation "io.cucumber:cucumber-testng:${cucumberVersion}"
+    testImplementation "io.cucumber:cucumber-picocontainer:${cucumberVersion}"
+
+    // Test Runner Orchestration
+    testImplementation "org.testng:testng:${testngVersion}"
+
+    // Enterprise Excel Reading Engines
+    testImplementation "org.apache.poi:poi:${poiVersion}"
+    testImplementation "org.apache.poi:poi-ooxml:${poiVersion}"
+
+    // Enterprise Reporting Engine
+    testImplementation "tech.grasshopper:extentreports-cucumber7-adapter:${extentAdapterVersion}"
+
+    // Logging Core - Removed slf4j-simple binding conflict to ensure logback takes authority
+    testImplementation "org.slf4j:slf4j-api:${slf4jVersion}"
+    testRuntimeOnly "ch.qos.logback:logback-classic:${logbackVersion}"
+
+    // Redirects all Apache POI / TestNG Log4j2 calls into your Logback appenders
+    testRuntimeOnly "org.apache.logging.log4j:log4j-to-slf4j:${log4jVersion}"
+}
+
+test {
+    useTestNG() {
+        // Points directly to your suite orchestration layout
+        suites 'src/test/resources/testng.xml'
+    }
+
+    // Explicitly configure enterprise memory boundaries for concurrent execution
+    minHeapSize = "4096m"  // Pre-allocates 4GB to prevent overhead from constant JVM garbage collection expansion
+    maxHeapSize = "8192m"  // Provides an 8GB ceiling for handling heavy asset streams (Traces/Screenshots)
+
+    // Explicitly forces Gradle to forward command line property switches (-Dbrowser=firefox)
+    systemProperties System.getProperties() as Map<String, ?>
+
+    testLogging {
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+        showExceptions true
+        exceptionFormat "full"
+        showCauses true
+        showStackTraces true
+    }
+}
+
+
+
+/*
+plugins {
+    id 'java'
+}
+
+group = 'com.framework'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Centralized version catalog (ext block keeps dependency isolation explicit
+// and prevents transitive drift between Cucumber / TestNG / Playwright)
+// ---------------------------------------------------------------------------
+ext {
+    playwrightVersion = '1.48.0'
+    cucumberVersion   = '7.18.1'
+    testngVersion     = '7.10.2'
+    slf4jVersion      = '2.0.16'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    // ---------------- Playwright (Core Automation) -----------------------
+    implementation "com.microsoft.playwright:playwright:${playwrightVersion}"
+
+    // ---------------- Cucumber JVM (BDD Engine) ---------------------------
+    implementation "io.cucumber:cucumber-java:${cucumberVersion}"
+    // cucumber-testng supplies AbstractTestNGCucumberTests + parallel data-provider
+    implementation "io.cucumber:cucumber-testng:${cucumberVersion}"
+    implementation "io.cucumber:cucumber-picocontainer:${cucumberVersion}"
+
+    // ---------------- TestNG (Runner / Hooks Orchestrator) -----------------
+    implementation "org.testng:testng:${testngVersion}"
+
+    // ---------------- Logging (SLF4J simple binding, no logback dependency
+    //                  pulled transitively/unpinned) -----------------------
+    implementation "org.slf4j:slf4j-api:${slf4jVersion}"
+    runtimeOnly "org.slf4j:slf4j-simple:${slf4jVersion}"
+
+    // Explicitly exclude legacy JUnit4 that some Cucumber transitive chains
+    // may attempt to drag in via other io.cucumber modules.
+    configurations.all {
+        exclude group: 'junit', module: 'junit'
+        exclude group: 'io.cucumber', module: 'cucumber-junit'
+        exclude group: 'io.cucumber', module: 'cucumber-junit-platform-engine'
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Test execution wiring: TestNG is the ONLY runner. Cucumber never runs via
+// its own CLI/JUnit-Platform entrypoint here — the abstract runner class
+// (AbstractTestNGCucumberTests) is what TestNG picks up and parallelizes.
+// ---------------------------------------------------------------------------
+test {
+    useTestNG() {
+        // testng.xml controls suite-level thread-count / parallel mode
+        // (methods|classes|tests) — see src/test/resources/testng.xml
+        suites "src/test/resources/testng.xml"
+    }
+
+    // Pass-through system properties so CI / local runs can override
+    // browser, headless mode, base URL, tag filters, etc. without editing code.
+    systemProperty 'browser',                 System.getProperty('browser', 'chromium')
+    systemProperty 'headless',                System.getProperty('headless', 'true')
+    systemProperty 'baseUrl',                  System.getProperty('baseUrl', 'https://parabank.parasoft.com/parabank/index.htm')
+    systemProperty 'cucumber.filter.tags',      System.getProperty('cucumber.filter.tags', '')
+    systemProperty 'cucumber.publish.quiet',    'true'
+
+    // Keep JVM/browser resource usage predictable when TestNG forks threads
+    // for parallel scenario execution (see testng.xml thread-count).
+    maxHeapSize = "2g"
+
+    testLogging {
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+        showExceptions true
+        exceptionFormat "full"
+        showCauses true
+        showStackTraces true
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Convenience task: installs the browser binaries Playwright needs.
+// Run once via `./gradlew installPlaywrightBrowsers`
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Pins the Gradle Wrapper version so `gradlew` is reproducible for every
+// contributor and CI runner. Regenerate with: gradle wrapper  (no --gradle-
+// version flag needed once this is set — it reads from here).
+// ---------------------------------------------------------------------------
+wrapper {
+    gradleVersion = '8.10'
+    distributionType = Wrapper.DistributionType.BIN
+}
+
+tasks.register('installPlaywrightBrowsers', JavaExec) {
+    group = 'playwright'
+    description = 'Downloads/updates Playwright browser binaries (Chromium, Firefox, WebKit).'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.microsoft.playwright.CLI'
+    args = ['install']
+}
+
+// Convenience task for tag-filtered smoke runs, e.g.:
+// ./gradlew smokeTest -Dcucumber.filter.tags="@smoke"
+tasks.register('smokeTest', Test) {
+    group = 'verification'
+    description = 'Runs only scenarios tagged @smoke'
+    useTestNG() {
+        suites "src/test/resources/testng.xml"
+    }
+    systemProperty 'cucumber.filter.tags', System.getProperty('cucumber.filter.tags', '@smoke')
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+}*/

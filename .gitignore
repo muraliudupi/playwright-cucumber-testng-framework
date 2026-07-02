@@ -1,0 +1,33 @@
+# --- Gradle Directories ---
+.gradle/
+build/
+
+# --- IntelliJ IDEA Settings ---
+.idea/
+out/
+*.iml
+*.iws
+*.ipr
+
+# --- Test Framework Outputs & Reports ---
+# Cucumber, TestNG, ExtentReports or Allure execution reports should not be pushed
+test-output/
+
+# --- Playwright Execution Artifacts ---
+# Prevents video recordings, traces, or screenshots from clogging git
+test-results/
+playwright-report/
+blob-report/
+
+# Playwright execution binaries and localized driver installations
+.local-browsers/
+
+# --- System & Log Files ---
+*.log
+.DS_Store
+Thumbs.db
+
+# --- Optional Data Safety Rule ---
+# Uncomment the line below if credentials or sensitive environments in config files
+# src/test/resources/config/*.properties
+
