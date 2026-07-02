@@ -8,6 +8,7 @@ import io.cucumber.testng.CucumberOptions;
         tags = "not @ignore",
         plugin = {
                 "pretty",
+                "com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:",
                 "html:test-output/reports/cucumber/cucumber-report.html",
                 "json:test-output/reports/cucumber/cucumber-report.json"
         },
