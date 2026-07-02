@@ -29,18 +29,21 @@ jobs:
       - name: Validate Gradle Wrapper Execution Permissions
         run: chmod +x gradlew
 
-      - name: Install Playwright Core System Dependencies & Browser Binaries
-        run: ./gradlew testCodeClasses && ./gradlew run --args="install --with-deps"
+      - name: Install Playwright Core System Dependencies & Linux Drivers
+        # Standardizes library setup using npm/npx tools already native to the runner environment
+        run: |
+          npm install -g playwright
+          npx playwright install-deps
 
       - name: Execute Test Suite via Parallel Worker Threads (Linux Headless Safe)
-        # xvfb-run provides a virtual display server to prevent initialization crashes on Linux
+        # Note: Playwright Java automatically downloads missing browser binaries
+        # (Chromium/Firefox) the first time the DriverFactory calls Playwright.create()
         run: xvfb-run ./gradlew test --no-daemon
 
       - name: Publish Interactive Extent Automation Reports
-        if: always() # Ensures logs are uploaded even if tests crash or fail
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Extent-Regression-Report-Artifact
-          # FIX: Uses a wildcard pattern '**' so GitHub can find files inside our dynamic timestamped folders
           path: build/reports/extent/**
           retention-days: 14
