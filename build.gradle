@@ -62,18 +62,13 @@ dependencies {
 
 test {
     useTestNG() {
-        // Points directly to your suite orchestration layout
         suites 'src/test/resources/testng.xml'
     }
 
-    // Explicitly configure enterprise memory boundaries for concurrent execution
     minHeapSize = "512m"
     maxHeapSize = "2048m"
 
-    // Explicitly forces Gradle to forward command line property switches (-Dbrowser=firefox)
-    systemProperties = (System.getProperties() as Map<String, ?>) + [
-            "user.dir": project.projectDir.absolutePath
-    ]
+    systemProperties System.getProperties() as Map<String, ?>
 
     testLogging {
         events "passed", "skipped", "failed", "standardOut", "standardError"
