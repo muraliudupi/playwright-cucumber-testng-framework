@@ -1,6 +1,8 @@
 package com.framework.runners;
 
+import io.cucumber.testng.AbstractTestNGCucumberTests;
 import io.cucumber.testng.CucumberOptions;
+import org.testng.annotations.DataProvider;
 
 @CucumberOptions(
         features = "src/test/resources/features",
@@ -8,11 +10,16 @@ import io.cucumber.testng.CucumberOptions;
         tags = "not @ignore",
         plugin = {
                 "pretty",
-                "html:test-output/reports/cucumber/cucumber-report.html",
-                "json:test-output/reports/cucumber/cucumber-report.json"
+                "com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:",
+                "html:build/reports/cucumber/cucumber-report.html",
+                "json:build/reports/cucumber/cucumber-report.json"
         },
-        monochrome = true,
-        publish = false
+        monochrome = true
 )
-public class TestNGRunner extends AbstractTestNGCucumberRunner {
+public class TestNGRunner extends AbstractTestNGCucumberTests {
+        @Override
+        @DataProvider(parallel = true)
+        public Object[][] scenarios() {
+                return super.scenarios();
+        }
 }
