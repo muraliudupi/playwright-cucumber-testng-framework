@@ -62,11 +62,8 @@ dependencies {
 
 test {
     useTestNG() {
-        suites 'src/test/resources/testng.xml'
+        suites file('src/test/resources/testng.xml')
     }
-
-    // Load base environment properties first
-    // systemProperties System.getProperties() as Map<String, ?>
 
     // Inject parameters safely AFTER loading the base map
     systemProperty "extent.reporter.spark.start", "true"
@@ -76,8 +73,6 @@ test {
     // Explicit system properties targeting the Cucumber adapter directly
     systemProperty "screenshot.dir", "${layout.buildDirectory.get().asFile}/reports/extent/"
     systemProperty "screenshot.rel.dir", "./"
-
-    include '**/TestNGRunner.class'
 
     minHeapSize = "512m"
     maxHeapSize = "2048m"
