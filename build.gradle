@@ -66,6 +66,9 @@ test {
         suites 'src/test/resources/testng.xml'
     }
 
+    systemProperty "extent.reporter.spark.start", "true"
+    systemProperty "extent.reporter.spark.out", "${layout.buildDirectory.get().asFile}/reports/extent/ExtentReport.html"
+
     // FORCE Gradle to recognize and run your TestNGRunner class
     include '**/TestNGRunner.class'
 
