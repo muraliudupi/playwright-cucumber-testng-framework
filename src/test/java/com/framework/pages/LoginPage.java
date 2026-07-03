@@ -31,7 +31,7 @@ public class LoginPage extends BasePage {
     }
 
     private Locator errorMessage() {
-        return page().locator("#rightPanel h1.title:has-text('Error!')");
+        return page().locator("#rightPanel p.error");
     }
 
     public LoginPage open() {

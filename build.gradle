@@ -18,13 +18,13 @@ repositories {
 // Global version management block
 ext {
     playwrightVersion = '1.60.0'
-    cucumberVersion   = '7.18.0' // Adjusted to the highest verified stable 7.x line for compatibility
-    testngVersion     = '7.10.2' // Optimized stable 7.x runner line
+    cucumberVersion   = '7.18.0'
+    testngVersion     = '7.10.2'
     slf4jVersion      = '2.0.13'
     logbackVersion    = '1.5.13'
     log4jVersion      = '2.23.1'
     poiVersion        = '5.4.0'
-    extentAdapterVersion = '1.14.0' // Stable adapter line for Cucumber 7
+    extentAdapterVersion = '1.14.0'
 }
 
 dependencies {
@@ -46,12 +46,18 @@ dependencies {
     // Enterprise Reporting Engine
     testImplementation "tech.grasshopper:extentreports-cucumber7-adapter:${extentAdapterVersion}"
 
-    // Logging Core - Removed slf4j-simple binding conflict to ensure logback takes authority
+    // Logging Core - logback takes authority; log4j-to-slf4j bridges POI's log4j2 calls into it
     testImplementation "org.slf4j:slf4j-api:${slf4jVersion}"
     testRuntimeOnly "ch.qos.logback:logback-classic:${logbackVersion}"
-
-    // Redirects all Apache POI / TestNG Log4j2 calls into your Logback appenders
     testRuntimeOnly "org.apache.logging.log4j:log4j-to-slf4j:${log4jVersion}"
+
+    // Dependency isolation: TestNG is the sole runner. Strip legacy JUnit
+    // artifacts that cucumber-testng/testng may otherwise pull in transitively.
+    configurations.configureEach {
+        exclude group: 'junit', module: 'junit'
+        exclude group: 'io.cucumber', module: 'cucumber-junit'
+        exclude group: 'io.cucumber', module: 'cucumber-junit-platform-engine'
+    }
 }
 
 test {
@@ -65,9 +71,9 @@ test {
     maxHeapSize = "2048m"
 
     // Explicitly forces Gradle to forward command line property switches (-Dbrowser=firefox)
-    systemProperties = [
+    systemProperties = (System.getProperties() as Map<String, ?>) + [
             "user.dir": project.projectDir.absolutePath
-    ] + (System.getProperties() as Map<String, ?>)
+    ]
 
     testLogging {
         events "passed", "skipped", "failed", "standardOut", "standardError"
@@ -76,4 +82,17 @@ test {
         showCauses true
         showStackTraces true
     }
+}
+
+wrapper {
+    gradleVersion = '8.10'
+    distributionType = Wrapper.DistributionType.BIN
+}
+
+tasks.register('installPlaywrightBrowsers', JavaExec) {
+    group = 'playwright'
+    description = 'Downloads/updates Playwright browser binaries (Chromium, Firefox, WebKit).'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.microsoft.playwright.CLI'
+    args = ['install']
 }
