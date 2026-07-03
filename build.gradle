@@ -62,12 +62,18 @@ dependencies {
 
 test {
     useTestNG() {
+        // Points directly to your suite orchestration layout
         suites 'src/test/resources/testng.xml'
     }
 
+    // FORCE Gradle to recognize and run your TestNGRunner class
+    include '**/TestNGRunner.class'
+
+    // Explicitly configure enterprise memory boundaries for concurrent execution
     minHeapSize = "512m"
     maxHeapSize = "2048m"
 
+    // Clear out the user.dir overrides to let the JVM look at default paths natively
     systemProperties System.getProperties() as Map<String, ?>
 
     testLogging {
