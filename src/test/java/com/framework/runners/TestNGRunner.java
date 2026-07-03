@@ -10,13 +10,14 @@ import org.testng.annotations.DataProvider;
         tags = "not @ignore",
         plugin = {
                 "pretty",
-                "com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:",
+                "com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter",
                 "html:build/reports/cucumber/cucumber-report.html",
                 "json:build/reports/cucumber/cucumber-report.json"
         },
         monochrome = true
 )
 public class TestNGRunner extends AbstractTestNGCucumberTests {
+
         @Override
         @DataProvider(parallel = true)
         public Object[][] scenarios() {
