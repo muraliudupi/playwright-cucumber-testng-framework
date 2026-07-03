@@ -65,6 +65,8 @@ test {
         suites file('src/test/resources/testng.xml')
     }
 
+    scanForTestClasses = false
+
     // Inject parameters safely AFTER loading the base map
     systemProperty "extent.reporter.spark.start", "true"
     systemProperty "extent.reporter.spark.out", "${layout.buildDirectory.get().asFile}/reports/extent/ExtentReport.html"
@@ -78,7 +80,8 @@ test {
     maxHeapSize = "2048m"
 
     testLogging {
-        events "passed", "skipped", "failed", "standardOut", "standardError"
+        // Added "started" so you can immediately see tests initializing in GitHub Actions
+        events "started", "passed", "skipped", "failed", "standardOut", "standardError"
         showExceptions true
         exceptionFormat "full"
         showCauses true

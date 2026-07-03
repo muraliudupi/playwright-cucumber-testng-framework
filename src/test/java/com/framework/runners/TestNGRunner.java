@@ -5,7 +5,7 @@ import io.cucumber.testng.CucumberOptions;
 import org.testng.annotations.DataProvider;
 
 @CucumberOptions(
-        features = "src/test/resources/features",
+        features = "classpath:features",
         glue = {"com.framework.stepdefinitions", "com.framework.hooks"},
         plugin = {
                 "pretty",
@@ -18,7 +18,7 @@ import org.testng.annotations.DataProvider;
 public class TestNGRunner extends AbstractTestNGCucumberTests {
 
         @Override
-        @DataProvider(parallel = true) // Tells TestNG to execute the scenarios in parallel
+        @DataProvider(parallel = true)
         public Object[][] scenarios() {
                 return super.scenarios();
         }
