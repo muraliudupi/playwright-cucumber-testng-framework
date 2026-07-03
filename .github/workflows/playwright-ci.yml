@@ -58,9 +58,9 @@ jobs:
 
       - name: Publish Interactive Extent Automation Reports
         if: always()
-        uses: actions/upload-artifact@v4 # Note: Ensure v7 actually exists/is supported; v4 is standard as of recently.
+        uses: actions/upload-artifact@v7
         with:
           name: Extent-Regression-Report-Artifact
-          path: build/reports/extent/**/ExtentReport.html  # Uses wildcards to find it recursively
+          path: build/reports/extent/ExtentReport.html
           retention-days: 14
           if-no-files-found: warn
