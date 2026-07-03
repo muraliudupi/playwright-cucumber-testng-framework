@@ -17,10 +17,10 @@ jobs:
 
     steps:
       - name: Checkout Source Code Baseline
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Java Development Kit Environment (JDK 21)
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
@@ -40,10 +40,27 @@ jobs:
         # (Chromium/Firefox) the first time the DriverFactory calls Playwright.create()
         run: xvfb-run ./gradlew test --no-daemon
 
+      - name: DEBUG - List workspace contents after test run
+        # Temporary diagnostic step. Prints exactly what got written where,
+        # so we can tell whether test-output/ is truly empty (0 scenarios
+        # ran, or the Extent/Cucumber plugins never fired) versus files
+        # landing in an unexpected directory. Remove once root-caused.
+        if: always()
+        run: |
+          echo "--- Repo root contents ---"
+          ls -la
+          echo "--- Searching for any test-output or build/reports dirs anywhere ---"
+          find . -type d \( -name "test-output" -o -name "reports" \) -not -path "*/node_modules/*" 2>/dev/null
+          echo "--- Full recursive listing of test-output if it exists ---"
+          find test-output -type f 2>/dev/null || echo "test-output/ does not exist at repo root"
+          echo "--- Full recursive listing of build/ if it exists ---"
+          find build -type f 2>/dev/null | head -50 || echo "build/ does not exist"
+
       - name: Publish Interactive Extent Automation Reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Extent-Regression-Report-Artifact
           path: test-output/
           retention-days: 14
+          if-no-files-found: warn
