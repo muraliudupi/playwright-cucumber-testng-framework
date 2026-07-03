@@ -1,6 +1,5 @@
 package com.framework.stepdefinitions;
 
-import com.framework.pages.LoginPage;
 import com.framework.pages.TransferPage;
 import com.framework.utils.ConfigReader;
 import com.framework.utils.ExcelReader;
@@ -13,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 public class TransferSteps {
 
-    private final LoginPage loginPage;
     private final TransferPage transferPage;
     String excelFilePath = ConfigReader.getExcelPath();
     private static final Logger LOG = LoggerFactory.getLogger(TransferSteps.class);
@@ -23,9 +21,8 @@ public class TransferSteps {
     private String expectedFrom;
     private String expectedTo;
 
-    // PicoContainer injects isolated page frameworks dynamically
-    public TransferSteps(LoginPage loginPage, TransferPage transferPage) {
-        this.loginPage = loginPage;
+    // PicoContainer injects the scenario-scoped TransferPage instance
+    public TransferSteps(TransferPage transferPage) {
         this.transferPage = transferPage;
     }
 

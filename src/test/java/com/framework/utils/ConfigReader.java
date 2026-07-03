@@ -1,16 +1,22 @@
 package com.framework.utils;
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 public class ConfigReader {
     private static Properties properties;
 
     public static void loadProperties() {
-        try (FileInputStream fis = new FileInputStream("src/test/resources/config/config.properties")) {
+        try (InputStream in = ConfigReader.class.getClassLoader()
+                .getResourceAsStream("config/config.properties")) {
+            if (in == null) {
+                throw new RuntimeException(
+                        "config/config.properties not found on classpath. " +
+                                "Check it's under src/test/resources/config/.");
+            }
             properties = new Properties();
-            properties.load(fis);
+            properties.load(in);
         } catch (IOException e) {
             throw new RuntimeException("Critical Failure: Could not load config.properties file configuration context", e);
         }
@@ -23,12 +29,15 @@ public class ConfigReader {
         return properties.getProperty(key);
     }
 
-    // ARCHITECTURAL ACCESSOR: Resolves the fully qualified path dynamically across OS layers
     public static String getExcelPath() {
-        return System.getProperty("user.dir") + "/" + getProperty("excel.path");
+        return System.getProperty("user.dir") + "/" + get("excel.path");
     }
 
     public static String get(String key) {
+        String override = System.getProperty(key);
+        if (override != null && !override.isBlank()) {
+            return override;
+        }
         return getProperty(key);
     }
 }

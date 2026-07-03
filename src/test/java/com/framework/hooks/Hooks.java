@@ -1,6 +1,7 @@
 package com.framework.hooks;
 
 import com.framework.core.DriverFactory;
+import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Tracing;
 import io.cucumber.java.After;
@@ -27,11 +28,19 @@ public class Hooks {
     @After(order = 0)
     public void tearDown(Scenario scenario) {
         try {
-            // UNCONDITIONAL SNAPSHOT CAPTURE: Executes for BOTH Pass and Fail states
-            try {
-                attachScreenshot(scenario);
-            } catch (Exception e) {
-                LOG.error("Failed to capture status screenshot for report context", e);
+            // Screenshot on failure always happens. Screenshot on PASS is
+            // config-gated (screenshot.on.pass in config.properties)
+            boolean screenshotOnPass = Boolean.parseBoolean(
+                    ConfigReader.get("screenshot.on.pass") != null
+                            ? ConfigReader.get("screenshot.on.pass")
+                            : "true");
+
+            if (scenario.isFailed() || screenshotOnPass) {
+                try {
+                    attachScreenshot(scenario);
+                } catch (Exception e) {
+                    LOG.error("Failed to capture status screenshot for report context", e);
+                }
             }
 
             // Trace generation remains selectively pinned to failures to optimize system memory bounds

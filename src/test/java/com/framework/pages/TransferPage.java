@@ -1,8 +1,12 @@
 package com.framework.pages;
 
 import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.options.SelectOption;
+import com.microsoft.playwright.options.WaitForSelectorState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 public class TransferPage extends BasePage {
 
@@ -48,24 +52,24 @@ public class TransferPage extends BasePage {
 
         fromAccountDropdown().waitFor(new Locator.WaitForOptions().setTimeout(5000));
         page().locator("#fromAccountId option").first().waitFor(
-                new Locator.WaitForOptions().setState(com.microsoft.playwright.options.WaitForSelectorState.ATTACHED).setTimeout(5000)
+                new Locator.WaitForOptions().setState(WaitForSelectorState.ATTACHED).setTimeout(5000)
         );
 
         // Dynamic Select Optimization: Check elements instantly without triggering timeouts
-        java.util.List<String> elementValues = fromAccountDropdown().locator("option").allInnerTexts();
+        List<String> elementValues = fromAccountDropdown().locator("option").allInnerTexts();
 
         if (elementValues.contains(fromAccount)) {
             fromAccountDropdown().selectOption(fromAccount);
         } else {
             LOG.warn("Excel FromAccount '{}' missing from system options. Instantly defaulting to index 0.", fromAccount);
-            fromAccountDropdown().selectOption(new com.microsoft.playwright.options.SelectOption().setIndex(0));
+            fromAccountDropdown().selectOption(new SelectOption().setIndex(0));
         }
 
         if (elementValues.contains(toAccount)) {
             toAccountDropdown().selectOption(toAccount);
         } else {
             LOG.warn("Excel ToAccount '{}' missing from system options. Instantly defaulting to index 1.", toAccount);
-            toAccountDropdown().selectOption(new com.microsoft.playwright.options.SelectOption().setIndex(1));
+            toAccountDropdown().selectOption(new SelectOption().setIndex(1));
         }
 
         transferButton().click();
