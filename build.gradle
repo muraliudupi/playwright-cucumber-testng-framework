@@ -62,22 +62,25 @@ dependencies {
 
 test {
     useTestNG() {
-        // Points directly to your suite orchestration layout
         suites 'src/test/resources/testng.xml'
     }
 
+    // Load base environment properties first
+    systemProperties System.getProperties() as Map<String, ?>
+
+    // Inject parameters safely AFTER loading the base map
     systemProperty "extent.reporter.spark.start", "true"
     systemProperty "extent.reporter.spark.out", "${layout.buildDirectory.get().asFile}/reports/extent/ExtentReport.html"
+    systemProperty "extent.reporter.spark.base64imagesrc", "true"
 
-    // FORCE Gradle to recognize and run your TestNGRunner class
+    // Explicit system properties targeting the Cucumber adapter directly
+    systemProperty "screenshot.dir", "${layout.buildDirectory.get().asFile}/reports/extent/"
+    systemProperty "screenshot.rel.dir", "./"
+
     include '**/TestNGRunner.class'
 
-    // Explicitly configure enterprise memory boundaries for concurrent execution
     minHeapSize = "512m"
     maxHeapSize = "2048m"
-
-    // Clear out the user.dir overrides to let the JVM look at default paths natively
-    systemProperties System.getProperties() as Map<String, ?>
 
     testLogging {
         events "passed", "skipped", "failed", "standardOut", "standardError"
