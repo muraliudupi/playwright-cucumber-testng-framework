@@ -42,25 +42,25 @@ jobs:
 
       - name: DEBUG - List workspace contents after test run
         # Temporary diagnostic step. Prints exactly what got written where,
-        # so we can tell whether test-output/ is truly empty (0 scenarios
+        # so we can tell whether build/ is truly empty (0 scenarios
         # ran, or the Extent/Cucumber plugins never fired) versus files
         # landing in an unexpected directory. Remove once root-caused.
         if: always()
         run: |
           echo "--- Repo root contents ---"
           ls -la
-          echo "--- Searching for any test-output or build/reports dirs anywhere ---"
-          find . -type d \( -name "test-output" -o -name "reports" \) -not -path "*/node_modules/*" 2>/dev/null
-          echo "--- Full recursive listing of test-output if it exists ---"
-          find test-output -type f 2>/dev/null || echo "test-output/ does not exist at repo root"
+          echo "--- Searching for any build or build/reports dirs anywhere ---"
+          find . -type d \( -name "build" -o -name "reports" \) -not -path "*/node_modules/*" 2>/dev/null
+          echo "--- Full recursive listing of build if it exists ---"
+          find build -type f 2>/dev/null || echo "build/ does not exist at repo root"
           echo "--- Full recursive listing of build/ if it exists ---"
           find build -type f 2>/dev/null | head -50 || echo "build/ does not exist"
 
       - name: Publish Interactive Extent Automation Reports
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4 # Note: Ensure v7 actually exists/is supported; v4 is standard as of recently.
         with:
           name: Extent-Regression-Report-Artifact
-          path: test-output/
+          path: build/reports/extent/**/ExtentReport.html  # Uses wildcards to find it recursively
           retention-days: 14
           if-no-files-found: warn
