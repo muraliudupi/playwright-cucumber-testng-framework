@@ -79,7 +79,7 @@ test {
 
     // Explicit system properties targeting the Cucumber adapter directly
     systemProperty "screenshot.dir", "${layout.buildDirectory.get().asFile}/reports/extent/"
-    systemProperty "screenshot.rel.dir", "./"
+    systemProperty "screenshot.rel.path", "./"
 
     minHeapSize = "512m"
     maxHeapSize = "2048m"
