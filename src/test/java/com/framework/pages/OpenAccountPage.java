@@ -37,7 +37,7 @@ public class OpenAccountPage extends BasePage {
     }
 
     public OpenAccountPage configureAndOpenAccount(String accountType, String fundingAccount) {
-        accountTypeDropdown().selectOption(accountType.toUpperCase());
+        accountTypeDropdown().selectOption(new SelectOption().setLabel(accountType.toUpperCase()));
 
         fromAccountDropdown().waitFor(new Locator.WaitForOptions().setTimeout(5000));
         page().locator("#fromAccountId option").first().waitFor(

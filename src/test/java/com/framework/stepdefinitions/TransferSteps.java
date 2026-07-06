@@ -1,23 +1,18 @@
 package com.framework.stepdefinitions;
 
 import com.framework.pages.TransferPage;
-import com.framework.utils.ConfigReader;
 import com.framework.utils.ExcelReader;
 import com.framework.utils.DatabaseUtil;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-public class TransferSteps {
+public class TransferSteps extends BaseSteps {
 
     private final TransferPage transferPage;
-    String excelFilePath = ConfigReader.getExcelPath();
-    private static final Logger LOG = LoggerFactory.getLogger(TransferSteps.class);
 
     private String expectedAmount;
     private String expectedFrom;
@@ -35,7 +30,7 @@ public class TransferSteps {
     @And("executes a transfer using data from excel row {string} sheet {string}")
     public void executes_a_transfer_using_data_from_excel_row_sheet(String rowNumber, String sheetName) {
         int rowIndex = Integer.parseInt(rowNumber) - 1;
-        List<Map<String, String>> testData = ExcelReader.getSheetData(excelFilePath, sheetName);
+        List<Map<String, String>> testData = ExcelReader.getSheetData(EXCEL_FILE_PATH, sheetName);
         Map<String, String> rowData = testData.get(rowIndex);
 
         this.expectedAmount = rowData.get("Amount");
@@ -70,12 +65,13 @@ public class TransferSteps {
         String sqlQuery = "SELECT transaction_status FROM bank_ledger WHERE from_account = ? AND amount = ? ORDER BY timestamp DESC LIMIT 1";
 
         String numericAmount = expectedAmount.replace("$", "").trim();
-        String actualDbStatus = DatabaseUtil.getSingleValue(sqlQuery, "transaction_status", expectedFrom, new BigDecimal(numericAmount).setScale(2, RoundingMode.HALF_UP));
+        BigDecimal amountForQuery = new BigDecimal(numericAmount).setScale(2, RoundingMode.HALF_UP);
+
+        String actualDbStatus = DatabaseUtil.getSingleValue(sqlQuery, "transaction_status", expectedFrom, amountForQuery);
 
         org.testng.Assert.assertEquals(actualDbStatus, expectedDbStatus,
                 String.format("CRITICAL LEDGER DESYNC: UI reported success, but Database ledger state was found to be: '%s'", actualDbStatus));
 
         LOG.info("Thread-Safe Database cross-check complete. Verified transaction state as {}", actualDbStatus);
     }
-
 }
