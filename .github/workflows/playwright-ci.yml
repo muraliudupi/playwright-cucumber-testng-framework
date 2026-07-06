@@ -62,18 +62,27 @@ jobs:
           retention-days: 14
           if-no-files-found: warn
 
-      - name: Parse Cucumber JSON Report Results
+      - name: Parse TestNG XML Report Results
         if: always()
         id: report_parser
         run: |
-          JSON_PATH=$(find . -name "cucumber-report.json" -print -quit)
+          # Locate the TestNG XML results file
+          XML_PATH=$(find build/test-results/test -name "*.xml" -print -quit)
         
-          if [ -n "$JSON_PATH" ] && [ -f "$JSON_PATH" ]; then
-            echo "Found Cucumber report at: $JSON_PATH"
-            # Parse total scenarios and failed scenarios using grep/wc combinations
-            TOTAL_SCENARIOS=$(grep -o '"type": "scenario"' "$JSON_PATH" | wc -l)
-            FAILED_SCENARIOS=$(grep -o '"status": "failed"' "$JSON_PATH" | wc -l)
-            PASSED_SCENARIOS=$((TOTAL_SCENARIOS - FAILED_SCENARIOS))
+          if [ -n "$XML_PATH" ] && [ -f "$XML_PATH" ]; then
+            echo "Found TestNG XML report at: $XML_PATH"
+        
+            # Extract metrics directly from the <testsuite> attributes using grep and sed
+            TOTAL_SCENARIOS=$(grep -oE "tests=\"[0-9]+\"" "$XML_PATH" | grep -oE "[0-9]+")
+            FAILED_SCENARIOS=$(grep -oE "failures=\"[0-9]+\"" "$XML_PATH" | grep -oE "[0-9]+")
+            SKIPPED_SCENARIOS=$(grep -oE "skipped=\"[0-9]+\"" "$XML_PATH" | grep -oE "[0-9]+")
+        
+            # Handle empty values safely
+            TOTAL_SCENARIOS=${TOTAL_SCENARIOS:-0}
+            FAILED_SCENARIOS=${FAILED_SCENARIOS:-0}
+            SKIPPED_SCENARIOS=${SKIPPED_SCENARIOS:-0}
+        
+            PASSED_SCENARIOS=$((TOTAL_SCENARIOS - FAILED_SCENARIOS - SKIPPED_SCENARIOS))
         
             if [ "$FAILED_SCENARIOS" -gt 0 ]; then
               STATUS_TEXT="❌ FAILED ($FAILED_SCENARIOS Scenarios Failed)"
@@ -83,7 +92,7 @@ jobs:
               BUILD_STATUS="SUCCESS"
             fi
           else
-            echo "❌ CRITICAL: cucumber-report.json could not be found."
+            echo "❌ CRITICAL: TestNG XML report could not be found."
             TOTAL_SCENARIOS=0
             FAILED_SCENARIOS=0
             PASSED_SCENARIOS=0
@@ -91,12 +100,13 @@ jobs:
             BUILD_STATUS="FAILED"
           fi
         
-          # Export results cleanly to GitHub Environment Variables for subsequent steps
+          # Export results cleanly to GitHub Environment Variables
           echo "TOTAL_COUNT=$TOTAL_SCENARIOS" >> $GITHUB_ENV
           echo "PASSED_COUNT=$PASSED_SCENARIOS" >> $GITHUB_ENV
           echo "FAILED_COUNT=$FAILED_SCENARIOS" >> $GITHUB_ENV
           echo "EMAIL_STATUS=$STATUS_TEXT" >> $GITHUB_ENV
           echo "BUILD_STATUS=$BUILD_STATUS" >> $GITHUB_ENV
+
 
       - name: Send Email Report
         if: always()
