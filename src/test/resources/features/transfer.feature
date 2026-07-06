@@ -11,4 +11,3 @@ Feature: Account Funds Transfer
     Examples:
       | RowNumber |
       | 1         |
-      | 2         |

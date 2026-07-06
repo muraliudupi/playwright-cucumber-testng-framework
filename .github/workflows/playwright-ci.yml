@@ -47,7 +47,7 @@ jobs:
 
       - name: Execute Test Suite via Parallel Worker Threads (Linux Headless Safe)
         continue-on-error: true
-        run: xvfb-run ./gradlew test -Dcucumber.filter.tags="@smoke" --no-daemon --info
+        run: xvfb-run ./gradlew clean test '-Dcucumber.filter.tags=@sanity' --no-daemon --info
 
 
       - name: Publish Interactive Extent Automation Reports
@@ -65,16 +65,16 @@ jobs:
         uses: dawidd6/action-send-mail@v4
         with:
           # Configuration for your SMTP server
-          server_address: smtp-mail.outlook.com
-          server_port: 587
-          secure: false
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
 
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
 
           # Email content details
           subject: "Automation Test Run Results: ${{ github.repository }} (Build #${{ github.run_number }})"
-          to: muralikudupi@outlook.com
+          to: qamurali@outlook.com
           from: Automation Framework <${{ secrets.MAIL_USERNAME }}>
           body: |
             Hi Team,
