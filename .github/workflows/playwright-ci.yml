@@ -10,7 +10,7 @@ on:
       tags:
         description: 'Cucumber tags to run'
         required: false
-        default: '@sanity'
+        default: '@sanity' # Defaults to sanity, but allows you to type @regression manually
 
 permissions:
   contents: read
@@ -126,7 +126,7 @@ jobs:
           
             Regards,
             QA Automation Bot
-        attachments: build/reports/extent/ExtentReport.html
+          attachments: build/reports/extent/ExtentReport.html
 
       - name: Enforce Correct Pipeline Status Badge
         if: always()
