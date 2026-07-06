@@ -1,7 +1,6 @@
 package com.framework.stepdefinitions;
 
 import com.framework.pages.LoginPage;
-import com.framework.utils.ConfigReader;
 import com.framework.utils.ExcelReader;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -10,10 +9,9 @@ import java.util.List;
 import java.util.Map;
 import static org.testng.Assert.assertTrue;
 
-public class LoginSteps {
+public class LoginSteps extends BaseSteps {
 
     private final LoginPage loginPage;
-    String excelFilePath = ConfigReader.getExcelPath();
 
     public LoginSteps(LoginPage loginPage) {
         this.loginPage = loginPage;
@@ -33,7 +31,7 @@ public class LoginSteps {
     public void the_user_logs_in_using_credentials_from_excel_row_sheet(String rowNumber, String sheetName) {
         int rowIndex = Integer.parseInt(rowNumber) - 1;
 
-        List<Map<String, String>> testData = ExcelReader.getSheetData(excelFilePath, sheetName);
+        List<Map<String, String>> testData = ExcelReader.getSheetData(EXCEL_FILE_PATH, sheetName);
         Map<String, String> rowData = testData.get(rowIndex);
 
         String username = rowData.get("Username");
