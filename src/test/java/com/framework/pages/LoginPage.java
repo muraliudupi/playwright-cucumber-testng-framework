@@ -3,10 +3,6 @@ package com.framework.pages;
 import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
 
-/**
- * Page Object for ParaBank's "Customer Login" panel (present on the site's index page). Selectors use stable id attributes rather than text/CSS
- * that's likely to shift with minor markup tweaks.
- */
 public class LoginPage extends BasePage {
 
     private Locator usernameInput() {

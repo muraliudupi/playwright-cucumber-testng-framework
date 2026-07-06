@@ -9,23 +9,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * DriverFactory
-
- * Central authority for Playwright object lifecycles. Playwright, Browser, BrowserContext and Page are all NOT thread-safe — a single instance of any
- * of them must never be accessed from more than one thread. TestNG's parallel="methods" execution model spins up scenarios on a pool of worker
- * threads, so every one of these objects is wrapped in its own ThreadLocal.
-
- * Lifecycle strategy (per thread):
- *   Playwright (1x per thread, expensive)  -> created once, reused across scenarios
- *   Browser    (1x per thread, expensive)  -> created once, reused across scenarios
- *   BrowserContext (1x per SCENARIO)       -> fresh isolated cookies/storage per test
- *   Page       (1x per SCENARIO)           -> fresh tab per test
- *
- * Context/Page are scenario-scoped (created in @Before, destroyed in @After) so tests never bleed cookies, localStorage or auth state into each other,
- * even when they share the same underlying Browser process on that thread.
- */
-
 public final class DriverFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(DriverFactory.class);
@@ -35,22 +18,12 @@ public final class DriverFactory {
     private static final ThreadLocal<BrowserContext> CONTEXT_THREAD_LOCAL = new ThreadLocal<>();
     private static final ThreadLocal<Page> PAGE_THREAD_LOCAL = new ThreadLocal<>();
 
-    // Cross-thread registry (keyed by owning thread id) purely for guaranteed
-    // teardown from a single @AfterSuite thread. ThreadLocal.remove() can
-    // only ever be called BY the owning thread, but TestNG worker threads
-    // are pooled/recycled and may already be gone by the time the suite
-    // finishes — so @AfterSuite closes instances via this map instead of
-    // relying on each worker thread to clean up after itself.
     private static final Map<Long, Playwright> PLAYWRIGHT_REGISTRY = new ConcurrentHashMap<>();
     private static final Map<Long, Browser> BROWSER_REGISTRY = new ConcurrentHashMap<>();
 
     private DriverFactory() {
         // static utility — never instantiated
     }
-
-    // -------------------------------------------------------------------
-    // Playwright / Browser — created lazily, ONE per worker thread
-    // -------------------------------------------------------------------
 
     private static Playwright getPlaywright() {
         if (PLAYWRIGHT_THREAD_LOCAL.get() == null) {
@@ -86,15 +59,6 @@ public final class DriverFactory {
         return BROWSER_THREAD_LOCAL.get();
     }
 
-    // -------------------------------------------------------------------
-    // BrowserContext / Page — created PER SCENARIO by Hooks
-    // -------------------------------------------------------------------
-
-    /**
-     * Creates a fresh, isolated BrowserContext + Page for the current thread.
-     * Must be called from an @Before hook. Idempotent-safe: if a stale
-     * context somehow exists on this thread it is closed first.
-     */
     public static void createNewPageForScenario(String scenarioName) {
         if (CONTEXT_THREAD_LOCAL.get() != null) {
             LOG.warn("[Thread-{}] Stale BrowserContext detected before '{}' — closing it first",
@@ -121,11 +85,6 @@ public final class DriverFactory {
         LOG.info("[Thread-{}] New BrowserContext + Page ready for scenario '{}'", threadId(), scenarioName);
     }
 
-    /**
-     * Returns the Page bound to the CURRENT thread. Step definitions and
-     * Page Objects call this instead of ever holding a Page reference as a
-     * field, which is what makes the whole model thread-safe.
-     */
     public static Page getPage() {
         Page page = PAGE_THREAD_LOCAL.get();
         if (page == null) {
@@ -144,25 +103,10 @@ public final class DriverFactory {
         return context;
     }
 
-    // -------------------------------------------------------------------
-    // Teardown
-    // -------------------------------------------------------------------
-
-    /**
-     * Closes Context + Page for the current thread. Called from @After on
-     * every scenario. Browser and Playwright instances are intentionally
-     * left alive and reused for the next scenario on this same thread.
-     */
     public static void closeContextAndPage() {
         try {
             BrowserContext context = CONTEXT_THREAD_LOCAL.get();
             if (context != null) {
-                // NOTE: do NOT call tracing().stop() here. Hooks.attachTrace()
-                // already stops (and saves) tracing explicitly for FAILED
-                // scenarios. Calling stop() twice throws. For passed
-                // scenarios we deliberately never save the trace — closing
-                // the context with an active trace simply discards it, which
-                // is the desired behavior (no wasted disk I/O on green runs).
                 context.close();
             }
         } catch (Exception e) {
@@ -173,16 +117,6 @@ public final class DriverFactory {
         }
     }
 
-    /**
-     * Suite-wide teardown. Called ONCE from a single @AfterSuite method
-     * (see AbstractTestNGCucumberRunner) after every worker thread has
-     * finished executing scenarios. Iterates the cross-thread registry
-     * rather than relying on ThreadLocal.remove(), because by this point
-     * the worker threads that originally created these instances may
-     * already be idle/recycled/destroyed by TestNG's thread pool — this is
-     * precisely the gap that causes silent browser-process leaks if you
-     * only ever call ThreadLocal.remove() from @After.
-     */
     public static void quitAllDrivers() {
         BROWSER_REGISTRY.forEach((tid, browser) -> {
             try {
@@ -211,14 +145,6 @@ public final class DriverFactory {
         return Thread.currentThread().threadId();
     }
 
-    /**
-     * Resolution order (handled inside ConfigReader): explicit -D system
-     * property (highest priority, for CI/local overrides) → config.properties
-     * → the hardcoded default passed here. Used so browser/headless settings
-     * behave identically whether the run is launched via `./gradlew test`
-     * (which forwards -D system properties) or directly via IntelliJ's
-     * native TestNG runner (which does not).
-     */
     private static String resolveSetting(String key, String hardcodedDefault) {
         String value = ConfigReader.get(key);
         return value != null && !value.isBlank() ? value : hardcodedDefault;

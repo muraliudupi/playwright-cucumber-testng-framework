@@ -28,8 +28,6 @@ public class Hooks {
     @After(order = 0)
     public void tearDown(Scenario scenario) {
         try {
-            // Screenshot on failure always happens. Screenshot on PASS is
-            // config-gated (screenshot.on.pass in config.properties)
             boolean screenshotOnPass = Boolean.parseBoolean(
                     ConfigReader.get("screenshot.on.pass") != null
                             ? ConfigReader.get("screenshot.on.pass")
@@ -43,20 +41,14 @@ public class Hooks {
                 }
             }
 
-            // Trace generation remains selectively pinned to failures to optimize system memory bounds
             if (scenario.isFailed()) {
                 try { attachTrace(scenario); } catch (Exception e) { LOG.error("Failed trace capture", e); }
             }
         } finally {
-            // Absolute guard line protecting parallel execution pipelines
             DriverFactory.closeContextAndPage();
         }
     }
 
-    /**
-     * Captures a full-page PNG binary array and attaches it safely into the Cucumber test engine context.
-     * The Extent Adapter intercepts this native .attach() call and formats it perfectly into the visual HTML layer.
-     */
     private void attachScreenshot(Scenario scenario) {
         Page page = DriverFactory.getPage();
         if (page != null) {
@@ -66,10 +58,6 @@ public class Hooks {
         }
     }
 
-    /**
-     * Saves a Playwright trace .zip (viewable via `playwright show-trace`) for any failed scenario. Tracing was started per-context in
-     * DriverFactory.createNewPageForScenario(); here we simply stop and persist it to disk since it's only needed on failure.
-     */
     private void attachTrace(Scenario scenario) {
         String safeName = scenario.getName().replaceAll("[^a-zA-Z0-9-_]", "_");
         Path tracePath = TRACE_DIR.resolve(safeName + "-" + Instant.now().toEpochMilli() + ".zip");
