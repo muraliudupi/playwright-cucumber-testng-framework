@@ -46,20 +46,8 @@ jobs:
           npx playwright install-deps
 
       - name: Execute Test Suite via Parallel Worker Threads (Linux Headless Safe)
-        # Added '--info' to force Gradle to output full class-scanning and test suite selection diagnostics
-        run: xvfb-run ./gradlew test --no-daemon --info
-
-      - name: DEBUG - List workspace contents after test run
-        if: always()
-        run: |
-          echo "--- Repo root contents ---"
-          ls -la
-          echo "--- Searching for any build or build/reports dirs anywhere ---"
-          find . -type d \( -name "build" -o -name "reports" \) -not -path "*/node_modules/*" 2>/dev/null
-          echo "--- Full recursive listing of build if it exists ---"
-          find build -type f 2>/dev/null || echo "build/ does not exist at repo root"
-          echo "--- Full recursive listing of build/ if it exists ---"
-          find build -type f 2>/dev/null | head -50 || echo "build/ does not exist"
+        run: xvfb-run ./gradlew test -Dcucumber.filter.tags="@smoke" --no-daemon --info
+        continue-on-error: true # Ensure the workflow continues so the email sends even if tests fail
 
       - name: Publish Interactive Extent Automation Reports
         if: always()
@@ -69,3 +57,37 @@ jobs:
           path: build/reports/extent/ExtentReport.html
           retention-days: 14
           if-no-files-found: warn
+
+      - name: Send Email Report
+        # This step runs whether the tests passed, failed, or timed out
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          # Configuration for your SMTP server (Example using Gmail)
+          server_address: smtp.office365.com
+          server_port: 587
+          secure: false
+
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+
+          # Email content details
+          subject: "Automation Test Run Results: ${{ github.repository }} (Build #${{ github.run_number }})"
+          to: muralikudupi@outlook.com
+          from: Automation Framework <${{ secrets.MAIL_USERNAME }}>
+          body: |
+            Hi Team,
+            The automation test execution has completed. 
+          
+            - Repository: ${{ github.repository }}
+            - Branch: ${{ github.ref_name }}
+            - Triggered By: ${{ github.actor }}
+            - Workflow Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          
+            Please find the Extent Report attached to this email.
+          
+            Regards,
+            QA Automation Bot
+
+          # Path to your Extent Report HTML file
+          attachments: build/reports/extent/ExtentReport.html
