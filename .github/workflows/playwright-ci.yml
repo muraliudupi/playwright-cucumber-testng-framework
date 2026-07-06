@@ -22,10 +22,10 @@ jobs:
 
     steps:
       - name: Checkout Source Code Baseline
-        uses: actions/checkout@v4.
+        uses: actions/checkout@v4
 
       - name: Setup Java Development Kit Environment (JDK 21)
-        uses: actions/setup-java@v4.
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
@@ -34,7 +34,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Cache Playwright Browser Binaries
-        uses: actions/cache@v4.
+        uses: actions/cache@v4
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
@@ -54,7 +54,7 @@ jobs:
 
       - name: Publish Interactive Extent Automation Reports
         if: always()
-        uses: actions/upload-artifact@v4.
+        uses: actions/upload-artifact@v4
         with:
           name: Extent-Automation-Report
           path: build/reports/extent/ExtentReport.html
@@ -65,24 +65,21 @@ jobs:
         if: always()
         id: report_parser
         run: |
-          # Locate the TestNG XML results file
           XML_PATH=$(find build/test-results/test -name "*.xml" -print -quit)
-        
+          
           if [ -n "$XML_PATH" ] && [ -f "$XML_PATH" ]; then
             echo "Found TestNG XML report at: $XML_PATH"
-        
-            # Extract metrics directly from the <testsuite> attributes using grep and sed
+          
             TOTAL_SCENARIOS=$(grep -oE "tests=\"[0-9]+\"" "$XML_PATH" | grep -oE "[0-9]+")
             FAILED_SCENARIOS=$(grep -oE "failures=\"[0-9]+\"" "$XML_PATH" | grep -oE "[0-9]+")
             SKIPPED_SCENARIOS=$(grep -oE "skipped=\"[0-9]+\"" "$XML_PATH" | grep -oE "[0-9]+")
-        
-            # Handle empty values safely
+          
             TOTAL_SCENARIOS=${TOTAL_SCENARIOS:-0}
             FAILED_SCENARIOS=${FAILED_SCENARIOS:-0}
             SKIPPED_SCENARIOS=${SKIPPED_SCENARIOS:-0}
-        
+          
             PASSED_SCENARIOS=$((TOTAL_SCENARIOS - FAILED_SCENARIOS - SKIPPED_SCENARIOS))
-        
+          
             if [ "$FAILED_SCENARIOS" -gt 0 ]; then
               STATUS_TEXT="❌ FAILED ($FAILED_SCENARIOS Scenarios Failed)"
               BUILD_STATUS="FAILED"
@@ -98,18 +95,16 @@ jobs:
             STATUS_TEXT="⚠️ ERROR (No Report Found)"
             BUILD_STATUS="FAILED"
           fi
-        
-          # Export results cleanly to GitHub Environment Variables
+          
           echo "TOTAL_COUNT=$TOTAL_SCENARIOS" >> $GITHUB_ENV
           echo "PASSED_COUNT=$PASSED_SCENARIOS" >> $GITHUB_ENV
           echo "FAILED_COUNT=$FAILED_SCENARIOS" >> $GITHUB_ENV
           echo "EMAIL_STATUS=$STATUS_TEXT" >> $GITHUB_ENV
           echo "BUILD_STATUS=$BUILD_STATUS" >> $GITHUB_ENV
 
-
       - name: Send Email Report
         if: always()
-        uses: dawidd6/action-send-mail@v4.
+        uses: dawidd6/action-send-mail@v4
         with:
           server_address: smtp.gmail.com
           server_port: 465
@@ -118,15 +113,14 @@ jobs:
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
 
-          # Dynamic Subject containing pass/fail flags
           subject: "Automation Results: ${{ env.EMAIL_STATUS }} | ${{ github.repository }} (Build #${{ github.run_number }})"
           to: qamurali@outlook.com
           from: Automation Framework <${{ secrets.MAIL_USERNAME }}>
           body: |
             Hi Team,
-          
+            
             The automation test execution has completed.
-          
+            
             =========================================
             📊 EXECUTION SUMMARY
             =========================================
@@ -135,14 +129,14 @@ jobs:
             • Passed Scenarios:  ${{ env.PASSED_COUNT }}
             • Failed Scenarios:  ${{ env.FAILED_COUNT }}
             =========================================
-          
+            
             - Repository:   ${{ github.repository }}
             - Branch:       ${{ github.ref_name }}
             - Triggered By: ${{ github.actor }}
             - Action Link:  https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          
+            
             Please find the interactive Extent Report attached to this email for full stack traces.
-          
+            
             Regards,
             QA Automation Bot
           attachments: build/reports/extent/ExtentReport.html
