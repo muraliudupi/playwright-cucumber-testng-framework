@@ -67,6 +67,8 @@ test {
 
     scanForTestClasses = false
 
+    systemProperties System.getProperties()
+
     // Inject parameters safely AFTER loading the base map
     systemProperty "extent.reporter.spark.start", "true"
     systemProperty "extent.reporter.spark.out", "${layout.buildDirectory.get().asFile}/reports/extent/ExtentReport.html"
