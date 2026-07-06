@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class TransferSteps {
 
@@ -68,7 +70,7 @@ public class TransferSteps {
         String sqlQuery = "SELECT transaction_status FROM bank_ledger WHERE from_account = ? AND amount = ? ORDER BY timestamp DESC LIMIT 1";
 
         String numericAmount = expectedAmount.replace("$", "").trim();
-        String actualDbStatus = DatabaseUtil.getSingleValue(sqlQuery, "transaction_status", expectedFrom, Double.parseDouble(numericAmount));
+        String actualDbStatus = DatabaseUtil.getSingleValue(sqlQuery, "transaction_status", expectedFrom, new BigDecimal(numericAmount).setScale(2, RoundingMode.HALF_UP));
 
         org.testng.Assert.assertEquals(actualDbStatus, expectedDbStatus,
                 String.format("CRITICAL LEDGER DESYNC: UI reported success, but Database ledger state was found to be: '%s'", actualDbStatus));
