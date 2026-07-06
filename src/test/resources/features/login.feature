@@ -1,4 +1,4 @@
-@login
+@sanity @login
 Feature: ParaBank Customer Login
 
   Scenario Outline: Successful login using external enterprise test data
@@ -10,4 +10,3 @@ Feature: ParaBank Customer Login
       | RowNumber |
       | 1         |
       | 2         |
-      | 3         |
