@@ -48,18 +48,45 @@ jobs:
 
       - name: Execute Test Suite via Parallel Worker Threads (Linux Headless Safe)
         continue-on-error: true
+        id: test_execution
         run: |
           TAGS="${{ github.event.inputs.tags || '@sanity' }}"
           xvfb-run ./gradlew clean test "-Dcucumber.filter.tags=$TAGS" --no-daemon --info
 
-      - name: Publish Interactive Extent Automation Reports
+      - name: Parse Cucumber JSON Report Results
         if: always()
-        uses: actions/upload-artifact@v4.4.0
-        with:
-          name: Extent-Automation-Report
-          path: build/reports/extent/ExtentReport.html
-          retention-days: 14
-          if-no-files-found: warn
+        id: report_parser
+        run: |
+          JSON_PATH="build/reports/cucumber/cucumber-report.json"
+        
+          if [ -f "$JSON_PATH" ]; then
+            # Parse total scenarios and failed scenarios using grep/wc combinations
+            TOTAL_SCENARIOS=$(grep -o '"type": "scenario"' "$JSON_PATH" | wc -l)
+            FAILED_SCENARIOS=$(grep -o '"status": "failed"' "$JSON_PATH" | wc -l)
+            PASSED_SCENARIOS=$((TOTAL_SCENARIOS - FAILED_SCENARIOS))
+        
+            if [ "$FAILED_SCENARIOS" -gt 0 ]; then
+              STATUS_TEXT="❌ FAILED ($FAILED_SCENARIOS Scenarios Failed)"
+              BUILD_STATUS="FAILED"
+            else
+              STATUS_TEXT="✅ PASSED (All Scenarios Clean)"
+              BUILD_STATUS="SUCCESS"
+            fi
+          else
+            # Fallback if no report file was generated due to early compilation failures
+            TOTAL_SCENARIOS=0
+            FAILED_SCENARIOS=0
+            PASSED_SCENARIOS=0
+            STATUS_TEXT="⚠️ ERROR (No Report Found)"
+            BUILD_STATUS="FAILED"
+          fi
+        
+          # Export results cleanly to GitHub Environment Variables for subsequent steps
+          echo "TOTAL_COUNT=$TOTAL_SCENARIOS" >> $GITHUB_ENV
+          echo "PASSED_COUNT=$PASSED_SCENARIOS" >> $GITHUB_ENV
+          echo "FAILED_COUNT=$FAILED_SCENARIOS" >> $GITHUB_ENV
+          echo "EMAIL_STATUS=$STATUS_TEXT" >> $GITHUB_ENV
+          echo "BUILD_STATUS=$BUILD_STATUS" >> $GITHUB_ENV
 
       - name: Send Email Report
         if: always()
@@ -72,21 +99,39 @@ jobs:
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
 
-          subject: "Automation Test Run Results: ${{ github.repository }} (Build #${{ github.run_number }})"
+          # Dynamic Subject containing pass/fail flags
+          subject: "Automation Results: ${{ env.EMAIL_STATUS }} | ${{ github.repository }} (Build #${{ github.run_number }})"
           to: qamurali@outlook.com
           from: Automation Framework <${{ secrets.MAIL_USERNAME }}>
           body: |
             Hi Team,
-            
-            The automation test execution has completed. 
-            
-            - Repository: ${{ github.repository }}
-            - Branch: ${{ github.ref_name }}
+          
+            The automation test execution has completed.
+          
+            =========================================
+            📊 EXECUTION SUMMARY
+            =========================================
+            • Status:            ${{ env.EMAIL_STATUS }}
+            • Total Scenarios:   ${{ env.TOTAL_COUNT }}
+            • Passed Scenarios:  ${{ env.PASSED_COUNT }}
+            • Failed Scenarios:  ${{ env.FAILED_COUNT }}
+            =========================================
+          
+            - Repository:   ${{ github.repository }}
+            - Branch:       ${{ github.ref_name }}
             - Triggered By: ${{ github.actor }}
-            - Workflow Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-            
-            Please find the Extent Report attached to this email.
-            
+            - Action Link:  https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          
+            Please find the interactive Extent Report attached to this email for full stack traces.
+          
             Regards,
             QA Automation Bot
-          attachments: build/reports/extent/ExtentReport.html
+        attachments: build/reports/extent/ExtentReport.html
+
+      - name: Enforce Correct Pipeline Status Badge
+        if: always()
+        run: |
+          if [ "${{ env.BUILD_STATUS }}" = "FAILED" ]; then
+            echo "Automation tests failed. Marking GitHub build as failed."
+            exit 1
+          fi
