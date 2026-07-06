@@ -46,8 +46,9 @@ jobs:
           npx playwright install-deps
 
       - name: Execute Test Suite via Parallel Worker Threads (Linux Headless Safe)
+        continue-on-error: true
         run: xvfb-run ./gradlew test -Dcucumber.filter.tags="@smoke" --no-daemon --info
-        continue-on-error: true # Ensure the workflow continues so the email sends even if tests fail
+
 
       - name: Publish Interactive Extent Automation Reports
         if: always()
@@ -61,10 +62,10 @@ jobs:
       - name: Send Email Report
         # This step runs whether the tests passed, failed, or timed out
         if: always()
-        uses: dawidd6/action-send-mail@v3
+        uses: dawidd6/action-send-mail@v4
         with:
-          # Configuration for your SMTP server (Example using Gmail)
-          server_address: smtp.office365.com
+          # Configuration for your SMTP server
+          server_address: smtp-mail.outlook.com
           server_port: 587
           secure: false
 
