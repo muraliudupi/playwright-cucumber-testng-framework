@@ -66,9 +66,10 @@ jobs:
         if: always()
         id: report_parser
         run: |
-          JSON_PATH="build/reports/cucumber/cucumber-report.json"
+          JSON_PATH=$(find . -name "cucumber-report.json" -print -quit)
         
-          if [ -f "$JSON_PATH" ]; then
+          if [ -n "$JSON_PATH" ] && [ -f "$JSON_PATH" ]; then
+            echo "Found Cucumber report at: $JSON_PATH"
             # Parse total scenarios and failed scenarios using grep/wc combinations
             TOTAL_SCENARIOS=$(grep -o '"type": "scenario"' "$JSON_PATH" | wc -l)
             FAILED_SCENARIOS=$(grep -o '"status": "failed"' "$JSON_PATH" | wc -l)
@@ -82,7 +83,7 @@ jobs:
               BUILD_STATUS="SUCCESS"
             fi
           else
-            # Fallback if no report file was generated due to early compilation failures
+            echo "❌ CRITICAL: cucumber-report.json could not be found."
             TOTAL_SCENARIOS=0
             FAILED_SCENARIOS=0
             PASSED_SCENARIOS=0
