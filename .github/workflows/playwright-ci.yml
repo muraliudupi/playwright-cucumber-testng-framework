@@ -48,9 +48,11 @@ jobs:
       - name: Execute Test Suite via Parallel Worker Threads (Linux Headless Safe)
         continue-on-error: true
         id: test_execution
+        env:
+          SECRET_PASS: ${{ secrets.ENTERPRISE_DB_PASSWORD }}
         run: |
           TAGS="${{ github.event.inputs.tags || '@sanity' }}"
-          xvfb-run ./gradlew clean test "-Dcucumber.filter.tags=$TAGS" --no-daemon --info
+          xvfb-run ./gradlew clean test "-Dcucumber.filter.tags=$TAGS" "-Ddb.password=$SECRET_PASS" --no-daemon --info
 
       - name: Publish Interactive Extent Automation Reports
         if: always()

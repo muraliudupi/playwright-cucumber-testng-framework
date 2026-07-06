@@ -31,7 +31,6 @@ public class LoginSteps {
 
     @When("the user logs in using credentials from excel row {string} sheet {string}")
     public void the_user_logs_in_using_credentials_from_excel_row_sheet(String rowNumber, String sheetName) {
-        // Convert Scenario Outline string row parameter to zero-indexed data pointer
         int rowIndex = Integer.parseInt(rowNumber) - 1;
 
         List<Map<String, String>> testData = ExcelReader.getSheetData(excelFilePath, sheetName);

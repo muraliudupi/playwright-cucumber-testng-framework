@@ -12,7 +12,6 @@ public class TransferPage extends BasePage {
 
     private static final Logger LOG = LoggerFactory.getLogger(TransferPage.class);
 
-    // Left Navigation link
     private Locator transferFundsLink() {
         return page().locator("a:has-text('Transfer Funds')");
     }
@@ -55,7 +54,6 @@ public class TransferPage extends BasePage {
                 new Locator.WaitForOptions().setState(WaitForSelectorState.ATTACHED).setTimeout(5000)
         );
 
-        // Dynamic Select Optimization: Check elements instantly without triggering timeouts
         List<String> elementValues = fromAccountDropdown().locator("option").allInnerTexts();
 
         if (elementValues.contains(fromAccount)) {

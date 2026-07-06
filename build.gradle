@@ -15,7 +15,6 @@ repositories {
     mavenCentral()
 }
 
-// Global version management block
 ext {
     playwrightVersion = '1.60.0'
     cucumberVersion   = '7.18.0'
@@ -25,6 +24,7 @@ ext {
     log4jVersion      = '2.23.1'
     poiVersion        = '5.4.0'
     extentAdapterVersion = '1.14.0'
+    postgresqlVersion = '42.7.12'
 }
 
 dependencies {
@@ -50,6 +50,9 @@ dependencies {
     testImplementation "org.slf4j:slf4j-api:${slf4jVersion}"
     testRuntimeOnly "ch.qos.logback:logback-classic:${logbackVersion}"
     testRuntimeOnly "org.apache.logging.log4j:log4j-to-slf4j:${log4jVersion}"
+
+    // SQL JDBC Driver
+    testImplementation "org.postgresql:postgresql:${postgresqlVersion}"
 
     // Dependency isolation: TestNG is the sole runner. Strip legacy JUnit
     // artifacts that cucumber-testng/testng may otherwise pull in transitively.
@@ -82,7 +85,6 @@ test {
     maxHeapSize = "2048m"
 
     testLogging {
-        // Added "started" so you can immediately see tests initializing in GitHub Actions
         events "started", "passed", "skipped", "failed", "standardOut", "standardError"
         showExceptions true
         exceptionFormat "full"
