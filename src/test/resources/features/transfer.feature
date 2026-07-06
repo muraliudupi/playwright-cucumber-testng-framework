@@ -1,6 +1,6 @@
 Feature: Account Funds Transfer
 
-  @regression @transfer
+  @sanity @regression @transfer
   Scenario Outline: Successful fund transfer between valid customer accounts
     Given the user is on the ParaBank login page
     When the user logs in using credentials from excel row "<RowNumber>" sheet "LoginData"
