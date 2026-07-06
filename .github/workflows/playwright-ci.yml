@@ -53,6 +53,15 @@ jobs:
           TAGS="${{ github.event.inputs.tags || '@sanity' }}"
           xvfb-run ./gradlew clean test "-Dcucumber.filter.tags=$TAGS" --no-daemon --info
 
+      - name: Publish Interactive Extent Automation Reports
+        if: always()
+        uses: actions/upload-artifact@v4.4.0
+        with:
+          name: Extent-Automation-Report
+          path: build/reports/extent/ExtentReport.html
+          retention-days: 14
+          if-no-files-found: warn
+
       - name: Parse Cucumber JSON Report Results
         if: always()
         id: report_parser
