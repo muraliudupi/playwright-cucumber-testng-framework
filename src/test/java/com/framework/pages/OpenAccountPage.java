@@ -45,17 +45,21 @@ public class OpenAccountPage extends BasePage {
 
         accountTypeDropdown().selectOption(new SelectOption().setLabel(sanitizedType));
 
-        fromAccountDropdown().waitFor(new Locator.WaitForOptions().setTimeout(5000));
-        page().locator("#fromAccountId option").first().waitFor(
-                new Locator.WaitForOptions().setState(WaitForSelectorState.ATTACHED).setTimeout(5000)
-        );
+        Locator optionTarget = fromAccountDropdown().locator("option");
+        optionTarget.first().waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.ATTACHED).setTimeout(5000));
 
-        java.util.List<String> options = fromAccountDropdown().locator("option").allInnerTexts();
+        try {
+            Locator specificOption = fromAccountDropdown().locator(String.format("option[value='%s']", fundingAccount));
 
-        if (options.contains(fundingAccount)) {
-            fromAccountDropdown().selectOption(fundingAccount);
-        } else {
-            LOG.warn("Target funding account ID '{}' not found in dropdown list options. Falling back to primary index option.", fundingAccount);
+            if (specificOption.count() > 0) {
+                fromAccountDropdown().selectOption(fundingAccount);
+                LOG.info("Successfully matched and selected funding account option: {}", fundingAccount);
+            } else {
+                LOG.warn("Target funding account ID '{}' not present in UI select element. Falling back to primary index option.", fundingAccount);
+                fromAccountDropdown().selectOption(new SelectOption().setIndex(0));
+            }
+        } catch (Exception e) {
+            LOG.error("Dropdown evaluation phase threw an unexpected anomaly. Enforcing structural fallback to index zero.", e);
             fromAccountDropdown().selectOption(new SelectOption().setIndex(0));
         }
 

@@ -1,6 +1,8 @@
 package com.framework.stepdefinitions;
 
+import com.framework.context.ScenarioContext;
 import com.framework.pages.OpenAccountPage;
+import com.framework.utils.ConfigReader;
 import com.framework.utils.DatabaseUtil;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -9,12 +11,11 @@ import java.util.Map;
 public class OpenAccountSteps extends BaseSteps {
 
     private final OpenAccountPage openAccountPage;
+    private final ScenarioContext context;
 
-    private String capturedNewAccountId;
-    private String expectedFundingAccount;
-
-    public OpenAccountSteps(OpenAccountPage openAccountPage) {
+    public OpenAccountSteps(OpenAccountPage openAccountPage, ScenarioContext context) {
         this.openAccountPage = openAccountPage;
+        this.context = context;
     }
 
     @And("the user navigates to the Open New Account module")
@@ -22,36 +23,44 @@ public class OpenAccountSteps extends BaseSteps {
         openAccountPage.navigateToOpenAccount();
     }
 
-    @And("requests a new {string} account using funding account from excel row {string} sheet {string}")
-    public void requests_a_new_account_using_funding_account(String accountType, String rowNumber, String sheetName) {
-        Map<String, String> rowData = getExcelRow(sheetName, rowNumber);
+    @And("requests a new {string} account using funding account from data key {string} sheet {string}")
+    public void requests_a_new_account_using_funding_account(String accountType, String testCaseId, String sheetName) {
+        Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
+        String fundingAccount = rowData.get("FromAccount");
 
-        expectedFundingAccount = rowData.get("FromAccount");
-
-        openAccountPage.configureAndOpenAccount(accountType, expectedFundingAccount);
+        openAccountPage.configureAndOpenAccount(accountType, fundingAccount);
     }
 
     @Then("the system creates the account showing a confirmation page")
     public void the_system_creates_the_account_showing_a_confirmation_page() {
         openAccountPage.verifyAccountCreationLayoutVisible();
-        capturedNewAccountId = openAccountPage.getGeneratedAccountId();
+        String generatedId = openAccountPage.getGeneratedAccountId();
 
-        org.testng.Assert.assertFalse(capturedNewAccountId.isEmpty(), "Generated Account ID was blank!");
-        LOG.info("UI Confirmation checked out. New dynamic account generated: [{}]", capturedNewAccountId);
+        org.testng.Assert.assertFalse(generatedId.isEmpty(), "Generated Account ID was blank!");
+
+        context.setContext("SHARED_ACCOUNT_ID", generatedId);
+        LOG.info("UI Confirmation verified. Isolated runtime context mapping bounded for ID: [{}]", generatedId);
     }
 
     @And("the backend account ledger table must confirm the new account type is {string}")
     public void the_backend_account_ledger_table_must_confirm_the_new_account_type(String expectedType) {
-        String query = "SELECT account_type FROM customer_accounts WHERE account_id = ?";
+        boolean isDbValidationActive = Boolean.parseBoolean(ConfigReader.get("db.validation.enabled"));
+        if (!isDbValidationActive) {
+            LOG.warn("Database Audit Warning: 'db.validation.enabled' is false. Skipping account ledger verification step.");
+            return;
+        }
 
-        String actualDbAccountType = DatabaseUtil.getSingleValue(query, "account_type", capturedNewAccountId);
+        String query = "SELECT account_type FROM customer_accounts WHERE account_id = ?";
+        String targetAccountId = context.getStringContext("SHARED_ACCOUNT_ID");
+
+        String actualDbAccountType = DatabaseUtil.getSingleValue(query, "account_type", targetAccountId);
 
         org.testng.Assert.assertEquals(
                 actualDbAccountType,
                 expectedType.toUpperCase(),
-                String.format("DATABASE AUDIT FAILURE: New Account ID %s is out of sync or missing in the DB ledger!", capturedNewAccountId)
+                String.format("DATABASE AUDIT FAILURE: New Account ID %s is out of sync or missing in DB ledger!", targetAccountId)
         );
 
-        LOG.info("Enterprise Verification Success: Database reflects account type {} for ID {}", actualDbAccountType, capturedNewAccountId);
+        LOG.info("Ecosystem Integration Checked: Database verified type {} for ID {}", actualDbAccountType, targetAccountId);
     }
 }

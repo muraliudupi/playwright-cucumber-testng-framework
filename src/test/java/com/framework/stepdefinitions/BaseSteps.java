@@ -12,16 +12,14 @@ public abstract class BaseSteps {
     protected final Logger LOG = LoggerFactory.getLogger(getClass());
     protected static final String EXCEL_FILE_PATH = ConfigReader.getExcelPath();
 
-    protected Map<String, String> getExcelRow(String sheetName, String rowNumber) {
-        List<Map<String, String>> testData = ExcelReader.getSheetData(EXCEL_FILE_PATH, sheetName);
-        int rowIndex = Integer.parseInt(rowNumber) - 1;
+    protected Map<String, String> getExcelRowByKey(String uniqueTestCaseId, String sheetName) {
+        List<Map<String, String>> allRows = ExcelReader.getSheetData(EXCEL_FILE_PATH, sheetName);
 
-        if (rowIndex < 0 || rowIndex >= testData.size()) {
-            throw new IllegalArgumentException(String.format(
-                    "Row %s not found in sheet '%s' (sheet has %d data row(s)). " +
-                            "Check the RowNumber value against the Examples table in your feature file.",
-                    rowNumber, sheetName, testData.size()));
-        }
-        return testData.get(rowIndex);
+        return allRows.stream()
+                .filter(row -> uniqueTestCaseId.equalsIgnoreCase(row.get("TestCaseID")))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(String.format(
+                        "Data Key Verification Error: TestCaseID matching value '%s' was not resolved inside sheet '%s'.",
+                        uniqueTestCaseId, sheetName)));
     }
 }

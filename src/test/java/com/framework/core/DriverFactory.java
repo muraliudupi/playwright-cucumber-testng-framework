@@ -2,12 +2,8 @@ package com.framework.core;
 
 import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.*;
-import com.microsoft.playwright.options.ViewportSize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public final class DriverFactory {
 
@@ -18,122 +14,107 @@ public final class DriverFactory {
     private static final ThreadLocal<BrowserContext> CONTEXT_THREAD_LOCAL = new ThreadLocal<>();
     private static final ThreadLocal<Page> PAGE_THREAD_LOCAL = new ThreadLocal<>();
 
-    private static final Map<Long, Playwright> PLAYWRIGHT_REGISTRY = new ConcurrentHashMap<>();
-    private static final Map<Long, Browser> BROWSER_REGISTRY = new ConcurrentHashMap<>();
-
-    private DriverFactory() {
-        // static utility — never instantiated
-    }
+    private DriverFactory() {}
 
     private static Playwright getPlaywright() {
         if (PLAYWRIGHT_THREAD_LOCAL.get() == null) {
-            LOG.info("[Thread-{}] Creating new Playwright instance", threadId());
-            Playwright playwright = PLAYWRIGHT_REGISTRY.computeIfAbsent(threadId(), id -> Playwright.create());
-            PLAYWRIGHT_THREAD_LOCAL.set(playwright);
+            LOG.info("[Thread-{}] Instantiating unique thread-isolated Playwright instance.", threadId());
+            PLAYWRIGHT_THREAD_LOCAL.set(Playwright.create());
         }
         return PLAYWRIGHT_THREAD_LOCAL.get();
     }
 
     private static Browser getBrowser() {
         if (BROWSER_THREAD_LOCAL.get() == null) {
-            String browserType = resolveSetting("browser", "chromium");
-            boolean isHeadless = Boolean.parseBoolean(resolveSetting("headless", "true"));
-            LOG.info("[Thread-{}] Launching {} Browser (Headless={})", threadId(), browserType, isHeadless);
+            String browserType = resolveSetting("browser", "chromium").trim().toLowerCase();
+            boolean headless = Boolean.parseBoolean(resolveSetting("headless", "true"));
 
-            BrowserType.LaunchOptions options = new BrowserType.LaunchOptions().setHeadless(isHeadless);
+            LOG.info("[Thread-{}] Spawning isolated {} OS process (Headless={}).", threadId(), browserType, headless);
+            BrowserType.LaunchOptions options = new BrowserType.LaunchOptions().setHeadless(headless);
 
-            Browser browser = BROWSER_REGISTRY.computeIfAbsent(threadId(), id -> {
-                switch (browserType.toLowerCase()) {
-                    case "firefox": return getPlaywright().firefox().launch(options);
-                    case "webkit":  return getPlaywright().webkit().launch(options);
-                    default:        return getPlaywright().chromium().launch(options);
-                }
-            });
+            Browser browser = switch (browserType) {
+                case "firefox" -> getPlaywright().firefox().launch(options);
+                case "webkit" -> getPlaywright().webkit().launch(options);
+                default -> getPlaywright().chromium().launch(options);
+            };
             BROWSER_THREAD_LOCAL.set(browser);
         }
         return BROWSER_THREAD_LOCAL.get();
     }
 
-    public static void createNewPageForScenario(String scenarioName) {
-        if (CONTEXT_THREAD_LOCAL.get() != null) {
-            LOG.warn("[Thread-{}] Stale BrowserContext detected before '{}' — closing it first",
-                    threadId(), scenarioName);
-            closeContextAndPage();
+    public static BrowserContext getContext() {
+        if (CONTEXT_THREAD_LOCAL.get() == null) {
+            BrowserContext context = getBrowser().newContext(
+                    new Browser.NewContextOptions().setViewportSize(1280, 720)
+            );
+            CONTEXT_THREAD_LOCAL.set(context);
         }
-
-        Browser.NewContextOptions contextOptions = new Browser.NewContextOptions()
-                .setViewportSize(new ViewportSize(1920, 1080))
-                .setIgnoreHTTPSErrors(true);
-
-        BrowserContext context = getBrowser().newContext(contextOptions);
-        context.setDefaultTimeout(30_000);
-        context.tracing().start(new Tracing.StartOptions()
-                .setScreenshots(true)
-                .setSnapshots(true)
-                .setSources(true));
-
-        Page page = context.newPage();
-
-        CONTEXT_THREAD_LOCAL.set(context);
-        PAGE_THREAD_LOCAL.set(page);
-
-        LOG.info("[Thread-{}] New BrowserContext + Page ready for scenario '{}'", threadId(), scenarioName);
+        return CONTEXT_THREAD_LOCAL.get();
     }
 
     public static Page getPage() {
-        Page page = PAGE_THREAD_LOCAL.get();
-        if (page == null) {
-            throw new IllegalStateException(
-                    "No Page bound to thread " + threadId() +
-                    ". Was createNewPageForScenario() called in a @Before hook?");
+        if (PAGE_THREAD_LOCAL.get() == null) {
+            Page page = getContext().newPage();
+            PAGE_THREAD_LOCAL.set(page);
         }
-        return page;
+        return PAGE_THREAD_LOCAL.get();
     }
 
-    public static BrowserContext getContext() {
-        BrowserContext context = CONTEXT_THREAD_LOCAL.get();
-        if (context == null) {
-            throw new IllegalStateException("No BrowserContext bound to thread " + threadId());
-        }
-        return context;
+    public static void createNewPageForScenario(String scenarioName) {
+        LOG.info("[Thread-{}] Mapping fresh Page viewport context allocation for: '{}'", threadId(), scenarioName);
+        getPage();
+        getContext().tracing().start(new Tracing.StartOptions()
+                .setScreenshots(true)
+                .setSnapshots(true)
+                .setSources(true));
     }
 
     public static void closeContextAndPage() {
+        long currentTid = threadId();
+        LOG.info("[Thread-{}] Initiating dynamic lifecycle sweep and browser process recycling...", currentTid);
+
+        try {
+            Page page = PAGE_THREAD_LOCAL.get();
+            if (page != null) page.close();
+        } catch (Exception e) {
+            LOG.error("[Thread-{}] Page reference cleanup anomaly logged.", currentTid, e);
+        } finally {
+            PAGE_THREAD_LOCAL.remove();
+        }
+
         try {
             BrowserContext context = CONTEXT_THREAD_LOCAL.get();
-            if (context != null) {
-                context.close();
-            }
+            if (context != null) context.close();
         } catch (Exception e) {
-            LOG.error("[Thread-{}] Error closing BrowserContext", threadId(), e);
+            LOG.error("[Thread-{}] Context mapping cleanup anomaly logged.", currentTid, e);
         } finally {
             CONTEXT_THREAD_LOCAL.remove();
-            PAGE_THREAD_LOCAL.remove();
+        }
+
+        try {
+            Browser browser = BROWSER_THREAD_LOCAL.get();
+            if (browser != null) {
+                browser.close();
+                LOG.info("[Thread-{}] Browser OS process recycled cleanly.", currentTid);
+            }
+        } catch (Exception e) {
+            LOG.error("[Thread-{}] Browser binary lifecycle execution closure error.", currentTid, e);
+        } finally {
+            BROWSER_THREAD_LOCAL.remove();
+        }
+
+        try {
+            Playwright pw = PLAYWRIGHT_THREAD_LOCAL.get();
+            if (pw != null) pw.close();
+        } catch (Exception e) {
+            LOG.error("[Thread-{}] Playwright core engine channel exception.", currentTid, e);
+        } finally {
+            PLAYWRIGHT_THREAD_LOCAL.remove();
         }
     }
 
     public static void quitAllDrivers() {
-        BROWSER_REGISTRY.forEach((tid, browser) -> {
-            try {
-                browser.close();
-                LOG.info("[Thread-{}] Browser closed during suite teardown", tid);
-            } catch (Exception e) {
-                LOG.error("[Thread-{}] Error closing Browser during suite teardown", tid, e);
-            }
-        });
-        BROWSER_REGISTRY.clear();
-
-        PLAYWRIGHT_REGISTRY.forEach((tid, playwright) -> {
-            try {
-                playwright.close();
-                LOG.info("[Thread-{}] Playwright closed during suite teardown", tid);
-            } catch (Exception e) {
-                LOG.error("[Thread-{}] Error closing Playwright during suite teardown", tid, e);
-            }
-        });
-        PLAYWRIGHT_REGISTRY.clear();
-
-        LOG.info("Suite-wide Playwright/Browser teardown complete.");
+        LOG.info("Global driver thread infrastructure verification check complete.");
     }
 
     private static long threadId() {
@@ -142,6 +123,6 @@ public final class DriverFactory {
 
     private static String resolveSetting(String key, String hardcodedDefault) {
         String value = ConfigReader.get(key);
-        return value != null && !value.isBlank() ? value : hardcodedDefault;
+        return (value != null && !value.isBlank()) ? value : hardcodedDefault;
     }
 }
