@@ -1,6 +1,6 @@
 Feature: ParaBank Customer Login
 
-  @sanity @login
+  @all @sanity @login
   Scenario Outline: Successful login using external enterprise test data
     Given the user is on the ParaBank login page
     When the user logs in using credentials from excel row "<RowNumber>" sheet "LoginData"
