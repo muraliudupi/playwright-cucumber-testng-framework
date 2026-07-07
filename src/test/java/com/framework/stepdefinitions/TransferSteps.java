@@ -60,14 +60,20 @@ public class TransferSteps extends BaseSteps {
     public void the_backend_database_ledger_state_must_reflect_a_transaction_status_of(String expectedDbStatus) {
         String sqlQuery = "SELECT transaction_status FROM bank_ledger WHERE from_account = ? AND amount = ? ORDER BY timestamp DESC LIMIT 1";
 
-        String numericAmount = expectedAmount.replace("$", "").trim();
-        BigDecimal amountForQuery = new BigDecimal(numericAmount).setScale(2, RoundingMode.HALF_UP);
+        String sanitizedAmountStr = expectedAmount.replaceAll("[\\$, ]", "").trim();
+
+        if (sanitizedAmountStr.isEmpty()) {
+            org.testng.Assert.fail("AUTOMATION ARCHITECTURE ERROR: Extracted transaction amount evaluation value is empty or non-numeric.");
+        }
+
+        BigDecimal amountForQuery = new BigDecimal(sanitizedAmountStr).setScale(2, RoundingMode.HALF_UP);
 
         String actualDbStatus = DatabaseUtil.getSingleValue(sqlQuery, "transaction_status", expectedFrom, amountForQuery);
 
         org.testng.Assert.assertEquals(actualDbStatus, expectedDbStatus,
                 String.format("CRITICAL LEDGER DESYNC: UI reported success, but Database ledger state was found to be: '%s'", actualDbStatus));
 
-        LOG.info("Thread-Safe Database cross-check complete. Verified transaction state as {}", actualDbStatus);
+        LOG.info("Thread-Safe Database cross-check complete. Verified transaction status as {} for parsed numeric context amount [{}]",
+                actualDbStatus, amountForQuery);
     }
 }

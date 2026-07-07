@@ -42,7 +42,6 @@ public class OpenAccountPage extends BasePage {
 
     public OpenAccountPage configureAndOpenAccount(String accountType, String fundingAccount) {
         String sanitizedType = accountType.trim().toUpperCase();
-        String sanitizedFunding = fundingAccount.trim();
 
         accountTypeDropdown().selectOption(new SelectOption().setLabel(sanitizedType));
 
@@ -53,10 +52,10 @@ public class OpenAccountPage extends BasePage {
 
         java.util.List<String> options = fromAccountDropdown().locator("option").allInnerTexts();
 
-        if (options.contains(sanitizedFunding)) {
-            fromAccountDropdown().selectOption(sanitizedFunding);
+        if (options.contains(fundingAccount)) {
+            fromAccountDropdown().selectOption(fundingAccount);
         } else {
-            LOG.warn("Target funding account ID '{}' not found in dropdown list options. Falling back to primary index option.", sanitizedFunding);
+            LOG.warn("Target funding account ID '{}' not found in dropdown list options. Falling back to primary index option.", fundingAccount);
             fromAccountDropdown().selectOption(new SelectOption().setIndex(0));
         }
 
