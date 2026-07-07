@@ -38,6 +38,26 @@ public class TransferSteps extends BaseSteps {
         context.setContext("TX_TO", toAccount);
 
         transferPage.executeTransfer(amount, fromAccount, toAccount);
+
+/*      Gets first From and To account and perform transfer.
+        com.microsoft.playwright.Page p = com.framework.core.DriverFactory.getPage();
+
+        p.locator("#fromAccountId option").first().waitFor();
+
+        java.util.List<String> options = p.locator("#fromAccountId option").allInnerTexts();
+        if (options.size() < 2) {
+            throw new IllegalStateException("Automation Failure: Insufficient dynamic accounts found in UI dropdown to perform a transfer.");
+        }
+
+        String dynamicFromAccount = options.get(0).trim();
+        String dynamicToAccount = options.get(1).trim();
+
+        context.setContext("TX_AMOUNT", amount);
+        context.setContext("TX_FROM", dynamicFromAccount);
+        context.setContext("TX_TO", dynamicToAccount);
+
+        // Execute step cleanly with deterministic state values
+        transferPage.executeTransfer(amount, dynamicFromAccount, dynamicToAccount);*/
     }
 
     @Then("the transfer completes successfully with a validated dynamic confirmation message")
@@ -82,7 +102,7 @@ public class TransferSteps extends BaseSteps {
 
         java.math.BigDecimal amountForQuery = new java.math.BigDecimal(sanitizedAmountStr).setScale(2, java.math.RoundingMode.HALF_UP);
 
-        String actualDbStatus = DatabaseUtil.getSingleValue(sqlQuery, "transaction_status", expectedFrom, expectedTo, amountForQuery);
+        String actualDbStatus = DatabaseUtil.getSingleValueWithRetry(5, 500, sqlQuery, "transaction_status", expectedFrom, expectedTo, amountForQuery);
 
         org.testng.Assert.assertEquals(actualDbStatus, expectedDbStatus,
                 String.format("CRITICAL DESYNC FAILURE: Thread clashing or missing ledger row! " +

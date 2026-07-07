@@ -67,6 +67,28 @@ public final class DatabaseUtil {
         }
     }
 
+    public static String getSingleValueWithRetry(int maxTimeoutSeconds, int pollIntervalMillis, String query, String columnName, Object... params) {
+        long endTime = System.currentTimeMillis() + (maxTimeoutSeconds * 1000L);
+        Exception lastException = null;
+
+        while (System.currentTimeMillis() < endTime) {
+            try {
+                return getSingleValue(query, columnName, params);
+            } catch (Exception e) {
+                lastException = e;
+                try {
+                    Thread.sleep(pollIntervalMillis);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Database polling thread synchronization interrupted", ie);
+                }
+            }
+        }
+        throw new RuntimeException(String.format(
+                "Database Validation Timeout: Record failed to settle in ledger within %d seconds. Query: [%s]",
+                maxTimeoutSeconds, query), lastException);
+    }
+
     public static void closePool() {
         if (dataSource != null && !dataSource.isClosed()) {
             dataSource.close();

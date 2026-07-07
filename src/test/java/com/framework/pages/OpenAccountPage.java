@@ -58,6 +58,21 @@ public class OpenAccountPage extends BasePage {
         return this;
     }
 
+/*  Open Account using 1st account in From dropdown.
+    public OpenAccountPage configureAndOpenAccount(String accountType) {
+        String sanitizedType = accountType.trim().toUpperCase();
+        accountTypeDropdown().selectOption(new SelectOption().setLabel(sanitizedType));
+
+        // Since account numbers change constantly, wait for the dropdown to load options
+        fromAccountDropdown().waitFor(new Locator.WaitForOptions().setTimeout(5000));
+
+        // Dynamic Resolution: Instead of catching an error, deliberately select the first option available
+        fromAccountDropdown().selectOption(new SelectOption().setIndex(0));
+
+        openAccountButton().click();
+        return this;
+    }*/
+
     public void verifyAccountCreationLayoutVisible() {
         successHeading().waitFor(new Locator.WaitForOptions().setTimeout(10000));
     }
