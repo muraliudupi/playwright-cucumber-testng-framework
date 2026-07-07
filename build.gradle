@@ -72,14 +72,14 @@ test {
 
     systemProperties System.getProperties()
 
-    // Inject parameters safely AFTER loading the base map
+/*    // Inject parameters safely AFTER loading the base map
     systemProperty "extent.reporter.spark.start", "true"
     systemProperty "extent.reporter.spark.out", "${layout.buildDirectory.get().asFile}/reports/extent/ExtentReport.html"
     systemProperty "extent.reporter.spark.base64imagesrc", "true"
 
     // Explicit system properties targeting the Cucumber adapter directly
     systemProperty "screenshot.dir", "${layout.buildDirectory.get().asFile}/reports/extent/"
-    systemProperty "screenshot.rel.path", "./"
+    systemProperty "screenshot.rel.path", "./"*/
 
     minHeapSize = "512m"
     maxHeapSize = "2048m"

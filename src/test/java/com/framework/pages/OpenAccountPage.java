@@ -3,8 +3,12 @@ package com.framework.pages;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.SelectOption;
 import com.microsoft.playwright.options.WaitForSelectorState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OpenAccountPage extends BasePage {
+
+    protected final Logger LOG = LoggerFactory.getLogger(getClass());
 
     private Locator openNewAccountLink() {
         return page().locator("a:has-text('Open New Account')");
@@ -37,7 +41,10 @@ public class OpenAccountPage extends BasePage {
     }
 
     public OpenAccountPage configureAndOpenAccount(String accountType, String fundingAccount) {
-        accountTypeDropdown().selectOption(new SelectOption().setLabel(accountType.toUpperCase()));
+        String sanitizedType = accountType.trim().toUpperCase();
+        String sanitizedFunding = fundingAccount.trim();
+
+        accountTypeDropdown().selectOption(new SelectOption().setLabel(sanitizedType));
 
         fromAccountDropdown().waitFor(new Locator.WaitForOptions().setTimeout(5000));
         page().locator("#fromAccountId option").first().waitFor(
@@ -45,9 +52,11 @@ public class OpenAccountPage extends BasePage {
         );
 
         java.util.List<String> options = fromAccountDropdown().locator("option").allInnerTexts();
-        if (options.contains(fundingAccount)) {
-            fromAccountDropdown().selectOption(fundingAccount);
+
+        if (options.contains(sanitizedFunding)) {
+            fromAccountDropdown().selectOption(sanitizedFunding);
         } else {
+            LOG.warn("Target funding account ID '{}' not found in dropdown list options. Falling back to primary index option.", sanitizedFunding);
             fromAccountDropdown().selectOption(new SelectOption().setIndex(0));
         }
 
