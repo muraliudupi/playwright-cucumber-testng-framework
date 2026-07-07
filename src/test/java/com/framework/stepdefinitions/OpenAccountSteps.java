@@ -29,6 +29,8 @@ public class OpenAccountSteps extends BaseSteps {
         String fundingAccount = rowData.get("FromAccount");
 
         openAccountPage.configureAndOpenAccount(accountType, fundingAccount);
+        // Gets first From & Open Account.
+        // openAccountPage.configureAndOpenAccount(accountType);
     }
 
     @Then("the system creates the account showing a confirmation page")
@@ -53,7 +55,7 @@ public class OpenAccountSteps extends BaseSteps {
         String query = "SELECT account_type FROM customer_accounts WHERE account_id = ?";
         String targetAccountId = context.getStringContext("SHARED_ACCOUNT_ID");
 
-        String actualDbAccountType = DatabaseUtil.getSingleValue(query, "account_type", targetAccountId);
+        String actualDbAccountType = DatabaseUtil.getSingleValueWithRetry(5, 500, query, "account_type", targetAccountId);
 
         org.testng.Assert.assertEquals(
                 actualDbAccountType,

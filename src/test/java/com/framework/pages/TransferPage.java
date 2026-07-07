@@ -70,6 +70,21 @@ public class TransferPage extends BasePage {
         transferButton().click();
     }
 
+/*  Transfer using 1st account in From & To dropdown.
+    public void executeTransfer(String amount, String fromAccount, String toAccount) {
+        amountInput().fill(amount);
+
+        Locator fromOption = fromAccountDropdown().locator(String.format("option[value='%s']", fromAccount));
+        fromOption.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.ATTACHED).setTimeout(5000));
+        fromAccountDropdown().selectOption(fromAccount);
+
+        Locator toOption = toAccountDropdown().locator(String.format("option[value='%s']", toAccount));
+        toOption.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.ATTACHED).setTimeout(5000));
+        toAccountDropdown().selectOption(toAccount);
+
+        transferButton().click();
+    }*/
+
     public void verifyTransferLayoutVisible() {
         transferSuccessHeading().waitFor(new Locator.WaitForOptions().setTimeout(10000));
     }

@@ -62,9 +62,14 @@ public class Hooks {
 
     private void attachTrace(Scenario scenario) {
         String safeName = scenario.getName().replaceAll("[^a-zA-Z0-9-_]", "_");
-        Path tracePath = TRACE_DIR.resolve(safeName + "-" + Instant.now().toEpochMilli() + ".zip");
+
+        String threadId = String.valueOf(Thread.currentThread().threadId());
+        String uniqueMarker = java.util.UUID.randomUUID().toString().substring(0, 8);
+
+        Path tracePath = TRACE_DIR.resolve(String.format("%s-thread%s-%s-%s.zip",
+                safeName, threadId, Instant.now().toEpochMilli(), uniqueMarker));
 
         DriverFactory.getContext().tracing().stop(new Tracing.StopOptions().setPath(tracePath));
-        LOG.info("Trace written successfully to target path: {}", tracePath.toAbsolutePath());
+        LOG.info("[Thread-{}] Trace written successfully to isolated path: {}", threadId, tracePath.toAbsolutePath());
     }
 }
