@@ -5,20 +5,26 @@ import java.io.InputStream;
 import java.util.Properties;
 
 public class ConfigReader {
-    private static Properties properties;
+    private static volatile Properties properties;
 
     public static void loadProperties() {
-        try (InputStream in = ConfigReader.class.getClassLoader()
-                .getResourceAsStream("config/config.properties")) {
-            if (in == null) {
-                throw new RuntimeException(
-                        "config/config.properties not found on classpath. " +
-                                "Check it's under src/test/resources/config/.");
+        synchronized (ConfigReader.class) {
+            if (properties != null) {
+                return;
             }
-            properties = new Properties();
-            properties.load(in);
-        } catch (IOException e) {
-            throw new RuntimeException("Critical Failure: Could not load config.properties file configuration context", e);
+            try (InputStream in = ConfigReader.class.getClassLoader()
+                    .getResourceAsStream("config/config.properties")) {
+                if (in == null) {
+                    throw new RuntimeException(
+                            "config/config.properties not found on classpath. " +
+                                    "Check it's under src/test/resources/config/.");
+                }
+                Properties loaded = new Properties();
+                loaded.load(in);
+                properties = loaded;
+            } catch (IOException e) {
+                throw new RuntimeException("Critical Failure: Could not load config.properties file configuration context", e);
+            }
         }
     }
 
