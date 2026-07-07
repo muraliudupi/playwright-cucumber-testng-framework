@@ -35,6 +35,7 @@ public class TransferSteps extends BaseSteps {
 
         context.setContext("TX_AMOUNT", amount);
         context.setContext("TX_FROM", fromAccount);
+        context.setContext("TX_TO", toAccount);
 
         transferPage.executeTransfer(amount, fromAccount, toAccount);
     }
@@ -66,9 +67,13 @@ public class TransferSteps extends BaseSteps {
             return;
         }
 
-        String sqlQuery = "SELECT transaction_status FROM bank_ledger WHERE from_account = ? AND amount = ? ORDER BY timestamp DESC LIMIT 1";
+        String sqlQuery = "SELECT transaction_status FROM bank_ledger " +
+                "WHERE from_account = ? AND to_account = ? AND amount = ? " +
+                "ORDER BY timestamp DESC LIMIT 1";
+
         String expectedAmount = context.getStringContext("TX_AMOUNT");
         String expectedFrom = context.getStringContext("TX_FROM");
+        String expectedTo = context.getStringContext("TX_TO"); // Bounded context value
 
         String sanitizedAmountStr = expectedAmount.replaceAll("[\\$, ]", "").trim();
         if (sanitizedAmountStr.isEmpty()) {
@@ -77,10 +82,14 @@ public class TransferSteps extends BaseSteps {
 
         java.math.BigDecimal amountForQuery = new java.math.BigDecimal(sanitizedAmountStr).setScale(2, java.math.RoundingMode.HALF_UP);
 
-        // This call will now safely fail fast with structural details if zero rows are returned
-        String actualDbStatus = DatabaseUtil.getSingleValue(sqlQuery, "transaction_status", expectedFrom, amountForQuery);
+        String actualDbStatus = DatabaseUtil.getSingleValue(sqlQuery, "transaction_status", expectedFrom, expectedTo, amountForQuery);
 
         org.testng.Assert.assertEquals(actualDbStatus, expectedDbStatus,
-                String.format("CRITICAL DESYNC FAILURE: UI displayed success, but DB ledger transaction status resolved to: '%s'", actualDbStatus));
+                String.format("CRITICAL DESYNC FAILURE: Thread clashing or missing ledger row! " +
+                                "UI displayed success, but DB ledger transaction status resolved to: '%s' for transfer from %s to %s.",
+                        actualDbStatus, expectedFrom, expectedTo));
+
+        LOG.info("[Thread-{}] Database verification success: Status verified as {} for transfer from {} to {} of amount [{}]",
+                Thread.currentThread().threadId(), actualDbStatus, expectedFrom, expectedTo, amountForQuery);
     }
 }
