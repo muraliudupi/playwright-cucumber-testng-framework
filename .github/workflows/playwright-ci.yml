@@ -45,14 +45,17 @@ jobs:
       - name: Install Playwright OS Linux Dependencies
         run: npx playwright install-deps
 
+      - name: Install Playwright Browser Binaries
+        run: ./gradlew installPlaywrightBrowsers --no-daemon
+
       - name: Execute Test Suite via Parallel Worker Threads (Linux Headless Safe)
         continue-on-error: true
         id: test_execution
         env:
-          SECRET_PASS: ${{ secrets.ENTERPRISE_DB_PASSWORD }}
+          DB_PASSWORD: ${{ secrets.ENTERPRISE_DB_PASSWORD }}
         run: |
           TAGS="${{ github.event.inputs.tags || '@sanity' }}"
-          xvfb-run ./gradlew clean test "-Dcucumber.filter.tags=$TAGS" "-Ddb.password=$SECRET_PASS" --no-daemon --info
+          xvfb-run ./gradlew clean test "-Dcucumber.filter.tags=$TAGS" --no-daemon
 
       - name: Publish Interactive Extent Automation Reports
         if: always()
@@ -63,25 +66,38 @@ jobs:
           retention-days: 14
           if-no-files-found: warn
 
-      - name: Parse TestNG XML Report Results
+      - name: Parse Cucumber JSON Report Results
         if: always()
         id: report_parser
         run: |
-          XML_PATH=$(find build/test-results/test -name "*.xml" -print -quit)
-          
-          if [ -n "$XML_PATH" ] && [ -f "$XML_PATH" ]; then
-            echo "Found TestNG XML report at: $XML_PATH"
-          
-            TOTAL_SCENARIOS=$(grep -oE "tests=\"[0-9]+\"" "$XML_PATH" | grep -oE "[0-9]+")
-            FAILED_SCENARIOS=$(grep -oE "failures=\"[0-9]+\"" "$XML_PATH" | grep -oE "[0-9]+")
-            SKIPPED_SCENARIOS=$(grep -oE "skipped=\"[0-9]+\"" "$XML_PATH" | grep -oE "[0-9]+")
-          
-            TOTAL_SCENARIOS=${TOTAL_SCENARIOS:-0}
-            FAILED_SCENARIOS=${FAILED_SCENARIOS:-0}
-            SKIPPED_SCENARIOS=${SKIPPED_SCENARIOS:-0}
-          
-            PASSED_SCENARIOS=$((TOTAL_SCENARIOS - FAILED_SCENARIOS - SKIPPED_SCENARIOS))
-          
+          # Aggregates across ALL json report files under build/reports/cucumber/, not just the first one found - if a second runner class is added,
+          # Need to give a uniquely-named json plugin path (e.g. # json:build/reports/cucumber/cucumber-report-<name>.json) and this
+          # glob + jq -s (slurp) picks it up automatically with no script changes.
+          JSON_FILES=$(find build/reports/cucumber -name "*.json" 2>/dev/null)
+
+          if [ -n "$JSON_FILES" ]; then
+            echo "Found Cucumber JSON report(s):"
+            echo "$JSON_FILES"
+
+            RESULT=$(echo "$JSON_FILES" | xargs jq -s '
+              [.[][] | .elements[]? | select(.type == "scenario")] as $scenarios
+              | ($scenarios | map(
+                  (.steps // []) as $steps
+                  | if ($steps | any(.result.status == "failed")) then "failed"
+                    elif ($steps | any(.result.status == "skipped" or .result.status == "pending" or .result.status == "undefined" or .result.status == "ambiguous")) then "skipped"
+                    else "passed"
+                    end
+                )) as $statuses
+              | { total: ($statuses | length),
+                  passed: ($statuses | map(select(. == "passed")) | length),
+                  failed: ($statuses | map(select(. == "failed")) | length),
+                  skipped: ($statuses | map(select(. == "skipped")) | length) }
+            ')
+
+            TOTAL_SCENARIOS=$(echo "$RESULT" | jq -r '.total')
+            FAILED_SCENARIOS=$(echo "$RESULT" | jq -r '.failed')
+            PASSED_SCENARIOS=$(echo "$RESULT" | jq -r '.passed')
+
             if [ "$FAILED_SCENARIOS" -gt 0 ]; then
               STATUS_TEXT="❌ FAILED ($FAILED_SCENARIOS Scenarios Failed)"
               BUILD_STATUS="FAILED"
@@ -90,14 +106,14 @@ jobs:
               BUILD_STATUS="SUCCESS"
             fi
           else
-            echo "❌ CRITICAL: TestNG XML report could not be found."
+            echo "❌ CRITICAL: No Cucumber JSON report(s) found."
             TOTAL_SCENARIOS=0
             FAILED_SCENARIOS=0
             PASSED_SCENARIOS=0
             STATUS_TEXT="⚠️ ERROR (No Report Found)"
             BUILD_STATUS="FAILED"
           fi
-          
+
           echo "TOTAL_COUNT=$TOTAL_SCENARIOS" >> $GITHUB_ENV
           echo "PASSED_COUNT=$PASSED_SCENARIOS" >> $GITHUB_ENV
           echo "FAILED_COUNT=$FAILED_SCENARIOS" >> $GITHUB_ENV
