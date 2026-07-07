@@ -20,7 +20,6 @@ public class DatabaseUtil {
         DB_URL = ConfigReader.get("db.url");
         DB_USER = ConfigReader.get("db.user");
 
-        // 2. Resolve password from JVM system arguments (-Ddb.password) or fallback to local system environment (DB_PASSWORD)
         String runtimePassword = System.getProperty("db.password", System.getenv("DB_PASSWORD"));
 
         if (runtimePassword == null || runtimePassword.isBlank()) {
@@ -40,12 +39,7 @@ public class DatabaseUtil {
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             for (int i = 0; i < params.length; i++) {
-                Object param = params[i];
-                if (param instanceof java.math.BigDecimal) {
-                    stmt.setDouble(i + 1, ((java.math.BigDecimal) param).doubleValue());
-                } else {
-                    stmt.setObject(i + 1, param);
-                }
+                stmt.setObject(i + 1, params[i]);
             }
 
             try (ResultSet rs = stmt.executeQuery()) {
