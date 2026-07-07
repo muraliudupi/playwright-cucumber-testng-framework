@@ -28,10 +28,8 @@ public class Hooks {
     @After(order = 0)
     public void tearDown(Scenario scenario) {
         try {
-            boolean screenshotOnPass = Boolean.parseBoolean(
-                    ConfigReader.get("screenshot.on.pass") != null
-                            ? ConfigReader.get("screenshot.on.pass")
-                            : "true");
+            String isScreenshot = ConfigReader.get("screenshot.on.pass");
+            boolean screenshotOnPass = Boolean.parseBoolean(isScreenshot != null ? isScreenshot : "true");
 
             if (scenario.isFailed() || screenshotOnPass) {
                 try {
@@ -46,9 +44,8 @@ public class Hooks {
                     attachTrace(scenario);
                 } else {
                     com.microsoft.playwright.Page page = DriverFactory.getPage();
-                    if (page != null && DriverFactory.getContext() != null) {
-                        DriverFactory.getContext().tracing().stop(new com.microsoft.playwright.Tracing.StopOptions().setPath(null));
-                    }
+                    DriverFactory.getContext();
+                    DriverFactory.getContext().tracing().stop(new Tracing.StopOptions().setPath(null));
                 }
             } catch (Exception e) {
                 LOG.error("Failed to complete teardown tracing cleanup lifecycle", e);
@@ -61,20 +58,17 @@ public class Hooks {
 
     private void attachScreenshot(Scenario scenario) {
         Page page = DriverFactory.getPage();
-        if (page != null) {
-            byte[] screenshot = page.screenshot(new Page.ScreenshotOptions().setFullPage(true));
-            String attachmentName = scenario.isFailed() ? "Failure-State-Snapshot" : "Success-State-Snapshot";
-            scenario.attach(screenshot, "image/png", attachmentName);
-        }
+        byte[] screenshot = page.screenshot(new Page.ScreenshotOptions().setFullPage(true));
+        String attachmentName = scenario.isFailed() ? "Failure-State-Snapshot" : "Success-State-Snapshot";
+        scenario.attach(screenshot, "image/png", attachmentName);
     }
 
     private void attachTrace(Scenario scenario) {
-        if (DriverFactory.getContext() != null) {
-            String safeName = scenario.getName().replaceAll("[^a-zA-Z0-9-_]", "_");
-            Path tracePath = TRACE_DIR.resolve(safeName + "-" + Instant.now().toEpochMilli() + ".zip");
+        DriverFactory.getContext();
+        String safeName = scenario.getName().replaceAll("[^a-zA-Z0-9-_]", "_");
+        Path tracePath = TRACE_DIR.resolve(safeName + "-" + Instant.now().toEpochMilli() + ".zip");
 
-            DriverFactory.getContext().tracing().stop(new com.microsoft.playwright.Tracing.StopOptions().setPath(tracePath));
-            LOG.info("Trace saved and bounded to execution report at: {}", tracePath.toAbsolutePath());
-        }
+        DriverFactory.getContext().tracing().stop(new Tracing.StopOptions().setPath(tracePath));
+        LOG.info("Trace saved and bounded to execution report at: {}", tracePath.toAbsolutePath());
     }
 }
