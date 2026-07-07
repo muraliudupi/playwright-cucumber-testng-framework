@@ -61,12 +61,21 @@ public final class DriverFactory {
     }
 
     public static void createNewPageForScenario(String scenarioName) {
-        LOG.info("[Thread-{}] Mapping fresh Page viewport context allocation for: '{}'", threadId(), scenarioName);
-        getPage();
-        getContext().tracing().start(new Tracing.StartOptions()
+        long threadId = Thread.currentThread().threadId();
+        LOG.info("[Thread-{}] Allocating fresh workflow execution context for: {}", threadId, scenarioName);
+
+        if (CONTEXT_THREAD_LOCAL.get() != null) {
+            closeContextAndPage();
+        }
+
+        BrowserContext context = getBrowser().newContext();
+        context.tracing().start(new Tracing.StartOptions()
                 .setScreenshots(true)
                 .setSnapshots(true)
                 .setSources(true));
+
+        CONTEXT_THREAD_LOCAL.set(context);
+        PAGE_THREAD_LOCAL.set(context.newPage());
     }
 
     public static void closeContextAndPage() {
