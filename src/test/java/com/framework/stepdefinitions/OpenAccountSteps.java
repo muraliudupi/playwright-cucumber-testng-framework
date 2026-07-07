@@ -1,11 +1,9 @@
 package com.framework.stepdefinitions;
 
 import com.framework.pages.OpenAccountPage;
-import com.framework.utils.ExcelReader;
 import com.framework.utils.DatabaseUtil;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
-import java.util.List;
 import java.util.Map;
 
 public class OpenAccountSteps extends BaseSteps {
@@ -26,9 +24,7 @@ public class OpenAccountSteps extends BaseSteps {
 
     @And("requests a new {string} account using funding account from excel row {string} sheet {string}")
     public void requests_a_new_account_using_funding_account(String accountType, String rowNumber, String sheetName) {
-        int rowIndex = Integer.parseInt(rowNumber) - 1;
-        List<Map<String, String>> testData = ExcelReader.getSheetData(EXCEL_FILE_PATH, sheetName);
-        Map<String, String> rowData = testData.get(rowIndex);
+        Map<String, String> rowData = getExcelRow(sheetName, rowNumber);
 
         expectedFundingAccount = rowData.get("FromAccount");
 

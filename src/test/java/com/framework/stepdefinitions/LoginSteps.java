@@ -1,11 +1,9 @@
 package com.framework.stepdefinitions;
 
 import com.framework.pages.LoginPage;
-import com.framework.utils.ExcelReader;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import java.util.List;
 import java.util.Map;
 import static org.testng.Assert.assertTrue;
 
@@ -29,10 +27,7 @@ public class LoginSteps extends BaseSteps {
 
     @When("the user logs in using credentials from excel row {string} sheet {string}")
     public void the_user_logs_in_using_credentials_from_excel_row_sheet(String rowNumber, String sheetName) {
-        int rowIndex = Integer.parseInt(rowNumber) - 1;
-
-        List<Map<String, String>> testData = ExcelReader.getSheetData(EXCEL_FILE_PATH, sheetName);
-        Map<String, String> rowData = testData.get(rowIndex);
+        Map<String, String> rowData = getExcelRow(sheetName, rowNumber);
 
         String username = rowData.get("Username");
         String password = rowData.get("Password");

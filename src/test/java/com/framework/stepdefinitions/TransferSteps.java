@@ -1,11 +1,9 @@
 package com.framework.stepdefinitions;
 
 import com.framework.pages.TransferPage;
-import com.framework.utils.ExcelReader;
 import com.framework.utils.DatabaseUtil;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
-import java.util.List;
 import java.util.Map;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -29,9 +27,7 @@ public class TransferSteps extends BaseSteps {
 
     @And("executes a transfer using data from excel row {string} sheet {string}")
     public void executes_a_transfer_using_data_from_excel_row_sheet(String rowNumber, String sheetName) {
-        int rowIndex = Integer.parseInt(rowNumber) - 1;
-        List<Map<String, String>> testData = ExcelReader.getSheetData(EXCEL_FILE_PATH, sheetName);
-        Map<String, String> rowData = testData.get(rowIndex);
+        Map<String, String> rowData = getExcelRow(sheetName, rowNumber);
 
         this.expectedAmount = rowData.get("Amount");
         this.expectedFrom = rowData.get("FromAccount");
