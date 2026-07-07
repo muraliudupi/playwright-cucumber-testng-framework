@@ -35,7 +35,7 @@ public class Hooks {
                 try {
                     attachScreenshot(scenario);
                 } catch (Exception e) {
-                    LOG.error("Failed to capture status screenshot for report context", e);
+                    LOG.error("Failed to append snapshot attachment", e);
                 }
             }
 
@@ -43,12 +43,11 @@ public class Hooks {
                 if (scenario.isFailed()) {
                     attachTrace(scenario);
                 } else {
-                    com.microsoft.playwright.Page page = DriverFactory.getPage();
-                    DriverFactory.getContext();
-                    DriverFactory.getContext().tracing().stop(new Tracing.StopOptions().setPath(null));
+                    // Stop trace without writing to disk for successful runs
+                    DriverFactory.getContext().tracing().stop();
                 }
             } catch (Exception e) {
-                LOG.error("Failed to complete teardown tracing cleanup lifecycle", e);
+                LOG.error("Failed cleanly executing trace shutdown sequence", e);
             }
 
         } finally {
@@ -59,16 +58,15 @@ public class Hooks {
     private void attachScreenshot(Scenario scenario) {
         Page page = DriverFactory.getPage();
         byte[] screenshot = page.screenshot(new Page.ScreenshotOptions().setFullPage(true));
-        String attachmentName = scenario.isFailed() ? "Failure-State-Snapshot" : "Success-State-Snapshot";
-        scenario.attach(screenshot, "image/png", attachmentName);
+        String label = scenario.isFailed() ? "Failure-State-Snapshot" : "Success-State-Snapshot";
+        scenario.attach(screenshot, "image/png", label);
     }
 
     private void attachTrace(Scenario scenario) {
-        DriverFactory.getContext();
         String safeName = scenario.getName().replaceAll("[^a-zA-Z0-9-_]", "_");
         Path tracePath = TRACE_DIR.resolve(safeName + "-" + Instant.now().toEpochMilli() + ".zip");
 
         DriverFactory.getContext().tracing().stop(new Tracing.StopOptions().setPath(tracePath));
-        LOG.info("Trace saved and bounded to execution report at: {}", tracePath.toAbsolutePath());
+        LOG.info("Trace written successfully to target path: {}", tracePath.toAbsolutePath());
     }
 }

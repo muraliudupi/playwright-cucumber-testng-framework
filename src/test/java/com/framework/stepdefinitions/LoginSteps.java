@@ -25,9 +25,9 @@ public class LoginSteps extends BaseSteps {
         loginPage.login(username, password);
     }
 
-    @When("the user logs in using credentials from excel row {string} sheet {string}")
-    public void the_user_logs_in_using_credentials_from_excel_row_sheet(String rowNumber, String sheetName) {
-        Map<String, String> rowData = getExcelRow(sheetName, rowNumber);
+    @When("the user logs in using credentials from data key {string} sheet {string}")
+    public void the_user_logs_in_using_credentials_from_data_key(String testCaseId, String sheetName) {
+        Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
 
         String username = rowData.get("Username");
         String password = rowData.get("Password");

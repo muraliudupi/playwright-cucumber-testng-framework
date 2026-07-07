@@ -49,24 +49,20 @@ public class TransferPage extends BasePage {
     public void executeTransfer(String amount, String fromAccount, String toAccount) {
         amountInput().fill(amount);
 
-        fromAccountDropdown().waitFor(new Locator.WaitForOptions().setTimeout(5000));
-        page().locator("#fromAccountId option").first().waitFor(
-                new Locator.WaitForOptions().setState(WaitForSelectorState.ATTACHED).setTimeout(5000)
-        );
+        Locator optionTarget = fromAccountDropdown().locator("option");
+        optionTarget.first().waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.ATTACHED).setTimeout(5000));
 
-        List<String> elementValues = fromAccountDropdown().locator("option").allInnerTexts();
-
-        if (elementValues.contains(fromAccount)) {
+        if (fromAccountDropdown().locator(String.format("option[value='%s']", fromAccount)).count() > 0) {
             fromAccountDropdown().selectOption(fromAccount);
         } else {
-            LOG.warn("Excel FromAccount '{}' missing from system options. Instantly defaulting to index 0.", fromAccount);
+            LOG.warn("Excel FromAccount '{}' missing from option tree options. Defaulting to index 0.", fromAccount);
             fromAccountDropdown().selectOption(new SelectOption().setIndex(0));
         }
 
-        if (elementValues.contains(toAccount)) {
+        if (toAccountDropdown().locator(String.format("option[value='%s']", toAccount)).count() > 0) {
             toAccountDropdown().selectOption(toAccount);
         } else {
-            LOG.warn("Excel ToAccount '{}' missing from system options. Instantly defaulting to index 1.", toAccount);
+            LOG.warn("Excel ToAccount '{}' missing from option tree options. Defaulting to index 1.", toAccount);
             toAccountDropdown().selectOption(new SelectOption().setIndex(1));
         }
 
