@@ -45,21 +45,12 @@ public class OpenAccountPage extends BasePage {
 
         accountTypeDropdown().selectOption(new SelectOption().setLabel(sanitizedType));
 
-        Locator optionTarget = fromAccountDropdown().locator("option");
-        optionTarget.first().waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.ATTACHED).setTimeout(5000));
-
         try {
-            Locator specificOption = fromAccountDropdown().locator(String.format("option[value='%s']", fundingAccount));
-
-            if (specificOption.count() > 0) {
-                fromAccountDropdown().selectOption(fundingAccount);
-                LOG.info("Successfully matched and selected funding account option: {}", fundingAccount);
-            } else {
-                LOG.warn("Target funding account ID '{}' not present in UI select element. Falling back to primary index option.", fundingAccount);
-                fromAccountDropdown().selectOption(new SelectOption().setIndex(0));
-            }
+            Locator optionTarget = fromAccountDropdown().locator(String.format("option[value='%s']", fundingAccount));
+            optionTarget.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.ATTACHED).setTimeout(3000));
+            fromAccountDropdown().selectOption(fundingAccount);
         } catch (Exception e) {
-            LOG.error("Dropdown evaluation phase threw an unexpected anomaly. Enforcing structural fallback to index zero.", e);
+            LOG.warn("Target FromAccount '{}' did not render within timeout. Falling back to index 0.", fundingAccount);
             fromAccountDropdown().selectOption(new SelectOption().setIndex(0));
         }
 

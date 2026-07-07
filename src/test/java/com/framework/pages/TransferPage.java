@@ -49,20 +49,21 @@ public class TransferPage extends BasePage {
     public void executeTransfer(String amount, String fromAccount, String toAccount) {
         amountInput().fill(amount);
 
-        Locator optionTarget = fromAccountDropdown().locator("option");
-        optionTarget.first().waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.ATTACHED).setTimeout(5000));
-
-        if (fromAccountDropdown().locator(String.format("option[value='%s']", fromAccount)).count() > 0) {
+        try {
+            Locator fromOption = fromAccountDropdown().locator(String.format("option[value='%s']", fromAccount));
+            fromOption.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.ATTACHED).setTimeout(3000));
             fromAccountDropdown().selectOption(fromAccount);
-        } else {
-            LOG.warn("Excel FromAccount '{}' missing from option tree options. Defaulting to index 0.", fromAccount);
+        } catch (Exception e) {
+            LOG.warn("Target FromAccount '{}' did not render within timeout. Falling back to index 0.", fromAccount);
             fromAccountDropdown().selectOption(new SelectOption().setIndex(0));
         }
 
-        if (toAccountDropdown().locator(String.format("option[value='%s']", toAccount)).count() > 0) {
+        try {
+            Locator toOption = toAccountDropdown().locator(String.format("option[value='%s']", toAccount));
+            toOption.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.ATTACHED).setTimeout(3000));
             toAccountDropdown().selectOption(toAccount);
-        } else {
-            LOG.warn("Excel ToAccount '{}' missing from option tree options. Defaulting to index 1.", toAccount);
+        } catch (Exception e) {
+            LOG.warn("Target ToAccount '{}' did not render within timeout. Falling back to index 1.", toAccount);
             toAccountDropdown().selectOption(new SelectOption().setIndex(1));
         }
 
