@@ -4,9 +4,11 @@ import org.apache.poi.ss.usermodel.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class ExcelReader {
@@ -30,7 +32,32 @@ public final class ExcelReader {
             }
 
             Row headerRow = sheet.getRow(0);
+            if (headerRow == null) {
+                throw new RuntimeException("Header row (row 0) is missing in sheet '" + sheetName + "' of " + excelFilePath);
+            }
             int totalCols = headerRow.getPhysicalNumberOfCells();
+
+            List<String> headerNames = new ArrayList<>(totalCols);
+            Set<String> seenHeaders = new HashSet<>();
+            for (int j = 0; j < totalCols; j++) {
+                Cell headerCell = headerRow.getCell(j, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+                String headerName = headerCell.getStringCellValue().trim();
+
+                if (headerName.isEmpty()) {
+                    throw new RuntimeException(String.format(
+                            "Blank header cell at column index %d in sheet '%s' of %s. Every column must have a non-empty header.",
+                            j, sheetName, excelFilePath));
+                }
+                if (!seenHeaders.add(headerName)) {
+                    throw new RuntimeException(String.format(
+                            "Duplicate header '%s' in sheet '%s' of %s. Column headers must be unique - " +
+                                    "a repeated header silently overwrites a prior column's value when rows are read.",
+                            headerName, sheetName, excelFilePath));
+                }
+                headerNames.add(headerName);
+            }
+
+            DataFormatter formatter = new DataFormatter();
 
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row currentRow = sheet.getRow(i);
@@ -39,13 +66,8 @@ public final class ExcelReader {
                 Map<String, String> rowMap = new LinkedHashMap<>();
                 for (int j = 0; j < totalCols; j++) {
                     Cell cell = currentRow.getCell(j, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
-                    Cell headerCell = headerRow.getCell(j, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
-                    String headerName = headerCell.getStringCellValue().trim();
-
-                    DataFormatter formatter = new DataFormatter();
                     String cellValue = formatter.formatCellValue(cell).trim();
-
-                    rowMap.put(headerName, cellValue);
+                    rowMap.put(headerNames.get(j), cellValue);
                 }
                 dataList.add(rowMap);
             }
