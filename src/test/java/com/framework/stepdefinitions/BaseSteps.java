@@ -19,7 +19,7 @@ public abstract class BaseSteps {
                 .filter(row -> uniqueTestCaseId.equalsIgnoreCase(row.get("TestCaseID")))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(String.format(
-                        "Data Key Verification Error: TestCaseID matching value '%s' was not resolved inside sheet '%s'.",
+                        "Data Key Verification Error: TestCaseID '%s' not resolved in sheet '%s'.",
                         uniqueTestCaseId, sheetName)));
     }
 }

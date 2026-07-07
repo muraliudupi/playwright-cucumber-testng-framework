@@ -38,20 +38,18 @@ public class Hooks {
                     LOG.error("Failed to append snapshot attachment", e);
                 }
             }
-
+        } finally {
             try {
                 if (scenario.isFailed()) {
                     attachTrace(scenario);
                 } else {
-                    // Stop trace without writing to disk for successful runs
                     DriverFactory.getContext().tracing().stop();
                 }
             } catch (Exception e) {
                 LOG.error("Failed cleanly executing trace shutdown sequence", e);
+            } finally {
+                DriverFactory.closeContextAndPage();
             }
-
-        } finally {
-            DriverFactory.closeContextAndPage();
         }
     }
 

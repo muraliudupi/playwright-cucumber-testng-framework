@@ -47,8 +47,8 @@ public class LoginPage extends BasePage {
     }
 
     public void verifyLoginSuccessful() {
-        accountsOverviewHeading().waitFor(new Locator.WaitForOptions().setTimeout(10_000));
-        welcomeMessage().waitFor(new Locator.WaitForOptions().setTimeout(10_000));
+        accountsOverviewHeading().waitFor();
+        welcomeMessage().waitFor();
     }
 
     public String getErrorMessage() {
