@@ -1,6 +1,6 @@
 Feature: ParaBank Account Lifecycle Management
 
-  @regression @acctOpn
+  @sanity @regression @acctOpn
   Scenario Outline: Open a New Sub-Account and Validate Core Database Persistence
     Given the user is on the ParaBank login page
     When the user logs in using credentials from excel row "<RowNo>" sheet "LoginData"

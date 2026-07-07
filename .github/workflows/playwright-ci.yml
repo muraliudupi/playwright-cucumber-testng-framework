@@ -52,9 +52,9 @@ jobs:
         continue-on-error: true
         id: test_execution
         env:
+          TAGS: "${{ github.event.inputs.tags || '@sanity' }}"
           DB_PASSWORD: ${{ secrets.ENTERPRISE_DB_PASSWORD }}
         run: |
-          TAGS="${{ github.event.inputs.tags || '@sanity' }}"
           xvfb-run ./gradlew clean test "-Dcucumber.filter.tags=$TAGS" --no-daemon
 
       - name: Publish Interactive Extent Automation Reports

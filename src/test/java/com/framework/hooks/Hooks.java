@@ -41,9 +41,19 @@ public class Hooks {
                 }
             }
 
-            if (scenario.isFailed()) {
-                try { attachTrace(scenario); } catch (Exception e) { LOG.error("Failed trace capture", e); }
+            try {
+                if (scenario.isFailed()) {
+                    attachTrace(scenario);
+                } else {
+                    com.microsoft.playwright.Page page = DriverFactory.getPage();
+                    if (page != null && DriverFactory.getContext() != null) {
+                        DriverFactory.getContext().tracing().stop(new com.microsoft.playwright.Tracing.StopOptions().setPath(null));
+                    }
+                }
+            } catch (Exception e) {
+                LOG.error("Failed to complete teardown tracing cleanup lifecycle", e);
             }
+
         } finally {
             DriverFactory.closeContextAndPage();
         }
@@ -59,9 +69,12 @@ public class Hooks {
     }
 
     private void attachTrace(Scenario scenario) {
-        String safeName = scenario.getName().replaceAll("[^a-zA-Z0-9-_]", "_");
-        Path tracePath = TRACE_DIR.resolve(safeName + "-" + Instant.now().toEpochMilli() + ".zip");
-        DriverFactory.getContext().tracing().stop(new Tracing.StopOptions().setPath(tracePath));
-        LOG.info("Trace saved to {}", tracePath.toAbsolutePath());
+        if (DriverFactory.getContext() != null) {
+            String safeName = scenario.getName().replaceAll("[^a-zA-Z0-9-_]", "_");
+            Path tracePath = TRACE_DIR.resolve(safeName + "-" + Instant.now().toEpochMilli() + ".zip");
+
+            DriverFactory.getContext().tracing().stop(new com.microsoft.playwright.Tracing.StopOptions().setPath(tracePath));
+            LOG.info("Trace saved and bounded to execution report at: {}", tracePath.toAbsolutePath());
+        }
     }
 }

@@ -36,7 +36,7 @@ public class ConfigReader {
     }
 
     public static String getExcelPath() {
-        return System.getProperty("user.dir") + "/" + get("excel.path");
+        return get("excel.path");
     }
 
     public static String get(String key) {

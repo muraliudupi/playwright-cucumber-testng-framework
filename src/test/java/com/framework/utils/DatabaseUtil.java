@@ -40,7 +40,12 @@ public class DatabaseUtil {
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             for (int i = 0; i < params.length; i++) {
-                stmt.setObject(i + 1, params[i]);
+                Object param = params[i];
+                if (param instanceof java.math.BigDecimal) {
+                    stmt.setDouble(i + 1, ((java.math.BigDecimal) param).doubleValue());
+                } else {
+                    stmt.setObject(i + 1, param);
+                }
             }
 
             try (ResultSet rs = stmt.executeQuery()) {

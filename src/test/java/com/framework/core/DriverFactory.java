@@ -28,33 +28,28 @@ public final class DriverFactory {
     private static Playwright getPlaywright() {
         if (PLAYWRIGHT_THREAD_LOCAL.get() == null) {
             LOG.info("[Thread-{}] Creating new Playwright instance", threadId());
-            Playwright playwright = Playwright.create();
+            Playwright playwright = PLAYWRIGHT_REGISTRY.computeIfAbsent(threadId(), id -> Playwright.create());
             PLAYWRIGHT_THREAD_LOCAL.set(playwright);
-            PLAYWRIGHT_REGISTRY.put(threadId(), playwright);
         }
         return PLAYWRIGHT_THREAD_LOCAL.get();
     }
 
     private static Browser getBrowser() {
         if (BROWSER_THREAD_LOCAL.get() == null) {
-            String browserName = resolveSetting("browser", "chromium").toLowerCase();
-            boolean headless = Boolean.parseBoolean(resolveSetting("headless", "true"));
+            String browserType = resolveSetting("browser", "chromium");
+            boolean isHeadless = Boolean.parseBoolean(resolveSetting("headless", "true"));
+            LOG.info("[Thread-{}] Launching {} Browser (Headless={})", threadId(), browserType, isHeadless);
 
-            LOG.info("[Thread-{}] Launching {} (headless={})", threadId(), browserName, headless);
+            BrowserType.LaunchOptions options = new BrowserType.LaunchOptions().setHeadless(isHeadless);
 
-            BrowserType.LaunchOptions launchOptions = new BrowserType.LaunchOptions()
-                    .setHeadless(headless)
-                    .setSlowMo(0);
-
-            BrowserType browserType = switch (browserName) {
-                case "firefox" -> getPlaywright().firefox();
-                case "webkit"  -> getPlaywright().webkit();
-                default        -> getPlaywright().chromium();
-            };
-
-            Browser browser = browserType.launch(launchOptions);
+            Browser browser = BROWSER_REGISTRY.computeIfAbsent(threadId(), id -> {
+                switch (browserType.toLowerCase()) {
+                    case "firefox": return getPlaywright().firefox().launch(options);
+                    case "webkit":  return getPlaywright().webkit().launch(options);
+                    default:        return getPlaywright().chromium().launch(options);
+                }
+            });
             BROWSER_THREAD_LOCAL.set(browser);
-            BROWSER_REGISTRY.put(threadId(), browser);
         }
         return BROWSER_THREAD_LOCAL.get();
     }

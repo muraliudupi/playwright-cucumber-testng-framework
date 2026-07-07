@@ -17,9 +17,9 @@ public abstract class BaseSteps {
         int rowIndex = Integer.parseInt(rowNumber) - 1;
 
         if (rowIndex < 0 || rowIndex >= testData.size()) {
-            throw new IllegalArgumentException(String.format(
-                    "Row %s not found in sheet '%s' (sheet has %d data row(s)). " +
-                            "Check the RowNumber value against the Examples table in your feature file.",
+            org.testng.Assert.fail(String.format(
+                    "DATA PROFILE ERROR: Requested Row %s not found in spreadsheet partition '%s' (sheet contains %d rows). " +
+                            "Verify the row index bounds specified within your Feature File Scenario Outline Examples.",
                     rowNumber, sheetName, testData.size()));
         }
         return testData.get(rowIndex);
