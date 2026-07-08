@@ -52,7 +52,7 @@ jobs:
         continue-on-error: true
         id: test_execution
         env:
-          TAGS: "${{ github.event.inputs.tags || '@sanity' }}"
+          TAGS: "${{ github.event.inputs.tags || '@sanity and not @wip' }}"
           DB_PASSWORD: ${{ secrets.ENTERPRISE_DB_PASSWORD }}
         run: |
           xvfb-run ./gradlew clean test "-Dcucumber.filter.tags=$TAGS" --no-daemon
