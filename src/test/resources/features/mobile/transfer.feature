@@ -1,6 +1,6 @@
 Feature: Mobile Account Funds Transfer
 
-  @sanity @mobile @transfer @wip
+  @mobile @transfer @wip
   Scenario Outline: Successful fund transfer on mobile
     Given the user is on the mobile login screen
     When the user logs into the mobile app using credentials from data key "<TestCaseID>" sheet "TransferData"

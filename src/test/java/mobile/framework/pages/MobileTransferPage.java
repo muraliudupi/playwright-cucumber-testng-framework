@@ -1,7 +1,5 @@
 package mobile.framework.pages;
 
-import com.framework.pages.TransferPage;
-import com.microsoft.playwright.Locator;
 import mobile.framework.core.MobileDriverFactory;
 import io.appium.java_client.pagefactory.AndroidFindBy;
 import io.appium.java_client.pagefactory.iOSXCUITFindBy;
