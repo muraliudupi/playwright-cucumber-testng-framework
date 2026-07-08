@@ -25,7 +25,7 @@ ext {
     poiVersion        = '5.4.0'
     extentAdapterVersion = '1.14.0'
     postgresqlVersion = '42.7.12'
-    hikariCPVersion   = '6.2.1'
+    hikariCPVersion   = '7.0.2'
 }
 
 dependencies {

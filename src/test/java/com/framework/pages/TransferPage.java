@@ -3,14 +3,8 @@ package com.framework.pages;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.SelectOption;
 import com.microsoft.playwright.options.WaitForSelectorState;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 public class TransferPage extends BasePage {
-
-    private static final Logger LOG = LoggerFactory.getLogger(TransferPage.class);
 
     private Locator transferFundsLink() {
         return page().locator("a:has-text('Transfer Funds')");
