@@ -58,7 +58,7 @@ public class MobileHooks {
         try {
             byte[] screenshot = ((TakesScreenshot) MobileDriverFactory.getDriver()).getScreenshotAs(OutputType.BYTES);
             String label = scenario.isFailed() ? "Failure-State-Snapshot" : "Success-State-Snapshot";
-            scenario.attach(screenshot, "image/png", label);
+            scenario.attach(screenshot,  "image/png", label);
         } catch (Exception e) {
             LOG.error("Failed to parse device frame buffer into scenario attachment report interface", e);
         }

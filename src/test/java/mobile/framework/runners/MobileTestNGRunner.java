@@ -7,7 +7,7 @@ import org.testng.annotations.DataProvider;
 @CucumberOptions(
         features = "classpath:features/mobile",
         glue = {"mobile.framework.stepdefinitions", "mobile.framework.hooks"},
-        tags = "not @wip",
+        tags = "@mobile", //"not @wip",
         plugin = {
                 "pretty",
                 "com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:",
@@ -18,7 +18,7 @@ import org.testng.annotations.DataProvider;
 )
 public class MobileTestNGRunner extends AbstractTestNGCucumberRunner {
     @Override
-    @DataProvider(parallel = true)
+    @DataProvider(parallel = false)
     public Object[][] scenarios() {
         return super.scenarios();
     }
