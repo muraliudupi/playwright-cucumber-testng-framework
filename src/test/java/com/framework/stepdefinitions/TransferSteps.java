@@ -7,8 +7,6 @@ import com.framework.utils.DatabaseUtil;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import java.util.Map;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 public class TransferSteps extends BaseSteps {
 
@@ -26,7 +24,7 @@ public class TransferSteps extends BaseSteps {
     }
 
     @And("executes a transfer using data from data key {string} sheet {string}")
-    public void executes_a_transfer_using_data_from_excel_row_sheet(String testCaseId, String sheetName) {
+    public void executes_a_transfer_using_data_from_sheet(String testCaseId, String sheetName) {
         Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
 
         String amount = rowData.get("Amount");

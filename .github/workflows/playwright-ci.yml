@@ -57,12 +57,15 @@ jobs:
         run: |
           xvfb-run ./gradlew clean test "-Dcucumber.filter.tags=$TAGS" --no-daemon
 
-      - name: Publish Interactive Extent Automation Reports
+      - name: Publish Automation Reports
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: Extent-Automation-Report
-          path: build/reports/extent/ExtentReport.html
+          name: Automation-Report
+          path: |
+            build/reports/cucumber/web-cucumber-report.html
+            build/reports/cucumber/mobile-cucumber-report.html
+            build/reports/extent/ExtentReport.html
           retention-days: 14
           if-no-files-found: warn
 

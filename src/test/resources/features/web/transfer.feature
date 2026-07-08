@@ -1,6 +1,6 @@
 Feature: Account Funds Transfer
 
-  @sanity @transfer
+  @sanity @web @transfer
   Scenario Outline: Successful fund transfer between valid customer accounts
     Given the user is on the ParaBank login page
     When the user logs in using credentials from data key "<TestCaseID>" sheet "TransferData"

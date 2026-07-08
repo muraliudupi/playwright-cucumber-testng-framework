@@ -4,14 +4,14 @@ import io.cucumber.testng.CucumberOptions;
 import org.testng.annotations.DataProvider;
 
 @CucumberOptions(
-        features = "classpath:features",
+        features = "classpath:features/web",
         glue = {"com.framework.stepdefinitions", "com.framework.hooks"},
         tags = "not @wip",
         plugin = {
                 "pretty",
                 "com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:",
-                "html:build/reports/cucumber/cucumber-report.html",
-                "json:build/reports/cucumber/cucumber-report.json"
+                "html:build/reports/cucumber/web-cucumber-report.html",
+                "json:build/reports/cucumber/web-cucumber-report.json"
         },
         monochrome = true
 )

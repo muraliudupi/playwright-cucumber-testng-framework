@@ -26,6 +26,8 @@ ext {
     extentAdapterVersion = '1.14.0'
     postgresqlVersion = '42.7.12'
     hikariCPVersion   = '7.0.2'
+    ioAppiumVersion    = '10.1.1'
+
 }
 
 dependencies {
@@ -56,6 +58,9 @@ dependencies {
     testImplementation "org.postgresql:postgresql:${postgresqlVersion}"
     // High-Performance Enterprise Connection Pool
     testImplementation "com.zaxxer:HikariCP:${hikariCPVersion}"
+
+    // Mobile Appium Protocol bindings
+    testImplementation "io.appium:java-client:${ioAppiumVersion}"
 
     // Dependency isolation: TestNG is the sole runner. Strip legacy JUnit
     // artifacts that cucumber-testng/testng may otherwise pull in transitively.
