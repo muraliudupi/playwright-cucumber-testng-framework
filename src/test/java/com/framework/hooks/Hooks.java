@@ -10,6 +10,8 @@ import io.cucumber.java.Scenario;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
@@ -61,9 +63,14 @@ public class Hooks {
     }
 
     private void attachTrace(Scenario scenario) {
-        String safeName = scenario.getName().replaceAll("[^a-zA-Z0-9-_]", "_");
+        try {
+            Files.createDirectories(TRACE_DIR);
+        } catch (IOException e) {
+            LOG.error("Could not create trace output directory: {}", TRACE_DIR.toAbsolutePath(), e);
+        }
 
-        String threadId = String.valueOf(Thread.currentThread().threadId());
+        String safeName    = scenario.getName().replaceAll("[^a-zA-Z0-9-_]", "_");
+        String threadId    = String.valueOf(Thread.currentThread().threadId());
         String uniqueMarker = java.util.UUID.randomUUID().toString().substring(0, 8);
 
         Path tracePath = TRACE_DIR.resolve(String.format("%s-thread%s-%s-%s.zip",

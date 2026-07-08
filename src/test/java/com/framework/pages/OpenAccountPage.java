@@ -3,12 +3,8 @@ package com.framework.pages;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.SelectOption;
 import com.microsoft.playwright.options.WaitForSelectorState;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class OpenAccountPage extends BasePage {
-
-    protected final Logger LOG = LoggerFactory.getLogger(getClass());
 
     private Locator openNewAccountLink() {
         return page().locator("a:has-text('Open New Account')");
