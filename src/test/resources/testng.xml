@@ -4,9 +4,9 @@
 <suite name="Playwright-Cucumber-Suite" data-provider-thread-count="4" verbose="1">
     <test name="Cucumber-Regression-Test">
         <classes>
-            <!-- <class name="com.framework.runners.WebTestNGRunner"/> -->
-            <!-- Mobile scenarios - Work in progress -->
-            <class name="com.framework.runners.MobileTestNGRunner"/>
+            <class name="com.framework.runners.WebTestNGRunner"/>
+            <!-- Mobile scenarios - Work in progress
+            <class name="com.framework.runners.MobileTestNGRunner"/> -->
         </classes>
     </test>
 </suite>
