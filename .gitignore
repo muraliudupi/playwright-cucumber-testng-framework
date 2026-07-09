@@ -8,6 +8,7 @@ out/
 *.iml
 *.iws
 *.ipr
+local.properties
 
 # --- Test Framework Outputs & Reports ---
 # Cucumber, TestNG, ExtentReports or Allure execution reports should not be pushed
@@ -16,8 +17,14 @@ test-output/
 # --- Playwright Execution Artifacts ---
 # Prevents video recordings, traces, or screenshots from clogging git
 test-results/
+target/
 playwright-report/
 blob-report/
+
+# --- Apps ---
+# Prevents app files from upload.
+*.apk
+*.ipa
 
 # Playwright execution binaries and localized driver installations
 .local-browsers/
