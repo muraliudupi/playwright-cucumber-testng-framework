@@ -27,7 +27,7 @@ ext {
     postgresqlVersion = '42.7.12'
     hikariCPVersion   = '7.0.2'
     appiumVersion    = '10.1.1'
-
+    seleniumVersion   = '4.43.0'
 }
 
 dependencies {
@@ -46,6 +46,11 @@ dependencies {
 
     // Mobile Appium Protocol bindings
     implementation "io.appium:java-client:${appiumVersion}"
+
+    // Selenium
+    implementation "org.seleniumhq.selenium:selenium-api:${seleniumVersion}"
+    implementation "org.seleniumhq.selenium:selenium-remote-driver:${seleniumVersion}"
+    implementation "org.seleniumhq.selenium:selenium-support:${seleniumVersion}"
 
     // Cucumber Engine & TestNG Integration with Picocontainer DI
     testImplementation "io.cucumber:cucumber-java:${cucumberVersion}"

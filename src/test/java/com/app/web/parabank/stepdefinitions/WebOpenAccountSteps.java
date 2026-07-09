@@ -2,13 +2,14 @@ package com.app.web.parabank.stepdefinitions;
 
 import com.framework.context.ScenarioContext;
 import com.app.web.parabank.pages.WebOpenAccountPage;
+import com.framework.steps.BaseSteps;
 import com.framework.utils.ConfigReader;
 import com.framework.utils.DatabaseUtil;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import java.util.Map;
 
-public class WebOpenAccountSteps extends WebBaseSteps {
+public class WebOpenAccountSteps extends BaseSteps {
 
     private final WebOpenAccountPage webOpenAccountPage;
     private final ScenarioContext context;

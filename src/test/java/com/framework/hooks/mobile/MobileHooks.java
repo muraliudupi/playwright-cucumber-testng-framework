@@ -16,6 +16,11 @@ public class MobileHooks {
 
     private static final Logger LOG = LoggerFactory.getLogger(MobileHooks.class);
 
+    private final MobileLoginPage mobileLoginPage;
+    public MobileHooks(MobileLoginPage mobileLoginPage) {
+        this.mobileLoginPage = mobileLoginPage;
+    }
+
     @Before(order = 0)
     public void setUp(Scenario scenario) {
         LOG.info("=== Starting scenario: '{}' [Thread-{}] ===", scenario.getName(), Thread.currentThread().threadId());
@@ -34,7 +39,6 @@ public class MobileHooks {
     public void ensureUserIsLoggedInBeforeScenario() {
         LOG.info("Hook triggered: Ensuring user is logged in before the test starts.");
 
-        MobileLoginPage mobileLoginPage = new MobileLoginPage();
         String defaultUser = ConfigReader.getProperty("mobile.default.username");
         String defaultPass = ConfigReader.getProperty("mobile.default.password");
 

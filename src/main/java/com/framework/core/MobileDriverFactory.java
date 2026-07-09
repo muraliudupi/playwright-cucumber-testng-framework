@@ -5,7 +5,7 @@ import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.options.UiAutomator2Options;
 import io.appium.java_client.ios.IOSDriver;
-import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.MutableCapabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +52,7 @@ public final class MobileDriverFactory {
                     // CLOUD EXECUTION: BrowserStack Cloud
                     LOG.info("[Thread-{}] Spawning remote Appium session on BrowserStack for platform: {}", threadId, platform);
 
-                    DesiredCapabilities caps = MobileCapsManager.getBrowserStackCaps(platform);
+                    MutableCapabilities caps = MobileCapsManager.getBrowserStackCaps(platform);
                     String hubUrlStr = ConfigReader.get("bs.hub.url");
 
                     if (hubUrlStr == null || hubUrlStr.isBlank()) {
