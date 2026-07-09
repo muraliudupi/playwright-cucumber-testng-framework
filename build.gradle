@@ -26,13 +26,26 @@ ext {
     extentAdapterVersion = '1.14.0'
     postgresqlVersion = '42.7.12'
     hikariCPVersion   = '7.0.2'
-    ioAppiumVersion    = '10.1.1'
+    appiumVersion    = '10.1.1'
 
 }
 
 dependencies {
     // Playwright Core Engine
-    testImplementation "com.microsoft.playwright:playwright:${playwrightVersion}"
+    implementation "com.microsoft.playwright:playwright:${playwrightVersion}"
+
+    // Enterprise Excel Reading Engines
+    implementation "org.apache.poi:poi:${poiVersion}"
+    implementation "org.apache.poi:poi-ooxml:${poiVersion}"
+
+    // Logging Core - logback takes authority; log4j-to-slf4j bridges POI's log4j2 calls into it
+    implementation "org.slf4j:slf4j-api:${slf4jVersion}"
+
+    // High-Performance Enterprise Connection Pool
+    implementation "com.zaxxer:HikariCP:${hikariCPVersion}"
+
+    // Mobile Appium Protocol bindings
+    implementation "io.appium:java-client:${appiumVersion}"
 
     // Cucumber Engine & TestNG Integration with Picocontainer DI
     testImplementation "io.cucumber:cucumber-java:${cucumberVersion}"
@@ -42,25 +55,15 @@ dependencies {
     // Test Runner Orchestration
     testImplementation "org.testng:testng:${testngVersion}"
 
-    // Enterprise Excel Reading Engines
-    testImplementation "org.apache.poi:poi:${poiVersion}"
-    testImplementation "org.apache.poi:poi-ooxml:${poiVersion}"
-
     // Enterprise Reporting Engine
     testImplementation "tech.grasshopper:extentreports-cucumber7-adapter:${extentAdapterVersion}"
 
     // Logging Core - logback takes authority; log4j-to-slf4j bridges POI's log4j2 calls into it
-    testImplementation "org.slf4j:slf4j-api:${slf4jVersion}"
     testRuntimeOnly "ch.qos.logback:logback-classic:${logbackVersion}"
     testRuntimeOnly "org.apache.logging.log4j:log4j-to-slf4j:${log4jVersion}"
 
     // SQL JDBC Driver
     testImplementation "org.postgresql:postgresql:${postgresqlVersion}"
-    // High-Performance Enterprise Connection Pool
-    testImplementation "com.zaxxer:HikariCP:${hikariCPVersion}"
-
-    // Mobile Appium Protocol bindings
-    testImplementation "io.appium:java-client:${ioAppiumVersion}"
 
     // Dependency isolation: TestNG is the sole runner. Strip legacy JUnit
     // artifacts that cucumber-testng/testng may otherwise pull in transitively.

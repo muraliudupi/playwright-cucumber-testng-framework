@@ -10,8 +10,8 @@ public class ScenarioContext {
         contextStorage.put(key, value);
     }
 
-    public Object getContext(String key) {
-        return contextStorage.get(key);
+    public Map<String, String> getContext(String key) {
+        return (Map<String, String>) contextStorage.get(key);
     }
 
     public String getStringContext(String key) {

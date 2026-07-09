@@ -63,11 +63,10 @@ jobs:
         with:
           name: Automation-Report
           path: |
-            build/reports/cucumber/web-cucumber-report.html
-            build/reports/cucumber/mobile-cucumber-report.html
+            build/reports/cucumber/*.html
             build/reports/extent/ExtentReport.html
+          if-no-files-found: ignore
           retention-days: 14
-          if-no-files-found: warn
 
       - name: Parse Cucumber JSON Report Results
         if: always()
@@ -123,6 +122,19 @@ jobs:
           echo "EMAIL_STATUS=$STATUS_TEXT" >> $GITHUB_ENV
           echo "BUILD_STATUS=$BUILD_STATUS" >> $GITHUB_ENV
 
+      - name: Check if Extent Report Exists
+        if: always()
+        id: check_extent
+        run: |
+          if [ -f "build/reports/extent/ExtentReport.html" ]; then
+            echo "EXTENT_EXISTS=true" >> $GITHUB_ENV
+            echo "ATTACHMENT_PATH=build/reports/extent/ExtentReport.html" >> $GITHUB_ENV
+          else
+            echo "EXTENT_EXISTS=false" >> $GITHUB_ENV
+            echo "ATTACHMENT_PATH=" >> $GITHUB_ENV
+            echo "⚠️ WARNING: ExtentReport.html was not generated due to a compilation or early framework failure."
+          fi
+
       - name: Send Email Report
         if: always()
         uses: dawidd6/action-send-mail@v17
@@ -156,11 +168,12 @@ jobs:
             - Triggered By: ${{ github.actor }}
             - Action Link:  https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
             
-            Please find the interactive Extent Report attached to this email for full stack traces.
+            ${{ env.EXTENT_EXISTS == 'true' && 'Please find the interactive Extent Report attached to this email for full stack traces.' || '⚠️ Note: Interactive Extent Report attachment is missing because the build or execution cycle was cut short.' }}            
             
             Regards,
             QA Automation Bot
-          attachments: build/reports/extent/ExtentReport.html
+
+          attachments: ${{ env.ATTACHMENT_PATH }}
 
       - name: Enforce Correct Pipeline Status Badge
         if: always()
