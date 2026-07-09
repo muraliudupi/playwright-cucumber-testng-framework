@@ -2,13 +2,14 @@ package com.app.web.parabank.stepdefinitions;
 
 import com.framework.context.ScenarioContext;
 import com.app.web.parabank.pages.WebTransferPage;
+import com.framework.steps.BaseSteps;
 import com.framework.utils.ConfigReader;
 import com.framework.utils.DatabaseUtil;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import java.util.Map;
 
-public class WebTransferSteps extends WebBaseSteps {
+public class WebTransferSteps extends BaseSteps {
 
     private final WebTransferPage webTransferPage;
     private final ScenarioContext context;

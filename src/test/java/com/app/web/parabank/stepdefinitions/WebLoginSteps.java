@@ -2,13 +2,14 @@ package com.app.web.parabank.stepdefinitions;
 
 import com.framework.context.ScenarioContext;
 import com.app.web.parabank.pages.WebLoginPage;
+import com.framework.steps.BaseSteps;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import java.util.Map;
 import static org.testng.Assert.assertTrue;
 
-public class WebLoginSteps extends WebBaseSteps {
+public class WebLoginSteps extends BaseSteps {
 
     private final WebLoginPage webLoginPage;
     private final ScenarioContext context;

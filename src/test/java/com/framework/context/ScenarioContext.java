@@ -10,8 +10,16 @@ public class ScenarioContext {
         contextStorage.put(key, value);
     }
 
-    public Map<String, String> getContext(String key) {
-        return (Map<String, String>) contextStorage.get(key);
+    @SuppressWarnings("unchecked")
+    public <T> T getContext(String key, Class<T> type) {
+        Object val = contextStorage.get(key);
+        if (val == null) return null;
+        if (!type.isInstance(val)) {
+            throw new IllegalStateException(String.format(
+                    "Context key '%s' holds a %s, not the requested %s.",
+                    key, val.getClass().getSimpleName(), type.getSimpleName()));
+        }
+        return (T) val;
     }
 
     public String getStringContext(String key) {

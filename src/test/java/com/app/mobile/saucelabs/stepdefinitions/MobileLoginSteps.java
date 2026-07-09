@@ -1,14 +1,14 @@
 package com.app.mobile.saucelabs.stepdefinitions;
 
-import com.app.web.parabank.stepdefinitions.WebBaseSteps;
 import com.framework.context.ScenarioContext;
 import com.app.mobile.saucelabs.pages.MobileLoginPage;
+import com.framework.steps.BaseSteps;
 import io.cucumber.java.en.*;
 import org.testng.Assert;
 
 import java.util.Map;
 
-public class MobileLoginSteps extends WebBaseSteps {
+public class MobileLoginSteps extends BaseSteps {
 
     private final MobileLoginPage mobileLoginPage;
     private final ScenarioContext context;

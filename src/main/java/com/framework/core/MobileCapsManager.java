@@ -1,13 +1,15 @@
 package com.framework.core;
 
 import com.framework.utils.ConfigReader;
-import org.openqa.selenium.remote.DesiredCapabilities;
+import io.appium.java_client.android.options.UiAutomator2Options;
+import io.appium.java_client.ios.options.XCUITestOptions;
+import org.openqa.selenium.MutableCapabilities;
 import java.util.HashMap;
 
 public class MobileCapsManager {
 
-    public static DesiredCapabilities getBrowserStackCaps(String platform) {
-        DesiredCapabilities caps = new DesiredCapabilities();
+    public static MutableCapabilities getBrowserStackCaps(String platform) {
+
         HashMap<String, Object> browserstackOptions = new HashMap<>();
 
         browserstackOptions.put("userName", ConfigReader.get("bs.username"));
@@ -18,19 +20,19 @@ public class MobileCapsManager {
 
         String cleanPlatform = platform.trim().toLowerCase();
 
+        MutableCapabilities caps;
+
         if ("android".equals(cleanPlatform)) {
-            caps.setCapability("platformName", "android");
-            caps.setCapability("appium:platformVersion", ConfigReader.get("android.platform.version"));
-            caps.setCapability("appium:deviceName", ConfigReader.get("android.device.name"));
-            caps.setCapability("appium:automationName", ConfigReader.get("android.automation.name"));
-            caps.setCapability("appium:app", ConfigReader.get("android.app.id"));
+            caps = new UiAutomator2Options()
+                    .setPlatformVersion(ConfigReader.get("android.platform.version"))
+                    .setDeviceName(ConfigReader.get("android.device.name"))
+                    .setApp(ConfigReader.get("android.app.id"));
         } else if ("ios".equals(cleanPlatform)) {
-            caps.setCapability("platformName", "ios");
-            caps.setCapability("appium:platformVersion", ConfigReader.get("ios.platform.version"));
-            caps.setCapability("appium:deviceName", ConfigReader.get("ios.device.name"));
-            caps.setCapability("appium:automationName", ConfigReader.get("ios.automation.name"));
-            caps.setCapability("appium:app", ConfigReader.get("ios.app.id"));
-        } else {
+            caps = new XCUITestOptions()
+                    .setPlatformVersion(ConfigReader.get("ios.platform.version"))
+                    .setDeviceName(ConfigReader.get("ios.device.name"))
+                    .setApp(ConfigReader.get("ios.app.id"));
+            } else {
             throw new IllegalArgumentException("Unsupported mobile automation target runtime platform: " + platform);
         }
 

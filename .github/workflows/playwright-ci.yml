@@ -148,7 +148,7 @@ jobs:
           password: ${{ secrets.MAIL_PASSWORD }}
 
           subject: "Automation Results: ${{ env.EMAIL_STATUS }} | ${{ github.repository }} (Build #${{ github.run_number }})"
-          to: qamurali@outlook.com
+          to: ${{ vars.QA_NOTIFICATION_EMAIL }}
           from: Automation Framework <${{ secrets.MAIL_USERNAME }}>
           body: |
             Hi Team,

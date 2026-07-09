@@ -1,4 +1,4 @@
-package com.app.web.parabank.stepdefinitions;
+package com.framework.steps;
 
 import com.framework.utils.ConfigReader;
 import com.framework.utils.ExcelReader;
@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 
-public abstract class WebBaseSteps {
+public abstract class BaseSteps {
     protected final Logger LOG = LoggerFactory.getLogger(getClass());
     protected static final String EXCEL_FILE_PATH = ConfigReader.getExcelPath();
 
