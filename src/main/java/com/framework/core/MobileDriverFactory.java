@@ -38,7 +38,7 @@ public final class MobileDriverFactory {
 
                     UiAutomator2Options options = new UiAutomator2Options()
                             .setPlatformName("Android")
-                            //.setDeviceName("emulator-5554") // Default name for the first booted AVD
+                            .setDeviceName("emulator-5554") // Default name for the first booted AVD
                             .setAutomationName("UiAutomator2")
                             .setApp(System.getProperty("user.dir") + "/" + ConfigReader.get("local.app.path"))
 
