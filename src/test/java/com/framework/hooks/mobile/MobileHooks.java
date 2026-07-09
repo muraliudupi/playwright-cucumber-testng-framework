@@ -1,5 +1,6 @@
 package com.framework.hooks.mobile;
 
+import com.app.mobile.saucelabs.pages.MobileLoginPage;
 import com.framework.utils.ConfigReader;
 import com.framework.core.MobileDriverFactory;
 
@@ -27,6 +28,17 @@ public class MobileHooks {
 
         // Initialize target mobile runtime cloud node context
         MobileDriverFactory.initializeDriver(platform);
+    }
+
+    @Before(value = "@require_login", order = 1)
+    public void ensureUserIsLoggedInBeforeScenario() {
+        LOG.info("Hook triggered: Ensuring user is logged in before the test starts.");
+
+        MobileLoginPage mobileLoginPage = new MobileLoginPage();
+        String defaultUser = ConfigReader.getProperty("mobile.default.username");
+        String defaultPass = ConfigReader.getProperty("mobile.default.password");
+
+        mobileLoginPage.loginWithValidCredentials(defaultUser, defaultPass);
     }
 
     @After(order = 0)
