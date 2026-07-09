@@ -6,7 +6,7 @@ import org.testng.annotations.DataProvider;
 @CucumberOptions(
         features = "classpath:features/web",
         glue = {"com.app.web.parabank.stepdefinitions", "com.framework.hooks.web"},
-        tags = "not @mobile", //"not @wip"
+        tags = "not @mobile and not @wip",
         plugin = {
                 "pretty",
                 "com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:",
