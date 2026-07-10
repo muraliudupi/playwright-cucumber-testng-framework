@@ -1,6 +1,6 @@
 package com.framework.hooks.mobile;
 
-import com.app.mobile.saucelabs.pages.MobileLoginPage;
+import com.app.mobile.saucelabs.pages.MobileProductPage;
 import com.framework.utils.ConfigReader;
 import com.framework.core.MobileDriverFactory;
 
@@ -16,10 +16,10 @@ public class MobileHooks {
 
     private static final Logger LOG = LoggerFactory.getLogger(MobileHooks.class);
 
-    private final MobileLoginPage mobileLoginPage;
+    private final MobileProductPage mobileProductPage;
 
-    public MobileHooks(MobileLoginPage mobileLoginPage) {
-        this.mobileLoginPage = mobileLoginPage;
+    public MobileHooks(MobileProductPage mobileProductPage) {
+        this.mobileProductPage = mobileProductPage;
     }
 
     @Before(order = 0)
@@ -43,7 +43,8 @@ public class MobileHooks {
         String defaultUser = ConfigReader.getProperty("mobile.default.username");
         String defaultPass = ConfigReader.getProperty("mobile.default.password");
 
-        mobileLoginPage.loginWithValidCredentials(defaultUser, defaultPass);
+        mobileProductPage.loginWithValidCredentials(defaultUser, defaultPass);
+        mobileProductPage.verifyDashboard();
     }
 
     @After(order = 0)
