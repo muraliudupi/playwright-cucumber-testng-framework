@@ -1,6 +1,6 @@
 package com.framework.hooks.mobile;
 
-import com.app.mobile.saucelabs.pages.MobileProductPage;
+import com.app.mobile.saucelabs.pages.MobileLoginPage;
 import com.framework.utils.ConfigReader;
 import com.framework.core.MobileDriverFactory;
 
@@ -16,9 +16,9 @@ public class MobileHooks {
 
     private static final Logger LOG = LoggerFactory.getLogger(MobileHooks.class);
 
-    private final MobileProductPage mobileLoginPage;
+    private final MobileLoginPage mobileLoginPage;
 
-    public MobileHooks(MobileProductPage mobileLoginPage) {
+    public MobileHooks(MobileLoginPage mobileLoginPage) {
         this.mobileLoginPage = mobileLoginPage;
     }
 
