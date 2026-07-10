@@ -1,6 +1,6 @@
 package com.framework.hooks.mobile;
 
-import com.app.mobile.saucelabs.pages.MobileLoginPage;
+import com.app.mobile.saucelabs.pages.MobileProductPage;
 import com.framework.utils.ConfigReader;
 import com.framework.core.MobileDriverFactory;
 
@@ -16,8 +16,9 @@ public class MobileHooks {
 
     private static final Logger LOG = LoggerFactory.getLogger(MobileHooks.class);
 
-    private final MobileLoginPage mobileLoginPage;
-    public MobileHooks(MobileLoginPage mobileLoginPage) {
+    private final MobileProductPage mobileLoginPage;
+
+    public MobileHooks(MobileProductPage mobileLoginPage) {
         this.mobileLoginPage = mobileLoginPage;
     }
 
@@ -48,8 +49,7 @@ public class MobileHooks {
     @After(order = 0)
     public void tearDown(Scenario scenario) {
         try {
-            String isScreenshot = ConfigReader.get("screenshot.on.pass");
-            boolean screenshotOnPass = Boolean.parseBoolean(isScreenshot != null ? isScreenshot : "true");
+            boolean screenshotOnPass = ConfigReader.getBoolean("screenshot.on.pass", true);
 
             if (scenario.isFailed() || screenshotOnPass) {
                 try {
@@ -75,7 +75,7 @@ public class MobileHooks {
         try {
             byte[] screenshot = ((TakesScreenshot) MobileDriverFactory.getDriver()).getScreenshotAs(OutputType.BYTES);
             String label = scenario.isFailed() ? "Failure-State-Snapshot" : "Success-State-Snapshot";
-            scenario.attach(screenshot,  "image/png", label);
+            scenario.attach(screenshot, "image/png", label);
         } catch (Exception e) {
             LOG.error("Failed to parse device frame buffer into scenario attachment report interface", e);
         }

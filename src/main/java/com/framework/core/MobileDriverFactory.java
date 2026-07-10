@@ -22,7 +22,8 @@ public final class MobileDriverFactory {
     private static final ThreadLocal<AppiumDriver> DRIVER_THREAD_LOCAL = new ThreadLocal<>();
     private static final Map<Long, AppiumDriver> DRIVER_REGISTRY = new ConcurrentHashMap<>();
 
-    private MobileDriverFactory() {}
+    private MobileDriverFactory() {
+    }
 
     public static void initializeDriver(String platform) {
         long threadId = Thread.currentThread().threadId();
@@ -38,12 +39,14 @@ public final class MobileDriverFactory {
 
                     UiAutomator2Options options = new UiAutomator2Options()
                             .setPlatformName("Android")
-                            .setDeviceName("emulator-5554") // Default name for the first booted AVD
+                            .setDeviceName(ConfigReader.get("mobile.local.device.name"))
                             .setAutomationName("UiAutomator2")
                             .setApp(System.getProperty("user.dir") + "/" + ConfigReader.get("local.app.path"))
 
-                            .setAppWaitActivity("*") // Bypasses the strict check for SplashActivity
-                            .setNewCommandTimeout(Duration.ofSeconds(60))
+                            .setAppWaitActivity(ConfigReader.get("mobile.local.app.wait.activity"))
+                            .setNewCommandTimeout(Duration.ofSeconds(
+                                    ConfigReader.getInt("mobile.local.new.command.timeout.sec", 60)))
+
                             .amend("appium:ensureWebviewsHavePages", true); // Recommended helper for hybrid components if any
 
                     URL localUrl = URI.create("http://127.0.0.1:4723/").toURL();

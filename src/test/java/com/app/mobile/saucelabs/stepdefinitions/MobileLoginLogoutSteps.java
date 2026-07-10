@@ -8,12 +8,12 @@ import org.testng.Assert;
 
 import java.util.Map;
 
-public class MobileLoginSteps extends BaseSteps {
+public class MobileLoginLogoutSteps extends BaseSteps {
 
     private final MobileLoginPage mobileLoginPage;
     private final ScenarioContext context;
 
-    public MobileLoginSteps(MobileLoginPage loginPage, ScenarioContext context) {
+    public MobileLoginLogoutSteps(MobileLoginPage loginPage, ScenarioContext context) {
         this.mobileLoginPage = loginPage;
         this.context = context;
 
@@ -30,7 +30,7 @@ public class MobileLoginSteps extends BaseSteps {
     }
 
     @When("the user logs into the mobile app using credentials from data key {string} sheet {string}")
-    public void the_user_logs_into_mobile_app_using_credentials_from_data_key(String testCaseId, String sheetName){
+    public void the_user_logs_into_mobile_app_using_credentials_from_data_key(String testCaseId, String sheetName) {
         Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
 
         context.setContext("USER_DATA", rowData);

@@ -7,6 +7,6 @@ Feature: ParaBank Customer Login
     Then the Welcome message and the Accounts Overview page are displayed
 
     Examples:
-      | TestCaseID  |
-      | Login_001   |
-      | Login_002   |
+      | TestCaseID |
+      | Login_001  |
+      | Login_002  |

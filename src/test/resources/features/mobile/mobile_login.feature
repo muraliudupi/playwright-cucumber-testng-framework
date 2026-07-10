@@ -7,8 +7,8 @@ Feature: Mobile ParaBank Customer Login
     Then the mobile dashboard should be displayed
 
     Examples:
-      | TestCaseID  |
-      | Login_001   |
+      | TestCaseID |
+      | Login_001  |
 
 
   @logout @wip @require_login

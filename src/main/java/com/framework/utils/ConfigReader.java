@@ -46,4 +46,22 @@ public class ConfigReader {
         }
         return getProperty(key);
     }
+
+    public static boolean getBoolean(String key, boolean defaultValue) {
+        String value = get(key);
+        return (value != null && !value.isBlank()) ? Boolean.parseBoolean(value) : defaultValue;
+    }
+
+    public static int getInt(String key, int defaultValue) {
+        String value = get(key);
+        if (value == null || value.isBlank()) {
+            return defaultValue;
+        }
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalStateException(String.format(
+                    "Config Error: Property '%s' expected an integer but resolved to '%s'.", key, value));
+        }
+    }
 }

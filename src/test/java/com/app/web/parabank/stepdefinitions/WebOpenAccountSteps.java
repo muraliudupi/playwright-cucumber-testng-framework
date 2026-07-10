@@ -7,6 +7,7 @@ import com.framework.utils.ConfigReader;
 import com.framework.utils.DatabaseUtil;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
+
 import java.util.Map;
 
 public class WebOpenAccountSteps extends BaseSteps {
@@ -29,9 +30,15 @@ public class WebOpenAccountSteps extends BaseSteps {
         Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
         String fundingAccount = rowData.get("FromAccount");
 
-        webOpenAccountPage.configureAndOpenAccount(accountType, fundingAccount);
         // Gets first From & Open Account.
         // webOpenAccountPage.configureAndOpenAccount(accountType);
+
+        String actualFundingAccount = webOpenAccountPage.configureAndOpenAccount(accountType, fundingAccount);
+        if (!actualFundingAccount.equals(fundingAccount)) {
+            LOG.warn("Test data requested FromAccount '{}' but framework substituted '{}' due to dropdown unavailability.",
+                    fundingAccount, actualFundingAccount);
+        }
+        context.setContext("ACTUAL_FUNDING_ACCOUNT", actualFundingAccount);
     }
 
     @Then("the system creates the account showing a confirmation page")
@@ -56,8 +63,10 @@ public class WebOpenAccountSteps extends BaseSteps {
         String query = "SELECT account_type FROM customer_accounts WHERE account_id = ?";
         String targetAccountId = context.getStringContext("SHARED_ACCOUNT_ID");
 
-        String actualDbAccountType = DatabaseUtil.getSingleValueWithRetry(5, 500, query, "account_type", targetAccountId);
-
+        String actualDbAccountType = DatabaseUtil.getSingleValueWithRetry(
+                ConfigReader.getInt("db.retry.max.timeout.sec", 5),
+                ConfigReader.getInt("db.retry.poll.interval.ms", 500),
+                query, "account_type", targetAccountId);
         org.testng.Assert.assertEquals(
                 actualDbAccountType,
                 expectedType.toUpperCase(),

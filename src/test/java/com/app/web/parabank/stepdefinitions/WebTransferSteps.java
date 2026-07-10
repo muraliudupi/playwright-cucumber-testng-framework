@@ -7,6 +7,7 @@ import com.framework.utils.ConfigReader;
 import com.framework.utils.DatabaseUtil;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
+
 import java.util.Map;
 
 public class WebTransferSteps extends BaseSteps {
@@ -32,11 +33,17 @@ public class WebTransferSteps extends BaseSteps {
         String fromAccount = rowData.get("FromAccount");
         String toAccount = rowData.get("ToAccount");
 
-        context.setContext("TX_AMOUNT", amount);
-        context.setContext("TX_FROM", fromAccount);
-        context.setContext("TX_TO", toAccount);
+        WebTransferPage.TransferAccounts actualAccounts = webTransferPage.executeTransfer(amount, fromAccount, toAccount);
 
-        webTransferPage.executeTransfer(amount, fromAccount, toAccount);
+
+        context.setContext("TX_AMOUNT", amount);
+        context.setContext("TX_FROM", actualAccounts.actualFromAccount());
+        context.setContext("TX_TO", actualAccounts.actualToAccount());
+
+        if (!actualAccounts.actualFromAccount().equals(fromAccount) || !actualAccounts.actualToAccount().equals(toAccount)) {
+            LOG.warn("Test data requested From={}, To={} but framework substituted From={}, To={}.",
+                    fromAccount, toAccount, actualAccounts.actualFromAccount(), actualAccounts.actualToAccount());
+        }
 
 /*      Gets first From and To account and perform transfer.
         com.microsoft.playwright.Page p = com.framework.core.WebDriverFactory.getPage();
@@ -63,18 +70,14 @@ public class WebTransferSteps extends BaseSteps {
     public void the_transfer_completes_successfully_with_a_validated_dynamic_confirmation_message() {
         webTransferPage.verifyTransferLayoutVisible();
         String expectedAmount = context.getStringContext("TX_AMOUNT");
+
+        boolean isValid = webTransferPage.isResultMessageValidFor(expectedAmount);
         String actualMessage = webTransferPage.getActualResultMessage();
 
-        if (!expectedAmount.startsWith("$")) {
-            expectedAmount = "$" + String.format("%.2f", Double.parseDouble(expectedAmount));
-        }
-
-        String regexAmount = expectedAmount.replace("$", "\\$");
-        String validationRegex = "^" + regexAmount + " has been transferred from account #(\\d+) to account #(\\d+)\\.$";
 
         org.testng.Assert.assertTrue(
-                actualMessage.matches(validationRegex),
-                String.format("Format Mismatch!\nActual: '%s'\nPattern: '%s'", actualMessage, validationRegex)
+                isValid,
+                String.format("Format Mismatch!\nActual: '%s'\nExpected Amount: '%s'", actualMessage, expectedAmount)
         );
     }
 
@@ -101,7 +104,10 @@ public class WebTransferSteps extends BaseSteps {
 
         java.math.BigDecimal amountForQuery = new java.math.BigDecimal(sanitizedAmountStr).setScale(2, java.math.RoundingMode.HALF_UP);
 
-        String actualDbStatus = DatabaseUtil.getSingleValueWithRetry(5, 500, sqlQuery, "transaction_status", expectedFrom, expectedTo, amountForQuery);
+        String actualDbStatus = DatabaseUtil.getSingleValueWithRetry(
+                ConfigReader.getInt("db.retry.max.timeout.sec", 5),
+                ConfigReader.getInt("db.retry.poll.interval.ms", 500),
+                sqlQuery, "transaction_status", expectedFrom, expectedTo, amountForQuery);
 
         org.testng.Assert.assertEquals(actualDbStatus, expectedDbStatus,
                 String.format("CRITICAL DESYNC FAILURE: Thread clashing or missing ledger row! " +

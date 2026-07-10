@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,10 +28,11 @@ public final class DatabaseUtil {
             String runtimePassword = System.getProperty("db.password", System.getenv("DB_PASSWORD"));
             config.setPassword((runtimePassword == null || runtimePassword.isBlank()) ? "" : runtimePassword);
 
-            config.setMaximumPoolSize(15);
-            config.setMinimumIdle(5);
-            config.setIdleTimeout(300000);
-            config.setConnectionTimeout(20000);
+            config.setMaximumPoolSize(ConfigReader.getInt("db.pool.max.size", 15));
+            config.setMinimumIdle(ConfigReader.getInt("db.pool.min.idle", 5));
+            config.setIdleTimeout(ConfigReader.getInt("db.pool.idle.timeout.ms", 300000));
+            config.setConnectionTimeout(ConfigReader.getInt("db.pool.connection.timeout.ms", 20000));
+
             config.setPoolName("Playwright-Automation-DBPool");
 
             dataSource = new HikariDataSource(config);
@@ -38,7 +40,8 @@ public final class DatabaseUtil {
         return dataSource;
     }
 
-    private DatabaseUtil() {}
+    private DatabaseUtil() {
+    }
 
     public static String getSingleValue(String query, String columnName, Object... params) {
         try (Connection conn = getDataSource().getConnection();

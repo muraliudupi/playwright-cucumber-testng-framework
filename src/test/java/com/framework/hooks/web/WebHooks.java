@@ -30,8 +30,7 @@ public class WebHooks {
     @After(order = 0)
     public void tearDown(Scenario scenario) {
         try {
-            String isScreenshot = ConfigReader.get("screenshot.on.pass");
-            boolean screenshotOnPass = Boolean.parseBoolean(isScreenshot != null ? isScreenshot : "true");
+            boolean screenshotOnPass = ConfigReader.getBoolean("screenshot.on.pass", true);
 
             if (scenario.isFailed() || screenshotOnPass) {
                 try {
@@ -70,8 +69,8 @@ public class WebHooks {
             LOG.error("Could not create trace output directory: {}", TRACE_DIR.toAbsolutePath(), e);
         }
 
-        String safeName    = scenario.getName().replaceAll("[^a-zA-Z0-9-_]", "_");
-        String threadId    = String.valueOf(Thread.currentThread().threadId());
+        String safeName = scenario.getName().replaceAll("[^a-zA-Z0-9-_]", "_");
+        String threadId = String.valueOf(Thread.currentThread().threadId());
         String uniqueMarker = java.util.UUID.randomUUID().toString().substring(0, 8);
 
         Path tracePath = TRACE_DIR.resolve(String.format("%s-thread%s-%s-%s.zip",

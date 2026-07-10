@@ -11,5 +11,5 @@ Feature: Account Funds Transfer
     And the backend database ledger state must reflect a transaction status of "SUCCESS"
 
     Examples:
-      | TestCaseID    |
-      | Transfer_001  |
+      | TestCaseID   |
+      | Transfer_001 |
