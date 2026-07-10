@@ -11,7 +11,7 @@ Feature: Mobile ParaBank Customer Login
       | Login_001  |
 
 
-  @logout @wip @require_login
+  @mobile @logout @require_login
   Scenario: Successful logout from mobile app
     When the user logs out from the mobile app
     Then the login screen should be displayed
