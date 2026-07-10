@@ -7,7 +7,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.time.Duration;
 
-public class MobileLoginPage extends MobileBasePage {
+public class MobileProductPage extends MobileBasePage {
 
     private Duration longWait() {
         return Duration.ofSeconds(ConfigReader.getInt("mobile.element.wait.timeout.sec", 15));
@@ -17,6 +17,7 @@ public class MobileLoginPage extends MobileBasePage {
         return Duration.ofSeconds(ConfigReader.getInt("mobile.element.short.wait.timeout.sec", 10));
     }
 
+/*
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/menuIV")
     //@iOSXCUITFindBy(accessibility = "View menu")
     private WebElement btnMenu;
@@ -45,11 +46,11 @@ public class MobileLoginPage extends MobileBasePage {
     //@iOSXCUITFindBy(accessibility = "title")
     private WebElement lblTitle;
 
-    public MobileLoginPage() {
+    public MobileProductPage() {
         super();
     }
 
-    public MobileLoginPage open() {
+    public MobileProductPage open() {
         ensureElementsInitialized();
 
         wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnMenu)).click();
@@ -59,7 +60,7 @@ public class MobileLoginPage extends MobileBasePage {
         return this;
     }
 
-    public MobileLoginPage login(String username, String password) {
+    public MobileProductPage login(String username, String password) {
         ensureElementsInitialized();
 
         txtUsername.clear();
@@ -104,7 +105,7 @@ public class MobileLoginPage extends MobileBasePage {
         return isDisplayed;
     }
 
-    public MobileLoginPage loginWithValidCredentials(String username, String password) {
+    public MobileProductPage loginWithValidCredentials(String username, String password) {
         ensureElementsInitialized();
 
         wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnMenu)).click();
@@ -121,5 +122,5 @@ public class MobileLoginPage extends MobileBasePage {
         btnLogin.click();
         return this;
     }
-
+*/
 }

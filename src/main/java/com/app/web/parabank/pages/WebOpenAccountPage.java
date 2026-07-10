@@ -1,5 +1,6 @@
 package com.app.web.parabank.pages;
 
+import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.SelectOption;
 import com.microsoft.playwright.options.WaitForSelectorState;
@@ -36,22 +37,30 @@ public class WebOpenAccountPage extends WebBasePage {
         return this;
     }
 
-    public WebOpenAccountPage configureAndOpenAccount(String accountType, String fundingAccount) {
+    public String configureAndOpenAccount(String accountType, String fundingAccount) {
         String sanitizedType = accountType.trim().toUpperCase();
 
         accountTypeDropdown().selectOption(new SelectOption().setLabel(sanitizedType));
+        boolean requestedAccountFound = true;
 
         try {
             Locator optionTarget = fromAccountDropdown().locator(String.format("option[value='%s']", fundingAccount));
-            optionTarget.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.ATTACHED).setTimeout(3000));
+            optionTarget.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.ATTACHED)
+                    .setTimeout(ConfigReader.getInt("web.dropdown.wait.timeout.ms", 3000)));
             fromAccountDropdown().selectOption(fundingAccount);
         } catch (Exception e) {
-            LOG.warn("Target FromAccount '{}' did not render within timeout. Falling back to index 0.", fundingAccount);
+            requestedAccountFound = false;
             fromAccountDropdown().selectOption(new SelectOption().setIndex(0));
         }
 
+        String actualFundingAccount = fromAccountDropdown().inputValue();
+        if (!requestedAccountFound) {
+            LOG.warn("Requested FromAccount '{}' was not available in the dropdown; framework substituted account '{}' instead.",
+                    fundingAccount, actualFundingAccount);
+        }
+
         openAccountButton().click();
-        return this;
+        return actualFundingAccount;
     }
 
 /*  Open Account using 1st account in From dropdown.
@@ -70,11 +79,13 @@ public class WebOpenAccountPage extends WebBasePage {
     }*/
 
     public void verifyAccountCreationLayoutVisible() {
-        successHeading().waitFor(new Locator.WaitForOptions().setTimeout(10000));
+        successHeading().waitFor(new Locator.WaitForOptions()
+                .setTimeout(ConfigReader.getInt("web.confirmation.wait.timeout.ms", 10000)));
     }
 
     public String getGeneratedAccountId() {
-        newAccountIdLink().waitFor(new Locator.WaitForOptions().setTimeout(5000));
+        newAccountIdLink().waitFor(new Locator.WaitForOptions()
+                .setTimeout(ConfigReader.getInt("web.element.wait.timeout.ms", 5000)));
         return newAccountIdLink().innerText().trim();
     }
 }

@@ -4,6 +4,7 @@ import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -12,17 +13,18 @@ public final class WebDriverFactory {
     private static final Logger LOG = LoggerFactory.getLogger(WebDriverFactory.class);
 
     private static final ThreadLocal<Playwright> PLAYWRIGHT_THREAD_LOCAL = new ThreadLocal<>();
-    private static final ThreadLocal<Browser>    BROWSER_THREAD_LOCAL    = new ThreadLocal<>();
+    private static final ThreadLocal<Browser> BROWSER_THREAD_LOCAL = new ThreadLocal<>();
     private static final ThreadLocal<BrowserContext> CONTEXT_THREAD_LOCAL = new ThreadLocal<>();
-    private static final ThreadLocal<Page>       PAGE_THREAD_LOCAL       = new ThreadLocal<>();
+    private static final ThreadLocal<Page> PAGE_THREAD_LOCAL = new ThreadLocal<>();
 
     private static final Map<Long, Playwright> PLAYWRIGHT_REGISTRY = new ConcurrentHashMap<>();
-    private static final Map<Long, Browser>    BROWSER_REGISTRY    = new ConcurrentHashMap<>();
+    private static final Map<Long, Browser> BROWSER_REGISTRY = new ConcurrentHashMap<>();
 
     private static final int DEFAULT_VIEWPORT_WIDTH = 1280;
     private static final int DEFAULT_VIEWPORT_HEIGHT = 720;
 
-    private WebDriverFactory() {}
+    private WebDriverFactory() {
+    }
 
     private static Playwright getPlaywright() {
         if (PLAYWRIGHT_THREAD_LOCAL.get() == null) {
@@ -37,7 +39,7 @@ public final class WebDriverFactory {
     private static Browser getBrowser() {
         if (BROWSER_THREAD_LOCAL.get() == null) {
             String browserType = resolveSetting("browser", "chromium").trim().toLowerCase();
-            boolean headless   = Boolean.parseBoolean(resolveSetting("headless", "true"));
+            boolean headless = Boolean.parseBoolean(resolveSetting("headless", "true"));
 
             LOG.info("[Thread-{}] Spawning isolated {} OS process (Headless={}).", threadId(), browserType, headless);
 
@@ -45,8 +47,8 @@ public final class WebDriverFactory {
 
             Browser browser = switch (browserType) {
                 case "firefox" -> getPlaywright().firefox().launch(options);
-                case "webkit"  -> getPlaywright().webkit().launch(options);
-                default        -> getPlaywright().chromium().launch(options);
+                case "webkit" -> getPlaywright().webkit().launch(options);
+                default -> getPlaywright().chromium().launch(options);
             };
             BROWSER_THREAD_LOCAL.set(browser);
             BROWSER_REGISTRY.put(threadId(), browser);
@@ -56,7 +58,9 @@ public final class WebDriverFactory {
 
     private static Browser.NewContextOptions buildStandardizedContextOptions() {
         return new Browser.NewContextOptions()
-                .setViewportSize(DEFAULT_VIEWPORT_WIDTH, DEFAULT_VIEWPORT_HEIGHT);
+                .setViewportSize(
+                        ConfigReader.getInt("web.viewport.width", DEFAULT_VIEWPORT_WIDTH),
+                        ConfigReader.getInt("web.viewport.height", DEFAULT_VIEWPORT_HEIGHT));
     }
 
     public static void createNewPageForScenario(String scenarioName) {

@@ -11,6 +11,6 @@ Feature: ParaBank Account Lifecycle Management
     And the backend account ledger table must confirm the new account type is "<AccountType>"
 
     Examples:
-      | TestCaseID    | AccountType |
-      | AcctOpen_001  | CHECKING    |
-      | AcctOpen_002  | SAVINGS     |
+      | TestCaseID   | AccountType |
+      | AcctOpen_001 | CHECKING    |
+      | AcctOpen_002 | SAVINGS     |

@@ -1,5 +1,6 @@
 package com.app.mobile.saucelabs.pages;
 
+import com.framework.utils.ConfigReader;
 import com.framework.core.MobileDriverFactory;
 
 import io.appium.java_client.AppiumDriver;
@@ -27,7 +28,9 @@ public abstract class MobileBasePage {
             LOG.debug("[Thread-{}] Lazily binding Appium proxies for page element factory: {}",
                     threadId, this.getClass().getSimpleName());
 
-            PageFactory.initElements(new AppiumFieldDecorator(driver, Duration.ofSeconds(5)), this);
+            PageFactory.initElements(new AppiumFieldDecorator(driver,
+                    Duration.ofSeconds(ConfigReader.getInt("mobile.field.decorator.timeout.sec", 5))), this);
+
             isInitialized = true;
         }
     }

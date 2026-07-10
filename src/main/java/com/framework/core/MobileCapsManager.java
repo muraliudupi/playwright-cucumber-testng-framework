@@ -4,6 +4,7 @@ import com.framework.utils.ConfigReader;
 import io.appium.java_client.android.options.UiAutomator2Options;
 import io.appium.java_client.ios.options.XCUITestOptions;
 import org.openqa.selenium.MutableCapabilities;
+
 import java.util.HashMap;
 
 public class MobileCapsManager {
@@ -32,7 +33,7 @@ public class MobileCapsManager {
                     .setPlatformVersion(ConfigReader.get("ios.platform.version"))
                     .setDeviceName(ConfigReader.get("ios.device.name"))
                     .setApp(ConfigReader.get("ios.app.id"));
-            } else {
+        } else {
             throw new IllegalArgumentException("Unsupported mobile automation target runtime platform: " + platform);
         }
 
