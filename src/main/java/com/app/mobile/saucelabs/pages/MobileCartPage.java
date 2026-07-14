@@ -57,7 +57,9 @@ public class MobileCartPage extends MobileBasePage {
         });
 
         By removeButtonForProduct = By.xpath(String.format(
-                "//android.widget.TextView[@text='%s']/ancestor::android.view.ViewGroup[1]//android.widget.Button[@resource-id='com.saucelabs.mydemoapp.android:id/removeBt']",
+                "//android.widget.TextView[@text='%s']"
+                        + "/ancestor::android.view.ViewGroup[.//android.widget.TextView[@resource-id='com.saucelabs.mydemoapp.android:id/removeBt']][1]"
+                        + "//android.widget.TextView[@resource-id='com.saucelabs.mydemoapp.android:id/removeBt']",
                 productLabel));
         wait(longWait()).until(ExpectedConditions.elementToBeClickable(driver().findElement(removeButtonForProduct))).click();
         return this;
