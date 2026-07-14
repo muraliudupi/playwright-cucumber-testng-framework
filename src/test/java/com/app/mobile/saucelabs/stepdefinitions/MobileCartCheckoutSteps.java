@@ -63,11 +63,23 @@ public class MobileCartCheckoutSteps extends BaseSteps {
 
     @When("the user removes {string} from the cart")
     public void the_user_removes_product_from_the_cart(String productLabel) {
-        mobileProductPage.openCart().removeProduct(productLabel);
+        mobileCartPage.removeProduct(productLabel);
     }
 
     @Then("{string} should no longer be visible in the cart")
     public void product_should_no_longer_be_in_cart(String productLabel) {
+        Assert.assertFalse(mobileCartPage.isProductInCart(productLabel),
+                "Cart Verification Failure: product was still present after removal.");
+    }
+
+    @When("the user removes the added product from the cart")
+    public void the_user_removes_the_added_product_from_the_cart() {
+        mobileCartPage.removeProduct(context.getStringContext(CTX_PRODUCT_LABEL));
+    }
+
+    @Then("the removed product should no longer be visible in the cart")
+    public void the_removed_product_should_no_longer_be_visible_in_the_cart() {
+        String productLabel = context.getStringContext(CTX_PRODUCT_LABEL);
         Assert.assertFalse(mobileCartPage.isProductInCart(productLabel),
                 "Cart Verification Failure: product was still present after removal.");
     }
