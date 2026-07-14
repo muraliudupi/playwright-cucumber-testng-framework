@@ -1,31 +1,22 @@
 package com.app.mobile.saucelabs.pages;
 
-import com.framework.utils.ConfigReader;
 import io.appium.java_client.pagefactory.AndroidFindBy;
 import org.openqa.selenium.WebElement;
+import io.appium.java_client.AppiumBy;
+import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-
-import java.time.Duration;
 
 public class MobileProductPage extends MobileBasePage {
 
     private final MobileLoginPage mobileLoginPage;
+    private final MobileProductDetailPage mobileProductDetailPage;
+    private final MobileCartPage mobileCartPage;
 
-    public MobileProductPage(MobileLoginPage mobileLoginPage) {
+    public MobileProductPage(MobileLoginPage mobileLoginPage, MobileProductDetailPage mobileProductDetailPage, MobileCartPage mobileCartPage) {
         super();
         this.mobileLoginPage = mobileLoginPage;
-    }
-
-    private Duration longWait() {
-        return Duration.ofSeconds(ConfigReader.getInt("mobile.element.wait.timeout.sec", 15));
-    }
-
-    private Duration shortWait() {
-        return Duration.ofSeconds(ConfigReader.getInt("mobile.element.short.wait.timeout.sec", 10));
-    }
-
-    private Duration existenceCheckTimeout() {
-        return Duration.ofSeconds(ConfigReader.getInt("mobile.existence.check.timeout.sec", 3));
+        this.mobileProductDetailPage = mobileProductDetailPage;
+        this.mobileCartPage = mobileCartPage;
     }
 
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/menuIV")
@@ -47,6 +38,10 @@ public class MobileProductPage extends MobileBasePage {
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/productTV")
     //@iOSXCUITFindBy(accessibility = "title")
     private WebElement lblTitle;
+
+    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/cartIV")
+    private WebElement btnCartIcon;
+
 
     public MobileLoginPage openLoginScreen() {
         ensureElementsInitialized();
@@ -94,5 +89,31 @@ public class MobileProductPage extends MobileBasePage {
         wait(shortWait()).until(ExpectedConditions.elementToBeClickable(btnPopupLogout)).click();
 
         return mobileLoginPage;
+    }
+
+    public MobileProductDetailPage selectProduct(String productLabel) {
+        ensureElementsInitialized();
+
+        String scrollToProductInCatalog = String.format(
+                "new UiScrollable(new UiSelector().resourceId(\"com.saucelabs.mydemoapp.android:id/productRV\"))"
+                        + ".scrollIntoView(new UiSelector().text(\"%s\"))",
+                productLabel);
+        wait(longWait()).until(d -> {
+            d.findElement(AppiumBy.androidUIAutomator(scrollToProductInCatalog));
+            return true;
+        });
+
+        By productImageByLabel = By.xpath(String.format(
+                "//android.widget.TextView[@text='%s']/preceding-sibling::android.widget.ImageView[@resource-id='com.saucelabs.mydemoapp.android:id/productIV']",
+                productLabel));
+        wait(longWait()).until(ExpectedConditions.elementToBeClickable(driver().findElement(productImageByLabel))).click();
+
+        return mobileProductDetailPage;
+    }
+
+    public MobileCartPage openCart() {
+        ensureElementsInitialized();
+        wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnCartIcon)).click();
+        return mobileCartPage;
     }
 }

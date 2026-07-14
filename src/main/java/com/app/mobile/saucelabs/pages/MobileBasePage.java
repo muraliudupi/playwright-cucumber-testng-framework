@@ -42,4 +42,16 @@ public abstract class MobileBasePage {
     protected WebDriverWait wait(Duration timeout) {
         return new WebDriverWait(driver(), timeout);
     }
+
+    protected Duration longWait() {
+        return Duration.ofSeconds(ConfigReader.getInt("mobile.element.wait.timeout.sec", 15));
+    }
+
+    protected Duration shortWait() {
+        return Duration.ofSeconds(ConfigReader.getInt("mobile.element.short.wait.timeout.sec", 10));
+    }
+
+    protected Duration existenceCheckTimeout() {
+        return Duration.ofSeconds(ConfigReader.getInt("mobile.existence.check.timeout.sec", 3));
+    }
 }

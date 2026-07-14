@@ -10,7 +10,6 @@ Feature: Mobile ParaBank Customer Login
       | TestCaseID |
       | Login_001  |
 
-
   @mobile @logout @require_login
   Scenario: Successful logout from mobile app
     When the user logs out from the mobile app

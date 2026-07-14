@@ -4,7 +4,6 @@ import com.app.mobile.saucelabs.pages.MobileProductPage;
 import com.framework.context.ScenarioContext;
 import com.app.mobile.saucelabs.pages.MobileLoginPage;
 import com.framework.steps.BaseSteps;
-import io.cucumber.java.PendingException;
 import io.cucumber.java.en.*;
 import org.testng.Assert;
 
