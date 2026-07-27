@@ -1,11 +1,11 @@
 Feature: Mobile Cart and Checkout
 
+  # Logged in User
   @mobile @cart @require_login
   Scenario: User Logged In: Add a product to the cart with label and quantity from test data
     When the user adds a product to the cart using data key "Cart_001" sheet "MobileCartData"
     Then the product should be visible in the cart
 
-  #Not Working
   @mobile @cart @remove @require_login
   Scenario: User Logged In: Remove a product from the cart
     Given the user has a product already added to the cart using data key "Cart_001" sheet "MobileCartData"
@@ -17,13 +17,12 @@ Feature: Mobile Cart and Checkout
     When the user proceeds to checkout and completes the order using data key "Checkout_001" sheet "MobileCheckoutData"
     Then the order confirmation should be displayed
 
-
+  # Guest User
   @mobile @cart @guest
   Scenario: Guest User: Add a product to the cart with label and quantity from test data
     When the user adds a product to the cart using data key "Cart_001" sheet "MobileCartData"
     Then the product should be visible in the cart
 
-  #Not Working
   @mobile @cart @remove @guest
   Scenario: Guest User: Remove a product from the cart
     Given the user has a product already added to the cart using data key "Cart_001" sheet "MobileCartData"

@@ -1,0 +1,40 @@
+package com.app.web.parabank.stepdefinitions;
+
+import com.framework.context.ScenarioContext;
+import com.app.web.parabank.pages.WebBillPayPage;
+import com.framework.steps.BaseSteps;
+import io.cucumber.java.en.And;
+import io.cucumber.java.en.Then;
+
+import java.util.Map;
+
+public class WebBillPaySteps extends BaseSteps {
+
+    private final WebBillPayPage webBillPayPage;
+    private final ScenarioContext context;
+
+    public WebBillPaySteps(WebBillPayPage webBillPayPage, ScenarioContext context) {
+        this.webBillPayPage = webBillPayPage;
+        this.context = context;
+    }
+
+    @And("the user navigates to Bill Pay and submits a payment using data key {string} sheet {string}")
+    public void the_user_pays_a_bill_using_data_key(String testCaseId, String sheetName) {
+        Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
+        String payeeName = rowData.get("PayeeName");
+
+        context.setContext("BILLPAY_PAYEE_NAME", payeeName);
+
+        webBillPayPage.navigateToBillPay();
+        String actualFromAccount = webBillPayPage.payBill(
+                payeeName, rowData.get("Address"), rowData.get("City"), rowData.get("State"),
+                rowData.get("ZipCode"), rowData.get("Phone"), rowData.get("AccountNumber"),
+                rowData.get("Amount"), rowData.get("FromAccount"));
+        context.setContext("BILLPAY_FROM_ACCOUNT", actualFromAccount);
+    }
+
+    @Then("the bill payment is confirmed")
+    public void the_bill_payment_is_confirmed() {
+        webBillPayPage.verifyPaymentConfirmed();
+    }
+}

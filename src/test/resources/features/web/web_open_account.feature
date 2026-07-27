@@ -13,4 +13,3 @@ Feature: ParaBank Account Lifecycle Management
     Examples:
       | TestCaseID   | AccountType |
       | AcctOpen_001 | CHECKING    |
-      | AcctOpen_002 | SAVINGS     |

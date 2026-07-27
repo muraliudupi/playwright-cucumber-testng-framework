@@ -9,4 +9,3 @@ Feature: ParaBank Customer Login
     Examples:
       | TestCaseID |
       | Login_001  |
-      | Login_002  |

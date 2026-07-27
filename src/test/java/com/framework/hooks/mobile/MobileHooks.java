@@ -44,7 +44,9 @@ public class MobileHooks {
         String defaultPass = ConfigReader.getProperty("mobile.default.password");
 
         mobileProductPage.loginWithValidCredentials(defaultUser, defaultPass);
-        mobileProductPage.verifyDashboard();
+        if (mobileProductPage.verifyDashboard()){
+            LOG.info("User is logged in before the test starts.");
+        }
     }
 
     @After(order = 0)

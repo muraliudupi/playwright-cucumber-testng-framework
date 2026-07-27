@@ -48,4 +48,14 @@ public class WebLoginSteps extends BaseSteps {
         webLoginPage.verifyLoginSuccessful();
         assertTrue(webLoginPage.isLoginSuccessful(), "Accounts Overview heading was not visible after login.");
     }
+
+    @When("the user logs out")
+    public void the_user_logs_out() {
+        webLoginPage.logout();
+    }
+
+    @Then("the user is returned to the login page")
+    public void the_user_is_returned_to_the_login_page() {
+        assertTrue(webLoginPage.isLoggedOut(), "Login page was not displayed after logout.");
+    }
 }
