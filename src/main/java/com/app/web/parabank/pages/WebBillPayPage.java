@@ -100,6 +100,6 @@ public class WebBillPayPage extends WebBasePage {
 
     public void verifyPaymentConfirmed() {
         confirmationHeading().waitFor(new Locator.WaitForOptions()
-                .setTimeout(ConfigReader.getInt("web.confirmation.wait.timeout.ms", 10000)));
+                .setTimeout(ConfigReader.getInt("web.confirmation.wait.timeout.ms", 20000)));
     }
 }

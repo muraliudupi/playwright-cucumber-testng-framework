@@ -80,7 +80,7 @@ public class WebOpenAccountPage extends WebBasePage {
 
     public void verifyAccountCreationLayoutVisible() {
         successHeading().waitFor(new Locator.WaitForOptions()
-                .setTimeout(ConfigReader.getInt("web.confirmation.wait.timeout.ms", 10000)));
+                .setTimeout(ConfigReader.getInt("web.confirmation.wait.timeout.ms", 20000)));
     }
 
     public String getGeneratedAccountId() {

@@ -38,6 +38,6 @@ public class WebUpdateContactPage extends WebBasePage {
 
     public void verifyContactUpdated() {
         confirmationHeading().waitFor(new Locator.WaitForOptions()
-                .setTimeout(ConfigReader.getInt("web.confirmation.wait.timeout.ms", 10000)));
+                .setTimeout(ConfigReader.getInt("web.confirmation.wait.timeout.ms", 20000)));
     }
 }

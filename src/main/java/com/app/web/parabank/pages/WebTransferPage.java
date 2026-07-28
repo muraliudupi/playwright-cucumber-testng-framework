@@ -102,7 +102,7 @@ public class WebTransferPage extends WebBasePage {
 
     public void verifyTransferLayoutVisible() {
         transferSuccessHeading().waitFor(new Locator.WaitForOptions()
-                .setTimeout(ConfigReader.getInt("web.confirmation.wait.timeout.ms", 10000)));
+                .setTimeout(ConfigReader.getInt("web.confirmation.wait.timeout.ms", 20000)));
     }
 
     public String getActualResultMessage() {

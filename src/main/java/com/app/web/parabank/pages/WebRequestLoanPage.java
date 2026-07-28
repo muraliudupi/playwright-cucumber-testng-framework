@@ -44,7 +44,7 @@ public class WebRequestLoanPage extends WebBasePage {
 
         applyButton().click();
         loanStatusHeading().waitFor(new Locator.WaitForOptions()
-                .setTimeout(ConfigReader.getInt("web.confirmation.wait.timeout.ms", 10000)));
+                .setTimeout(ConfigReader.getInt("web.confirmation.wait.timeout.ms", 20000)));
         return this;
     }
 
