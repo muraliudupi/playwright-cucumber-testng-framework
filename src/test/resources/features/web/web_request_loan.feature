@@ -1,4 +1,4 @@
-Feature: ParaBank Request Loan
+Feature: Request Loan
 
   @web @requestloan
   Scenario: A small loan request is approved

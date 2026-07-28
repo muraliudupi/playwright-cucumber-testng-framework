@@ -6,7 +6,6 @@ import com.app.mobile.saucelabs.pages.MobileLoginPage;
 import com.framework.steps.BaseSteps;
 import io.cucumber.java.en.*;
 import org.testng.Assert;
-
 import java.util.Map;
 
 public class MobileLoginLogoutSteps extends BaseSteps {

@@ -16,7 +16,6 @@ import org.testng.annotations.DataProvider;
         monochrome = true
 )
 public class WebTestNGRunner extends AbstractTestNGCucumberRunner {
-
     @Override
     @DataProvider(parallel = false)
     public Object[][] scenarios() {

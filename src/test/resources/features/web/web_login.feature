@@ -1,4 +1,4 @@
-Feature: ParaBank Customer Login
+Feature: Customer Login
 
   @sanity @web @login
   Scenario Outline: Successful login using external enterprise test data

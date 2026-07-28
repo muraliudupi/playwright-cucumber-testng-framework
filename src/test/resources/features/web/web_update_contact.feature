@@ -1,4 +1,4 @@
-Feature: ParaBank Update Contact Info
+Feature: Update Contact Info
 
   @web @updatecontact
   Scenario: Update contact information successfully

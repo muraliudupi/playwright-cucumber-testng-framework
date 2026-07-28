@@ -1,4 +1,4 @@
-Feature: ParaBank Find Transactions
+Feature: Find Transactions
 
   @web @findtransactions
   Scenario: A bill payment made today is findable by date
@@ -26,7 +26,6 @@ Feature: ParaBank Find Transactions
     And the bill payment is confirmed
     And the user searches transactions by amount matching the bill payment
     Then the bill payment transaction appears in the results
-
 
   @web @findtransactions @negative
   Scenario: Find Transactions shows validation errors for each empty search mode

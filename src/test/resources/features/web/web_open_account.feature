@@ -1,4 +1,4 @@
-Feature: ParaBank Account Lifecycle Management
+Feature: Account Open
 
   @web @regression @acctOpn
   Scenario Outline: Open a New Sub-Account and Validate Core Database Persistence

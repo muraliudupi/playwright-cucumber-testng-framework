@@ -7,7 +7,6 @@ import com.framework.utils.ConfigReader;
 import com.framework.utils.DatabaseUtil;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
-
 import java.util.Map;
 
 public class WebOpenAccountSteps extends BaseSteps {

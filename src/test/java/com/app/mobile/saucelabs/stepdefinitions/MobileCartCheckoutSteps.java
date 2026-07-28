@@ -5,7 +5,6 @@ import com.framework.context.ScenarioContext;
 import com.framework.steps.BaseSteps;
 import io.cucumber.java.en.*;
 import org.testng.Assert;
-
 import java.util.Map;
 
 public class MobileCartCheckoutSteps extends BaseSteps {

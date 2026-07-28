@@ -4,7 +4,6 @@ import com.app.web.parabank.pages.WebUpdateContactPage;
 import com.framework.steps.BaseSteps;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
-
 import java.util.Map;
 
 public class WebUpdateContactSteps extends BaseSteps {

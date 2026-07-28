@@ -2,6 +2,8 @@ package com.app.web.parabank.stepdefinitions;
 
 import com.framework.core.WebDriverFactory;
 import com.framework.steps.BaseSteps;
+import com.framework.utils.ConfigReader;
+import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
@@ -28,8 +30,14 @@ public class WebCommonSteps extends BaseSteps {
     }
 
     private boolean isTextVisible(String text) {
-        return WebDriverFactory.getPage()
-                .getByText(text, new Page.GetByTextOptions().setExact(true))
-                .count() > 0;
+        Locator locator = WebDriverFactory.getPage()
+                .getByText(text, new Page.GetByTextOptions().setExact(true));
+        try {
+            locator.first().waitFor(new Locator.WaitForOptions()
+                    .setTimeout(ConfigReader.getInt("web.confirmation.wait.timeout.ms", 20000)));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

@@ -1,4 +1,4 @@
-Feature: Mobile ParaBank Customer Login
+Feature: Customer Login
 
   @mobile @login
   Scenario Outline: Successful mobile login using enterprise test data

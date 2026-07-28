@@ -3,7 +3,6 @@ package com.framework.hooks.mobile;
 import com.app.mobile.saucelabs.pages.MobileProductPage;
 import com.framework.utils.ConfigReader;
 import com.framework.core.MobileDriverFactory;
-
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;

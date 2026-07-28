@@ -1,4 +1,4 @@
-Feature: ParaBank Logout
+Feature: Customer Logout
 
   @sanity @web @logout
   Scenario: Log out successfully after logging in

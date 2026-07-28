@@ -4,7 +4,6 @@ import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.LoadState;
 import com.microsoft.playwright.options.SelectOption;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
