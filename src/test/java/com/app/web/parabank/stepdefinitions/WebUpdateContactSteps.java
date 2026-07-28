@@ -28,4 +28,9 @@ public class WebUpdateContactSteps extends BaseSteps {
     public void the_contact_info_update_is_confirmed() {
         webUpdateContactPage.verifyContactUpdated();
     }
+
+    @And("the user clears all contact fields and submits")
+    public void the_user_clears_all_contact_fields_and_submits() {
+        webUpdateContactPage.navigateToUpdateContact().clearAllFieldsAndSubmit();
+    }
 }

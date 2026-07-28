@@ -10,7 +10,7 @@ Feature: ParaBank Customer Login
       | TestCaseID |
       | Login_001  |
 
-  @web @login @negative
+  @sanity @web @login @negative
   Scenario Outline: Login fails when required credentials are missing
     Given the user is on the ParaBank login page
     When the web user logs in with username "<username>" and password "<password>"

@@ -120,4 +120,9 @@ public class WebTransferPage extends WebBasePage {
 
         return getActualResultMessage().matches(validationRegex);
     }
+
+    public void executeTransfer(String amount) {
+        amountInput().fill(amount);
+        transferButton().click();
+    }
 }

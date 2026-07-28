@@ -104,4 +104,15 @@ public class WebBillPayPage extends WebBasePage {
         confirmationHeading().waitFor(new Locator.WaitForOptions()
                 .setTimeout(ConfigReader.getInt("web.confirmation.wait.timeout.ms", 20000)));
     }
+
+    public void submitBillPayWithoutValues() {
+        sendPaymentButton().click();
+    }
+
+    public void submitBillPayWithInvalidValues() {
+        payeeAccount().fill("@#$%^&");
+        verifyAccount().fill("@#$%^&");
+        amount().fill("@#$%^&");
+        sendPaymentButton().click();
+    }
 }

@@ -26,3 +26,26 @@ Feature: ParaBank Find Transactions
     And the bill payment is confirmed
     And the user searches transactions by amount matching the bill payment
     Then the bill payment transaction appears in the results
+
+
+  @web @findtransactions @negative
+  Scenario: Find Transactions shows validation errors for each empty search mode
+    Given the user is on the ParaBank login page
+    When the web user logs in using credentials from data key "Login_001" sheet "LoginData"
+    And the user navigates to Find Transactions
+    And the user submits each transaction search with no values entered
+    Then the following error messages are displayed:
+      | Invalid transaction ID |
+      | Invalid date format    |
+      | Invalid amount         |
+
+  @web @findtransactions @negative
+  Scenario: Find Transactions shows validation errors for each invalid search mode
+    Given the user is on the ParaBank login page
+    When the web user logs in using credentials from data key "Login_001" sheet "LoginData"
+    And the user navigates to Find Transactions
+    And the user submits each transaction search with invalid values
+    Then the following error messages are displayed:
+      | Invalid transaction ID |
+      | Invalid date format    |
+      | Invalid amount         |

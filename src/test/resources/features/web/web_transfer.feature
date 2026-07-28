@@ -13,3 +13,17 @@ Feature: Account Funds Transfer
     Examples:
       | TestCaseID   |
       | Transfer_001 |
+
+  @web @transfer @negative
+  Scenario: Transfer fails silently with an internal error when amount is missing
+    Given the user is on the ParaBank login page
+    When the web user logs in using credentials from data key "Login_001" sheet "LoginData"
+    And the user attempts a transfer with a missing amount
+    Then the error message "An internal error has occurred and has been logged." is displayed
+
+  @web @transfer @negative
+  Scenario: Transfer fails silently with an internal error when amount is invalid
+    Given the user is on the ParaBank login page
+    When the web user logs in using credentials from data key "Login_001" sheet "LoginData"
+    And the user attempts a transfer with an invalid amount
+    Then the error message "An internal error has occurred and has been logged." is displayed

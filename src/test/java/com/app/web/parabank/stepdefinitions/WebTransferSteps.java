@@ -117,4 +117,16 @@ public class WebTransferSteps extends BaseSteps {
         LOG.info("[Thread-{}] Database verification success: Status verified as {} for transfer from {} to {} of amount [{}]",
                 Thread.currentThread().threadId(), actualDbStatus, expectedFrom, expectedTo, amountForQuery);
     }
+
+    @And("the user attempts a transfer with a missing amount")
+    public void the_user_attempts_transfer_with_missing_amount() {
+        webTransferPage.navigateToTransferFunds()
+                .executeTransfer("");
+    }
+
+    @And("the user attempts a transfer with an invalid amount")
+    public void the_user_attempts_transfer_with_invalid_amount() {
+        webTransferPage.navigateToTransferFunds()
+                .executeTransfer("#$%^");
+    }
 }

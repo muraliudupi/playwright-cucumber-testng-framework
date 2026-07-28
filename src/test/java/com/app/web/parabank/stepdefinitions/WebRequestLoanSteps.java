@@ -39,4 +39,14 @@ public class WebRequestLoanSteps extends BaseSteps {
         assertTrue(actualMatches,
                 String.format("Loan Request Failure: expected status '%s' was not confirmed on the result screen.", expected));
     }
+
+    @And("the user navigates to Request Loan and applies without entering any values")
+    public void the_user_applies_for_loan_without_values() {
+        webRequestLoanPage.navigateToRequestLoan().applyForLoanWithoutValues();
+    }
+
+    @And("the user navigates to Request Loan and applies by entering invalid values")
+    public void the_user_applies_for_loan_with_invalid_values() {
+        webRequestLoanPage.navigateToRequestLoan().applyForLoanWithInvalidValues();
+    }
 }

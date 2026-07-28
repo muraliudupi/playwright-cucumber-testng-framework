@@ -37,4 +37,14 @@ public class WebBillPaySteps extends BaseSteps {
     public void the_bill_payment_is_confirmed() {
         webBillPayPage.verifyPaymentConfirmed();
     }
+
+    @And("the user navigates to Bill Pay and submits without entering any values")
+    public void the_user_submits_bill_pay_without_values() {
+        webBillPayPage.navigateToBillPay().submitBillPayWithoutValues();
+    }
+
+    @And("the user navigates to Bill Pay and submits with invalid entering in Account & Amount fields")
+    public void the_user_submits_bill_pay_with_invalid_values() {
+        webBillPayPage.navigateToBillPay().submitBillPayWithInvalidValues();
+    }
 }

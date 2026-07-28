@@ -62,4 +62,14 @@ public class WebRequestLoanPage extends WebBasePage {
     public String getNewLoanAccountId() {
         return newAccountId().isVisible() ? newAccountId().innerText().trim() : null;
     }
+
+    public void applyForLoanWithoutValues() {
+        applyButton().click();
+    }
+
+    public void applyForLoanWithInvalidValues() {
+        loanAmount().fill("ASDFG");
+        downPayment().fill("QWERT");
+        applyButton().click();
+    }
 }

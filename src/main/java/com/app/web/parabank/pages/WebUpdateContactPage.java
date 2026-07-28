@@ -38,6 +38,17 @@ public class WebUpdateContactPage extends WebBasePage {
         return this;
     }
 
+    public void clearAllFieldsAndSubmit() {
+        firstName().fill("");
+        lastName().fill("");
+        address().fill("");
+        city().fill("");
+        state().fill("");
+        zip().fill("");
+        phone().fill("");
+        updateProfileButton().click();
+    }
+
     public void verifyContactUpdated() {
         confirmationHeading().waitFor(new Locator.WaitForOptions()
                 .setTimeout(ConfigReader.getInt("web.confirmation.wait.timeout.ms", 20000)));

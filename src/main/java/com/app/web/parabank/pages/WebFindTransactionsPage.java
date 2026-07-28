@@ -15,6 +15,9 @@ public class WebFindTransactionsPage extends WebBasePage {
     private Locator findTransactionsLink() { return page().locator("a:has-text('Find Transactions')"); }
     private Locator accountDropdown()      { return page().locator("#accountId"); }
 
+    private Locator transactionID() { return page().locator("#transactionId"); }
+    private Locator findByIdButton() { return page().locator("#findById"); }
+
     private Locator transactionDateInput() { return page().locator("#transactionDate"); }
     private Locator findByDateButton()     { return page().locator("#findByDate"); }
 
@@ -27,6 +30,29 @@ public class WebFindTransactionsPage extends WebBasePage {
 
     private Locator resultContainer() { return page().locator("#resultContainer"); }
     private Locator errorContainer()  { return page().locator("#errorContainer"); }
+
+    public void submitFindByTransactionIdWithoutValue() { findByIdButton().click(); }
+    public void submitFindByDateWithoutValue()          { findByDateButton().click(); }
+    public void submitFindByDateRangeWithoutValues()    { findByDateRangeButton().click(); }
+    public void submitFindByAmountWithoutValue()        { findByAmountButton().click(); }
+
+    public void submitFindByTransactionIdWithInvalidValue() {
+        transactionID().fill("#$%^&*(");
+        findByIdButton().click();
+    }
+    public void submitFindByDateWithInvalidValue() {
+        transactionDateInput().fill("#$%^&*(");
+        findByDateButton().click();
+    }
+    public void submitFindByDateRangeWithInvalidValue() {
+        dateRangeFromInput().fill("#$%^&*(");
+        dateRangeToInput().fill("#$%^&*(");
+        findByDateRangeButton().click();
+    }
+    public void submitFindByAmountWithInvalidValue() {
+        amountInput().fill("#$%^&*(");
+        findByAmountButton().click();
+    }
 
     public WebFindTransactionsPage navigateToFindTransactions() {
         findTransactionsLink().click();

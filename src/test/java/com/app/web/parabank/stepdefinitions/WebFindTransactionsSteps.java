@@ -47,4 +47,25 @@ public class WebFindTransactionsSteps extends BaseSteps {
                 String.format("Find Transactions Failure: no result row referencing payee '%s' found for today's date on account '%s'.",
                         payeeName, context.getStringContext("BILLPAY_FROM_ACCOUNT")));
     }
+
+    @And("the user navigates to Find Transactions")
+    public void the_user_navigates_to_find_transactions() {
+        webFindTransactionsPage.navigateToFindTransactions();
+    }
+
+    @And("the user submits each transaction search with no values entered")
+    public void the_user_submits_each_search_with_no_values() {
+        webFindTransactionsPage.submitFindByTransactionIdWithoutValue();
+        webFindTransactionsPage.submitFindByDateWithoutValue();
+        webFindTransactionsPage.submitFindByDateRangeWithoutValues();
+        webFindTransactionsPage.submitFindByAmountWithoutValue();
+    }
+
+    @And("the user submits each transaction search with invalid values")
+    public void the_user_submits_each_search_with_invalid_values() {
+        webFindTransactionsPage.submitFindByTransactionIdWithInvalidValue();
+        webFindTransactionsPage.submitFindByDateWithInvalidValue();
+        webFindTransactionsPage.submitFindByDateRangeWithInvalidValue();
+        webFindTransactionsPage.submitFindByAmountWithInvalidValue();
+    }
 }
