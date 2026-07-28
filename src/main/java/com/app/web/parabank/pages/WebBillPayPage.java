@@ -2,6 +2,7 @@ package com.app.web.parabank.pages;
 
 import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.options.LoadState;
 import com.microsoft.playwright.options.SelectOption;
 import com.microsoft.playwright.options.WaitForSelectorState;
 
@@ -61,6 +62,7 @@ public class WebBillPayPage extends WebBasePage {
 
     public WebBillPayPage navigateToBillPay() {
         billPayLink().click();
+        page().waitForLoadState(LoadState.NETWORKIDLE);
         payeeName().waitFor(new Locator.WaitForOptions()
                 .setTimeout(ConfigReader.getInt("web.element.wait.timeout.ms", 5000)));
         return this;

@@ -2,6 +2,7 @@ package com.app.web.parabank.pages;
 
 import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.options.LoadState;
 import com.microsoft.playwright.options.SelectOption;
 import com.microsoft.playwright.options.WaitForSelectorState;
 
@@ -17,6 +18,7 @@ public class WebRequestLoanPage extends WebBasePage {
 
     public WebRequestLoanPage navigateToRequestLoan() {
         requestLoanLink().click();
+        page().waitForLoadState(LoadState.NETWORKIDLE);
         loanAmount().waitFor(new Locator.WaitForOptions()
                 .setTimeout(ConfigReader.getInt("web.element.wait.timeout.ms", 5000)));
         return this;

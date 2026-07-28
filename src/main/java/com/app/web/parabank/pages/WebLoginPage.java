@@ -2,6 +2,7 @@ package com.app.web.parabank.pages;
 
 import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.options.LoadState;
 
 public class WebLoginPage extends WebBasePage {
 
@@ -32,6 +33,7 @@ public class WebLoginPage extends WebBasePage {
 
     public WebLoginPage open() {
         page().navigate(ConfigReader.get("baseUrl"));
+        page().waitForLoadState(LoadState.NETWORKIDLE);
         return this;
     }
 
