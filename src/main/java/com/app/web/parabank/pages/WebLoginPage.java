@@ -54,6 +54,6 @@ public class WebLoginPage extends WebBasePage {
     }
 
     public String getErrorMessage() {
-        return errorMessage().isVisible() ? errorMessage().innerText() : null;
+        return errorMessage().isVisible() ? errorMessage().innerText().trim() : null;
     }
 }

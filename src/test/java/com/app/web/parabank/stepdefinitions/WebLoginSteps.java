@@ -6,10 +6,9 @@ import com.framework.steps.BaseSteps;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-
 import java.util.Map;
-
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.assertEquals;
 
 public class WebLoginSteps extends BaseSteps {
 
@@ -26,12 +25,12 @@ public class WebLoginSteps extends BaseSteps {
         webLoginPage.open();
     }
 
-    @When("the user logs in with username {string} and password {string}")
+    @When("the web user logs in with username {string} and password {string}")
     public void the_user_logs_in_with_username_and_password(String username, String password) {
         webLoginPage.login(username, password);
     }
 
-    @When("the user logs in using credentials from data key {string} sheet {string}")
+    @When("the web user logs in using credentials from data key {string} sheet {string}")
     public void the_user_logs_in_using_credentials_from_data_key(String testCaseId, String sheetName) {
         Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
 
@@ -57,5 +56,12 @@ public class WebLoginSteps extends BaseSteps {
     @Then("the user is returned to the login page")
     public void the_user_is_returned_to_the_login_page() {
         assertTrue(webLoginPage.isLoggedOut(), "Login page was not displayed after logout.");
+    }
+
+    @Then("the login error message {string} is displayed")
+    public void the_login_error_message_is_displayed(String expectedMessage) {
+        String actualMessage = webLoginPage.getErrorMessage();
+        assertEquals(actualMessage, expectedMessage,
+                String.format("Login Error Message Mismatch: expected '%s' but got '%s'.", expectedMessage, actualMessage));
     }
 }

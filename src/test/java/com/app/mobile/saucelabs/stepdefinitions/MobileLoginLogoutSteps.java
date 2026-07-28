@@ -26,12 +26,12 @@ public class MobileLoginLogoutSteps extends BaseSteps {
         mobileProductPage.openLoginScreen();
     }
 
-    @When("the user logs in with username {string} and password {string}")
+    @When("the mobile user logs in with username {string} and password {string}")
     public void the_user_logs_in_with_username_and_password(String username, String password) {
         mobileLoginPage.login(username, password);
     }
 
-    @When("the user logs into the mobile app using credentials from data key {string} sheet {string}")
+    @When("the mobile user logs into the mobile app using credentials from data key {string} sheet {string}")
     public void the_user_logs_into_mobile_app_using_credentials_from_data_key(String testCaseId, String sheetName) {
         Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
 
