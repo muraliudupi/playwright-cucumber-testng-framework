@@ -13,7 +13,8 @@ public class WebRequestLoanPage extends WebBasePage {
     private Locator downPayment()     { return page().locator("#downPayment"); }
     private Locator fromAccountDropdown() { return page().locator("#fromAccountId"); }
     private Locator applyButton()     { return page().locator("input[value='Apply Now']"); }
-    private Locator loanStatusHeading() { return page().locator("#requestLoanResult h1.title"); }
+    private Locator resultContainer() { return page().locator("#requestLoanResult"); }
+    private Locator loanStatusHeading() { return resultContainer().locator("h1.title"); }
     private Locator newAccountId()      { return page().locator("#newAccountId"); }
 
     public WebRequestLoanPage navigateToRequestLoan() {
@@ -51,7 +52,11 @@ public class WebRequestLoanPage extends WebBasePage {
     }
 
     public boolean isLoanApproved() {
-        return loanStatusHeading().innerText().contains("Approved");
+        return resultContainer().getByText("Approved", new Locator.GetByTextOptions().setExact(true)).count() > 0;
+    }
+
+    public boolean isLoanDenied() {
+        return resultContainer().getByText("Denied", new Locator.GetByTextOptions().setExact(true)).count() > 0;
     }
 
     public String getNewLoanAccountId() {
