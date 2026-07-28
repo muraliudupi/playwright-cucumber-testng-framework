@@ -21,15 +21,15 @@ public class WebBillPaySteps extends BaseSteps {
     @And("the user navigates to Bill Pay and submits a payment using data key {string} sheet {string}")
     public void the_user_pays_a_bill_using_data_key(String testCaseId, String sheetName) {
         Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
-        String payeeName = rowData.get("PayeeName");
-
-        context.setContext("BILLPAY_PAYEE_NAME", payeeName);
 
         webBillPayPage.navigateToBillPay();
         String actualFromAccount = webBillPayPage.payBill(
-                payeeName, rowData.get("Address"), rowData.get("City"), rowData.get("State"),
+                rowData.get("PayeeName"), rowData.get("Address"), rowData.get("City"), rowData.get("State"),
                 rowData.get("ZipCode"), rowData.get("Phone"), rowData.get("AccountNumber"),
                 rowData.get("Amount"), rowData.get("FromAccount"));
+
+        context.setContext("BILLPAY_PAYEE_NAME", rowData.get("PayeeName"));
+        context.setContext("BILLPAY_AMOUNT", rowData.get("Amount"));
         context.setContext("BILLPAY_FROM_ACCOUNT", actualFromAccount);
     }
 

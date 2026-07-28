@@ -39,10 +39,4 @@ public class WebRequestLoanSteps extends BaseSteps {
         assertTrue(actualMatches,
                 String.format("Loan Request Failure: expected status '%s' was not confirmed on the result screen.", expected));
     }
-
-    @Then("a loan status decision is displayed")
-    public void a_loan_status_decision_is_displayed() {
-        assertTrue(webRequestLoanPage.isLoanApproved() || true,
-                "Loan Request Failure: no status heading rendered after applying.");
-    }
 }
