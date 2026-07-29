@@ -1,6 +1,7 @@
 # --- Gradle Directories ---
 .gradle/
 build/
+.gradle-user-home
 
 # --- IntelliJ IDEA Settings ---
 .idea/
