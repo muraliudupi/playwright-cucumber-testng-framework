@@ -91,7 +91,7 @@ public class WebAccountsOverviewPage extends WebBasePage {
             throw new IllegalStateException("No usable account rows found on Accounts Overview.");
         }
 
-        LOG.info("Accounts Overview: total available balance across {} accounts is ${}.", processedAccountsCount, totalAmount);
+        LOG.info("Accounts Overview: total available balance across {} accounts is - ${}.", processedAccountsCount, totalAmount);
         return totalAmount;
     }
 

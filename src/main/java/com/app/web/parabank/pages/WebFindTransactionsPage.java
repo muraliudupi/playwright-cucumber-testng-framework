@@ -4,6 +4,7 @@ import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.LoadState;
 import com.microsoft.playwright.options.SelectOption;
+import com.microsoft.playwright.options.WaitForSelectorState;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -93,13 +94,11 @@ public class WebFindTransactionsPage extends WebBasePage {
 
     private void awaitSearchOutcome() {
         int timeoutMs = ConfigReader.getInt("web.confirmation.wait.timeout.ms", 20000);
-        long deadline = System.currentTimeMillis() + timeoutMs;
-        while (System.currentTimeMillis() < deadline) {
-            if (errorContainer().isVisible() || resultContainer().isVisible()) {
-                break;
-            }
-            page().waitForTimeout(200);
-        }
+        Locator outcome = page().locator("#resultContainer:visible, #errorContainer:visible");
+        outcome.first().waitFor(new Locator.WaitForOptions()
+                .setState(WaitForSelectorState.VISIBLE)
+                .setTimeout(timeoutMs));
+
         if (errorContainer().isVisible()) {
             LOG.error("Find Transactions returned an application error: {}", errorContainer().innerText().trim());
         }

@@ -39,8 +39,8 @@ public class MobileHooks {
     public void ensureUserIsLoggedInBeforeScenario() {
         LOG.info("Hook triggered: Ensuring user is logged in before the test starts.");
 
-        String defaultUser = ConfigReader.getProperty("mobile.default.username");
-        String defaultPass = ConfigReader.getProperty("mobile.default.password");
+        String defaultUser = ConfigReader.get("mobile.default.username");
+        String defaultPass = ConfigReader.get("mobile.default.password");
 
         mobileProductPage.loginWithValidCredentials(defaultUser, defaultPass);
         if (mobileProductPage.verifyDashboard()){

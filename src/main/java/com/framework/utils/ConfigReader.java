@@ -40,10 +40,17 @@ public class ConfigReader {
     }
 
     public static String get(String key) {
-        String override = System.getProperty(key);
-        if (override != null && !override.isBlank()) {
-            return override;
+        String systemPropertyOverride = System.getProperty(key);
+        if (systemPropertyOverride != null && !systemPropertyOverride.isBlank()) {
+            return systemPropertyOverride;
         }
+
+        String environmentVariableName = key.toUpperCase().replace('.', '_');
+        String environmentOverride = System.getenv(environmentVariableName);
+        if (environmentOverride != null && !environmentOverride.isBlank()) {
+            return environmentOverride;
+        }
+
         return getProperty(key);
     }
 
