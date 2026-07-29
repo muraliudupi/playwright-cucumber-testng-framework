@@ -1,19 +1,19 @@
 Feature: Request Loan
 
   @web @requestloan
-  Scenario: A small loan request is approved
+  Scenario: Loan request is approved
     Given the user is on the ParaBank login page
     When the web user logs in using credentials from data key "Login_001" sheet "LoginData"
-    And the user notes the account with the highest available balance
-    And the user requests a loan for less than the noted available balance
+    And the system decides loan amount required for approval
+    And the user requests a loan for less than the noted amount
     Then the loan status matches the expected outcome
 
   @web @requestloan
-  Scenario: A large loan request is denied
+  Scenario: Loan request is denied
     Given the user is on the ParaBank login page
     When the web user logs in using credentials from data key "Login_001" sheet "LoginData"
-    And the user notes the account with the highest available balance
-    And the user requests a loan for much more than the noted available balance
+    And the system decides loan amount required for approval
+    And the user requests a loan for much more than the noted amount
     Then the loan status matches the expected outcome
 
   @web @requestloan @negative

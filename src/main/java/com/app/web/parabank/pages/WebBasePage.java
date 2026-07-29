@@ -26,7 +26,11 @@ public abstract class WebBasePage {
             dropdown.selectOption(requestedAccount);
         } catch (Exception e) {
             requestedAccountFound = false;
-            dropdown.selectOption(new SelectOption().setIndex(fallbackIndex));
+            try {
+                dropdown.selectOption(new SelectOption().setIndex(fallbackIndex));
+            } catch (Exception fallbackException) {
+                dropdown.selectOption(new SelectOption().setIndex(0));
+            }
         }
         String actualAccount = dropdown.inputValue();
         if (!requestedAccountFound) {

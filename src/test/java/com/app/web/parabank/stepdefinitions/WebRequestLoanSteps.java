@@ -56,33 +56,37 @@ public class WebRequestLoanSteps extends BaseSteps {
         webRequestLoanPage.navigateToRequestLoan().applyForLoanWithInvalidValues();
     }
 
-    @And("the user notes the account with the highest available balance")
-    public void the_user_notes_account_with_highest_available_balance() {
-        WebAccountsOverviewPage.AccountBalance best = webAccountsOverviewPage
+    @And("the system decides loan amount required for approval")
+    public void the_system_decides_loan_amount_required_for_approval() {
+        BigDecimal totalAmount = webAccountsOverviewPage
                 .navigateToAccountsOverview()
-                .findAccountWithHighestAvailableAmount();
+                .calculateTotalAvailableAmount();
 
-        context.setContext(ContextKeys.LOAN_TARGET_ACCOUNT, best.accountNumber());
-        context.setContext(ContextKeys.LOAN_TARGET_AVAILABLE_AMOUNT, best.availableAmount().toPlainString());
+        // Need to navigate to Admin page and get 'Threshold' value to calculate 'Loan amount' that can be approved.
+        // E.g. if 20% then multiply totalAmount with 0.2 and assign to "loanAmount"
+
+        BigDecimal loanAmount = totalAmount.multiply(new BigDecimal("0.2"));
+
+        context.setContext(ContextKeys.LOAN_AMOUNT, loanAmount);
     }
 
-    @And("the user requests a loan for less than the noted available balance")
-    public void the_user_requests_loan_less_than_available_balance() {
-        BigDecimal available = new BigDecimal(context.getStringContext(ContextKeys.LOAN_TARGET_AVAILABLE_AMOUNT));
+    @And("the user requests a loan for less than the noted amount")
+    public void the_user_requests_loan_less_than_noted_amount() {
+        BigDecimal available = new BigDecimal(context.getStringContext(ContextKeys.LOAN_AMOUNT));
         BigDecimal loanAmount = available.divide(BigDecimal.valueOf(2), 2, RoundingMode.HALF_UP);
 
         context.setContext(ContextKeys.LOAN_EXPECTED_STATUS, "Approved");
         webRequestLoanPage.navigateToRequestLoan()
-                .requestLoan(loanAmount.toPlainString(), "10", context.getStringContext(ContextKeys.LOAN_TARGET_ACCOUNT));
+                .requestLoan(loanAmount.toPlainString(), "10");
     }
 
-    @And("the user requests a loan for much more than the noted available balance")
-    public void the_user_requests_loan_more_than_available_balance() {
-        BigDecimal available = new BigDecimal(context.getStringContext(ContextKeys.LOAN_TARGET_AVAILABLE_AMOUNT));
+    @And("the user requests a loan for much more than the noted amount")
+    public void the_user_requests_loan_more_than_noted_amount() {
+        BigDecimal available = new BigDecimal(context.getStringContext(ContextKeys.LOAN_AMOUNT));
         BigDecimal loanAmount = available.multiply(BigDecimal.valueOf(100));
 
         context.setContext(ContextKeys.LOAN_EXPECTED_STATUS, "Denied");
         webRequestLoanPage.navigateToRequestLoan()
-                .requestLoan(loanAmount.toPlainString(), "10", context.getStringContext(ContextKeys.LOAN_TARGET_ACCOUNT));
+                .requestLoan(loanAmount.toPlainString(), "10");
     }
 }

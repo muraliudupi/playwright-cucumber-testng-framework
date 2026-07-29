@@ -35,6 +35,16 @@ public class WebRequestLoanPage extends WebBasePage {
         return this;
     }
 
+    public WebRequestLoanPage requestLoan(String amount, String downPaymentValue) {
+        loanAmount().fill(amount);
+        downPayment().fill(downPaymentValue);
+
+        applyButton().click();
+        loanStatusHeading().waitFor(new Locator.WaitForOptions()
+                .setTimeout(ConfigReader.getInt("web.confirmation.wait.timeout.ms", 20000)));
+        return this;
+    }
+
     public boolean isLoanApproved() {
         return resultContainer().getByText("Approved", new Locator.GetByTextOptions().setExact(true)).count() > 0;
     }

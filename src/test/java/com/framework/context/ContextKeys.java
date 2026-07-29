@@ -13,7 +13,6 @@ public final class ContextKeys {
     public static final String SHARED_ACCOUNT_ID      = "SHARED_ACCOUNT_ID";
     public static final String ACTUAL_FUNDING_ACCOUNT = "ACTUAL_FUNDING_ACCOUNT";
     public static final String USER_DATA              = "USER_DATA";
-    public static final String LOAN_TARGET_ACCOUNT           = "LOAN_TARGET_ACCOUNT";
-    public static final String LOAN_TARGET_AVAILABLE_AMOUNT  = "LOAN_TARGET_AVAILABLE_AMOUNT";
+    public static final String LOAN_AMOUNT            = "LOAN_AMOUNT";
 
 }

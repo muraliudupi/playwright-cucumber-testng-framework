@@ -13,43 +13,33 @@ public class WebBillPayPage extends WebBasePage {
     private Locator payeeName() {
         return page().locator("input[name='payee.name']");
     }
-
     private Locator payeeAddress() {
         return page().locator("input[name='payee.address.street']");
     }
-
     private Locator payeeCity() {
         return page().locator("input[name='payee.address.city']");
     }
-
     private Locator payeeState() {
         return page().locator("input[name='payee.address.state']");
     }
-
     private Locator payeeZip() {
         return page().locator("input[name='payee.address.zipCode']");
     }
-
     private Locator payeePhone() {
         return page().locator("input[name='payee.phoneNumber']");
     }
-
     private Locator payeeAccount() {
         return page().locator("input[name='payee.accountNumber']");
     }
-
     private Locator verifyAccount() {
         return page().locator("input[name='verifyAccount']");
     }
-
     private Locator amount() {
         return page().locator("input[name='amount']");
     }
-
     private Locator fromAccountDropdown() {
         return page().locator("select[name='fromAccountId']");
     }
-
     private Locator sendPaymentButton() {
         return page().locator("input[value='Send Payment']");
     }
