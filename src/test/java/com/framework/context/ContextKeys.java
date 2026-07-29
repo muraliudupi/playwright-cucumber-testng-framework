@@ -17,4 +17,6 @@ public final class ContextKeys {
     public static final String LOAN_APPROVAL_DOWN_PAYMENT = "LOAN_APPROVAL_DOWN_PAYMENT";
     public static final String LOAN_DENIAL_AMOUNT         = "LOAN_DENIAL_AMOUNT";
     public static final String LOAN_DENIAL_DOWN_PAYMENT   = "LOAN_DENIAL_DOWN_PAYMENT";
+    public static final String REGISTERED_USERNAME      = "REGISTERED_USERNAME";
+    public static final String REGISTERED_PASSWORD      = "REGISTERED_PASSWORD";
 }
