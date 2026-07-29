@@ -1,6 +1,7 @@
 package com.app.web.parabank.stepdefinitions;
 
 import com.app.web.parabank.pages.WebAccountsOverviewPage;
+import com.app.web.parabank.pages.WebAdministrationPage;
 import com.app.web.parabank.pages.WebRequestLoanPage;
 import com.framework.context.ContextKeys;
 import com.framework.context.ScenarioContext;
@@ -16,13 +17,16 @@ public class WebRequestLoanSteps extends BaseSteps {
 
     private final WebRequestLoanPage webRequestLoanPage;
     private final WebAccountsOverviewPage webAccountsOverviewPage;
+    private final WebAdministrationPage webAdministrationPage;
     private final ScenarioContext context;
 
     public WebRequestLoanSteps(WebRequestLoanPage webRequestLoanPage,
-                               WebAccountsOverviewPage webAccountsOverviewPage, ScenarioContext context) {
+                               WebAccountsOverviewPage webAccountsOverviewPage,
+                               WebAdministrationPage webAdministrationPage, ScenarioContext context) {
 
         this.webRequestLoanPage = webRequestLoanPage;
         this.webAccountsOverviewPage = webAccountsOverviewPage;
+        this.webAdministrationPage = webAdministrationPage;
         this.context = context;
     }
 
@@ -62,8 +66,10 @@ public class WebRequestLoanSteps extends BaseSteps {
                 .navigateToAccountsOverview()
                 .calculateTotalAvailableAmount();
 
-        // Need to navigate to Admin page and get 'Threshold' value to calculate 'Loan amount' that can be approved.
-        // E.g. if 20% then multiply totalAmount with 0.2 and assign to "loanAmount"
+        // Need to navigate to Admin page and get 'Loan Processor' & 'Threshold' value to calculate 'Loan amount' that can be approved.
+        // E.g. if Loan Processor=Available Funds & Threshold=20%, then multiply totalAmount with 0.2 and assign to "loanAmount"
+        // if Loan Processor=Down Payment & Threshold=20%, then TBD
+        // if Loan Processor=Combined & Threshold=20%, then TBD
 
         BigDecimal loanAmount = totalAmount.multiply(new BigDecimal("0.2"));
 
