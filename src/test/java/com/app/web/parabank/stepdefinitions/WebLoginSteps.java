@@ -46,7 +46,6 @@ public class WebLoginSteps extends BaseSteps {
     @Then("the Welcome message and the Accounts Overview page are displayed")
     public void the_welcome_message_and_accounts_overview_page_are_displayed() {
         webLoginPage.verifyLoginSuccessful();
-        assertTrue(webLoginPage.isLoginSuccessful(), "Accounts Overview heading was not visible after login.");
     }
 
     @When("the user logs out")

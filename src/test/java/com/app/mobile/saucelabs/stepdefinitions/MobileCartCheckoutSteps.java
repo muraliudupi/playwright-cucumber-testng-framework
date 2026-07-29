@@ -39,11 +39,7 @@ public class MobileCartCheckoutSteps extends BaseSteps {
         int quantity = Integer.parseInt(rowData.get("Quantity"));
 
         context.setContext(CTX_PRODUCT_LABEL, productLabel);
-
-        mobileProductPage
-                .selectProduct(productLabel)
-                .setQuantity(quantity)
-                .addToCart();
+        addProductToCart(productLabel, quantity);
 
         mobileProductPage.openCart();
     }
@@ -113,10 +109,7 @@ public class MobileCartCheckoutSteps extends BaseSteps {
         String productLabel = rowData.get("ProductLabel");
         context.setContext(CTX_PRODUCT_LABEL, productLabel);
 
-        mobileProductPage
-                .selectProduct(productLabel)
-                .setQuantity(Integer.parseInt(rowData.get("Quantity")))
-                .addToCart();
+        addProductToCart(productLabel, Integer.parseInt(rowData.get("Quantity")));
 
         mobileProductPage.openCart().tapCheckout();
         completeCheckoutDetailsOnly(rowData);
@@ -128,5 +121,12 @@ public class MobileCartCheckoutSteps extends BaseSteps {
                         rowData.get("State"), rowData.get("Zip"), rowData.get("Country"))
                 .enterPaymentDetails(rowData.get("FullName"), rowData.get("CardNumber"), rowData.get("ExpirationDate"), rowData.get("SecurityCode"))
                 .placeOrder();
+    }
+
+    private void addProductToCart(String productLabel, int quantity) {
+        mobileProductPage
+                .selectProduct(productLabel)
+                .setQuantity(quantity)
+                .addToCart();
     }
 }

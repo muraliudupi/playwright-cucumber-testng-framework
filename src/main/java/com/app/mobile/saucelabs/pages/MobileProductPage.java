@@ -44,9 +44,7 @@ public class MobileProductPage extends MobileBasePage {
 
 
     public MobileLoginPage openLoginScreen() {
-        ensureElementsInitialized();
-        wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnMenu)).click();
-        wait(shortWait()).until(ExpectedConditions.elementToBeClickable(btnMenuLogin)).click();
+        navigateToLoginScreen();
         return mobileLoginPage;
     }
 
@@ -72,12 +70,14 @@ public class MobileProductPage extends MobileBasePage {
     }
 
     public void loginWithValidCredentials(String username, String password) {
-        ensureElementsInitialized();
+        navigateToLoginScreen();
+        mobileLoginPage.login(username, password);
+    }
 
+    private void navigateToLoginScreen() {
+        ensureElementsInitialized();
         wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnMenu)).click();
         wait(shortWait()).until(ExpectedConditions.elementToBeClickable(btnMenuLogin)).click();
-
-        mobileLoginPage.login(username, password);
     }
 
     public MobileLoginPage logOut() {

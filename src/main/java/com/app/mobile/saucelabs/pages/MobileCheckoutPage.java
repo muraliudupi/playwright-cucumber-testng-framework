@@ -15,7 +15,7 @@ public class MobileCheckoutPage extends MobileBasePage {
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/countryET")   private WebElement txtCountry;
 
     // --- Payment ---
-    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/nameET")  private WebElement txtFulName;
+    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/nameET")  private WebElement txtFName;
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/cardNumberET")     private WebElement txtCardNumber;
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/expirationDateET") private WebElement txtExpirationDate;
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/securityCodeET")   private WebElement txtSecurityCode;
@@ -41,7 +41,7 @@ public class MobileCheckoutPage extends MobileBasePage {
     public MobileCheckoutPage enterPaymentDetails(String fullName, String cardNumber, String expirationDate, String securityCode) {
         ensureElementsInitialized();
 
-        wait(longWait()).until(ExpectedConditions.visibilityOf(txtFulName)).sendKeys(fullName);
+        wait(longWait()).until(ExpectedConditions.visibilityOf(txtFName)).sendKeys(fullName);
         txtCardNumber.sendKeys(cardNumber);
         txtExpirationDate.sendKeys(expirationDate);
         txtSecurityCode.sendKeys(securityCode);

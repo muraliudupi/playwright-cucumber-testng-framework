@@ -54,32 +54,20 @@ public class MobileHooks {
             boolean screenshotOnPass = ConfigReader.getBoolean("screenshot.on.pass", true);
 
             if (scenario.isFailed() || screenshotOnPass) {
-                try {
-                    attachScreenshot(scenario);
-                } catch (Exception e) {
-                    LOG.error("Failed to append snapshot attachment", e);
-                }
+                attachScreenshot(scenario);
             }
+        } catch (Exception e) {
+            LOG.error("Failed to append snapshot attachment", e);
         } finally {
             long currentTid = Thread.currentThread().threadId();
-            try {
-                // Future extension placeholder for mobile app performance tracing / session logs if required
-                LOG.info("[Thread-{}] Completing lifecycle hook isolation tear down sequence.", currentTid);
-            } catch (Exception e) {
-                LOG.error("Failed cleanly executing session teardown loop analytics logs", e);
-            } finally {
-                MobileDriverFactory.quitDriver();
-            }
+            LOG.info("[Thread-{}] Completing lifecycle hook isolation tear down sequence.", currentTid);
+            MobileDriverFactory.quitDriver();
         }
     }
 
     private void attachScreenshot(Scenario scenario) {
-        try {
-            byte[] screenshot = ((TakesScreenshot) MobileDriverFactory.getDriver()).getScreenshotAs(OutputType.BYTES);
-            String label = scenario.isFailed() ? "Failure-State-Snapshot" : "Success-State-Snapshot";
-            scenario.attach(screenshot, "image/png", label);
-        } catch (Exception e) {
-            LOG.error("Failed to parse device frame buffer into scenario attachment report interface", e);
-        }
+        byte[] screenshot = ((TakesScreenshot) MobileDriverFactory.getDriver()).getScreenshotAs(OutputType.BYTES);
+        String label = scenario.isFailed() ? "Failure-State-Snapshot" : "Success-State-Snapshot";
+        scenario.attach(screenshot, "image/png", label);
     }
 }

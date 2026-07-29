@@ -1,21 +1,12 @@
 package com.app.mobile.saucelabs.pages;
 
+import io.appium.java_client.AppiumBy;
 import io.appium.java_client.pagefactory.AndroidFindBy;
 import org.openqa.selenium.By;
-import io.appium.java_client.AppiumBy;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class MobileCartPage extends MobileBasePage {
-
-    private final MobileLoginPage mobileLoginPage;
-    private final MobileCheckoutPage mobileCheckoutPage;
-
-    public MobileCartPage(MobileLoginPage mobileLoginPage, MobileCheckoutPage mobileCheckoutPage) {
-        super();
-        this.mobileLoginPage = mobileLoginPage;
-        this.mobileCheckoutPage = mobileCheckoutPage;
-    }
 
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/cartBt")
     private WebElement btnCheckout;
@@ -26,11 +17,7 @@ public class MobileCartPage extends MobileBasePage {
     public boolean isProductInCart(String productLabel) {
         ensureElementsInitialized();
         try {
-            String scrollToProductInCart = String.format(
-                    "new UiScrollable(new UiSelector().resourceId(\"com.saucelabs.mydemoapp.android:id/productRV\"))"
-                            + ".scrollIntoView(new UiSelector().text(\"%s\"))",
-                    productLabel);
-            driver().findElement(AppiumBy.androidUIAutomator(scrollToProductInCart));
+            driver().findElement(AppiumBy.androidUIAutomator(productScrollCommand(productLabel)));
 
             return wait(existenceCheckTimeout())
                     .until(ExpectedConditions.visibilityOfElementLocated(cartItemTitleLocator(productLabel)))
@@ -47,12 +34,8 @@ public class MobileCartPage extends MobileBasePage {
 
     public MobileCartPage removeProduct(String productLabel) {
         ensureElementsInitialized();
-        String scrollToProductInCart = String.format(
-                "new UiScrollable(new UiSelector().resourceId(\"com.saucelabs.mydemoapp.android:id/productRV\"))"
-                        + ".scrollIntoView(new UiSelector().text(\"%s\"))",
-                productLabel);
         wait(longWait()).until(d -> {
-            d.findElement(AppiumBy.androidUIAutomator(scrollToProductInCart));
+            d.findElement(AppiumBy.androidUIAutomator(productScrollCommand(productLabel)));
             return true;
         });
 
@@ -69,16 +52,16 @@ public class MobileCartPage extends MobileBasePage {
         return By.xpath(String.format("//android.widget.TextView[@resource-id='com.saucelabs.mydemoapp.android:id/titleTV' and @text='%s']", productLabel));
     }
 
+    private String productScrollCommand(String productLabel) {
+        return String.format(
+                "new UiScrollable(new UiSelector().resourceId(\"com.saucelabs.mydemoapp.android:id/productRV\"))"
+                        + ".scrollIntoView(new UiSelector().text(\"%s\"))",
+                productLabel);
+    }
+
     public void tapCheckout() {
         ensureElementsInitialized();
         wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnCheckout)).click();
     }
 
-    public MobileLoginPage getMobileLoginPage() {
-        return mobileLoginPage;
-    }
-
-    public MobileCheckoutPage getMobileCheckoutPage() {
-        return mobileCheckoutPage;
-    }
 }

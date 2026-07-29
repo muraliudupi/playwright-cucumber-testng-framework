@@ -6,10 +6,6 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class MobileProductDetailPage extends MobileBasePage {
 
-    public MobileProductDetailPage() {
-        super();
-    }
-
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/plusIV")
     private WebElement btnQuantityPlus;
 

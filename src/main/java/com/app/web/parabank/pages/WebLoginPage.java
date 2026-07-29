@@ -44,10 +44,6 @@ public class WebLoginPage extends WebBasePage {
         return this;
     }
 
-    public boolean isLoginSuccessful() {
-        return accountsOverviewHeading().isVisible();
-    }
-
     public void verifyLoginSuccessful() {
         accountsOverviewHeading().waitFor();
         welcomeMessage().waitFor();

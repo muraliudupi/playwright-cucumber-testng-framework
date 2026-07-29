@@ -4,11 +4,15 @@ import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.LoadState;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 public class WebAccountsOverviewPage extends WebBasePage {
 
     public record AccountBalance(String accountNumber, BigDecimal availableAmount) {
+    }
+
+    private record AccountRow(String accountNumber, BigDecimal balance, BigDecimal availableAmount) {
     }
 
     private Locator accountsOverviewLink() {
@@ -32,32 +36,12 @@ public class WebAccountsOverviewPage extends WebBasePage {
     }
 
     public BigDecimal calculateTotalBalanceAmount() {
-        int rowCount = accountRows().count();
-        BigDecimal totalAmount = BigDecimal.ZERO;
-        int processedAccountsCount = 0;
+        List<AccountRow> accounts = readUsableAccounts();
+        BigDecimal totalAmount = accounts.stream()
+                .map(AccountRow::balance)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        for (int i = 0; i < rowCount; i++) {
-            Locator row = accountRows().nth(i);
-            Locator accountLink = row.locator("a[href*='activity.htm']");
-            if (accountLink.count() == 0) {
-                continue;
-            }
-
-            List<String> cells = row.locator("td").allInnerTexts();
-            if (cells.size() < 3) {
-                continue;
-            }
-
-            BigDecimal balance = parseCurrency(cells.get(1));
-            totalAmount = totalAmount.add(balance);
-            processedAccountsCount++;
-        }
-
-        if (processedAccountsCount == 0) {
-            throw new IllegalStateException("No usable account rows found on Accounts Overview.");
-        }
-
-        LOG.info("Accounts Overview: total account Balance across {} accounts is - ${}.", processedAccountsCount, totalAmount);
+        LOG.info("Accounts Overview: total account Balance across {} accounts is - ${}.", accounts.size(), totalAmount);
         return totalAmount;
     }
 
@@ -86,43 +70,28 @@ public class WebAccountsOverviewPage extends WebBasePage {
     }
 
     public AccountBalance findAccountWithHighestAvailableAmount() {
-        int rowCount = accountRows().count();
-        String bestAccount = null;
-        BigDecimal bestAmount = null;
+        AccountRow highestAvailableAccount = readUsableAccounts().stream()
+                .max(java.util.Comparator.comparing(AccountRow::availableAmount))
+                .orElseThrow(() -> new IllegalStateException("No usable account rows found on Accounts Overview."));
 
-        for (int i = 0; i < rowCount; i++) {
-            Locator row = accountRows().nth(i);
-            Locator accountLink = row.locator("a[href*='activity.htm']");
-            if (accountLink.count() == 0) {
-                continue;
-            }
-
-            List<String> cells = row.locator("td").allInnerTexts();
-            if (cells.size() < 3) {
-                continue;
-            }
-
-            String accountNumber = accountLink.innerText().trim();
-            BigDecimal availableAmount = parseCurrency(cells.get(2));
-
-            if (bestAmount == null || availableAmount.compareTo(bestAmount) > 0) {
-                bestAmount = availableAmount;
-                bestAccount = accountNumber;
-            }
-        }
-
-        if (bestAccount == null) {
-            throw new IllegalStateException("No usable account rows found on Accounts Overview.");
-        }
-
-        LOG.info("Accounts Overview: highest available balance found on account '{}' with ${}.", bestAccount, bestAmount);
-        return new AccountBalance(bestAccount, bestAmount);
+        LOG.info("Accounts Overview: highest available balance found on account '{}' with ${}.",
+                highestAvailableAccount.accountNumber(), highestAvailableAccount.availableAmount());
+        return new AccountBalance(highestAvailableAccount.accountNumber(), highestAvailableAccount.availableAmount());
     }
 
     public BigDecimal calculateTotalAvailableAmount() {
+        List<AccountRow> accounts = readUsableAccounts();
+        BigDecimal totalAmount = accounts.stream()
+                .map(AccountRow::availableAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        LOG.info("Accounts Overview: total available balance across {} accounts is - ${}.", accounts.size(), totalAmount);
+        return totalAmount;
+    }
+
+    private List<AccountRow> readUsableAccounts() {
         int rowCount = accountRows().count();
-        BigDecimal totalAmount = BigDecimal.ZERO;
-        int processedAccountsCount = 0;
+        List<AccountRow> accounts = new ArrayList<>();
 
         for (int i = 0; i < rowCount; i++) {
             Locator row = accountRows().nth(i);
@@ -136,16 +105,15 @@ public class WebAccountsOverviewPage extends WebBasePage {
                 continue;
             }
 
-            BigDecimal availableAmount = parseCurrency(cells.get(2));
-            totalAmount = totalAmount.add(availableAmount);
-            processedAccountsCount++;
+            accounts.add(new AccountRow(
+                    accountLink.innerText().trim(),
+                    parseCurrency(cells.get(1)),
+                    parseCurrency(cells.get(2))));
         }
 
-        if (processedAccountsCount == 0) {
+        if (accounts.isEmpty()) {
             throw new IllegalStateException("No usable account rows found on Accounts Overview.");
         }
-
-        LOG.info("Accounts Overview: total available balance across {} accounts is - ${}.", processedAccountsCount, totalAmount);
-        return totalAmount;
+        return accounts;
     }
 }
