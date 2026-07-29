@@ -2,7 +2,6 @@ package com.app.web.parabank.pages;
 
 import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.options.LoadState;
 
 public class WebUpdateContactPage extends WebBasePage {
 
@@ -19,9 +18,7 @@ public class WebUpdateContactPage extends WebBasePage {
 
     public WebUpdateContactPage navigateToUpdateContact() {
         updateContactLink().click();
-        page().waitForLoadState(LoadState.NETWORKIDLE);
-        firstName().waitFor(new Locator.WaitForOptions()
-                .setTimeout(ConfigReader.getInt("web.element.wait.timeout.ms", 5000)));
+        waitUntilReady(firstName());
         return this;
     }
 

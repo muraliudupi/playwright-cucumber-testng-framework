@@ -43,9 +43,10 @@ public class MobileHooks {
         String defaultPass = ConfigReader.get("mobile.default.password");
 
         mobileProductPage.loginWithValidCredentials(defaultUser, defaultPass);
-        if (mobileProductPage.verifyDashboard()){
-            LOG.info("User is logged in before the test starts.");
+        if (!mobileProductPage.verifyDashboard()) {
+            throw new IllegalStateException("Precondition login failed: mobile dashboard was not displayed.");
         }
+        LOG.info("User is logged in before the test starts.");
     }
 
     @After(order = 0)

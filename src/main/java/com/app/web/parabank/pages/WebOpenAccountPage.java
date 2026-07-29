@@ -2,7 +2,6 @@ package com.app.web.parabank.pages;
 
 import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.options.LoadState;
 import com.microsoft.playwright.options.SelectOption;
 
 public class WebOpenAccountPage extends WebBasePage {
@@ -33,8 +32,7 @@ public class WebOpenAccountPage extends WebBasePage {
 
     public WebOpenAccountPage navigateToOpenAccount() {
         openNewAccountLink().click();
-        page().waitForLoadState(LoadState.NETWORKIDLE);
-        accountTypeDropdown().waitFor(new Locator.WaitForOptions().setTimeout(5000));
+        waitUntilReady(accountTypeDropdown());
         return this;
     }
 

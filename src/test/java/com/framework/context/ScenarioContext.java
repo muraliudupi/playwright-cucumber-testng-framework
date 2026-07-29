@@ -13,7 +13,9 @@ public class ScenarioContext {
     @SuppressWarnings("unchecked")
     public <T> T getContext(String key, Class<T> type) {
         Object val = contextStorage.get(key);
-        if (val == null) return null;
+        if (val == null) {
+            throw new IllegalStateException("Scenario context does not contain required key '" + key + "'.");
+        }
         if (!type.isInstance(val)) {
             throw new IllegalStateException(String.format(
                     "Context key '%s' holds a %s, not the requested %s.",
@@ -23,8 +25,7 @@ public class ScenarioContext {
     }
 
     public String getStringContext(String key) {
-        Object val = contextStorage.get(key);
-        return val != null ? val.toString() : "";
+        return getContext(key, Object.class).toString();
     }
 
     public boolean contains(String key) {

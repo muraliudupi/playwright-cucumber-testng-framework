@@ -2,7 +2,6 @@ package com.app.web.parabank.pages;
 
 import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.options.LoadState;
 
 public class WebTransferPage extends WebBasePage {
 
@@ -39,9 +38,7 @@ public class WebTransferPage extends WebBasePage {
 
     public WebTransferPage navigateToTransferFunds() {
         transferFundsLink().click();
-        page().waitForLoadState(LoadState.NETWORKIDLE);
-        amountInput().waitFor(new Locator.WaitForOptions()
-                .setTimeout(ConfigReader.getInt("web.element.wait.timeout.ms", 5000)));
+        waitUntilReady(amountInput());
         return this;
     }
 

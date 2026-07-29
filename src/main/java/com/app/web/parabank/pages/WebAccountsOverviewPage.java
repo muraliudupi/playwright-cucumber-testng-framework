@@ -1,8 +1,6 @@
 package com.app.web.parabank.pages;
 
-import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.options.LoadState;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,9 +27,7 @@ public class WebAccountsOverviewPage extends WebBasePage {
 
     public WebAccountsOverviewPage navigateToAccountsOverview() {
         accountsOverviewLink().click();
-        page().waitForLoadState(LoadState.NETWORKIDLE);
-        accountTable().waitFor(new Locator.WaitForOptions()
-                .setTimeout(ConfigReader.getInt("web.element.wait.timeout.ms", 5000)));
+        waitUntilReady(accountTable());
         return this;
     }
 

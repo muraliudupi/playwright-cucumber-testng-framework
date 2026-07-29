@@ -8,10 +8,18 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLRecoverableException;
+import java.sql.SQLTransientException;
 
 public final class DatabaseUtil {
     private static final Logger LOG = LoggerFactory.getLogger(DatabaseUtil.class);
     private static HikariDataSource dataSource = null;
+
+    private static final class DatabaseRecordNotFoundException extends RuntimeException {
+        private DatabaseRecordNotFoundException(String message) {
+            super(message);
+        }
+    }
 
     private static synchronized HikariDataSource getDataSource() {
         if (dataSource == null) {
@@ -59,7 +67,7 @@ public final class DatabaseUtil {
                     }
                     return value;
                 } else {
-                    throw new RuntimeException(String.format(
+                    throw new DatabaseRecordNotFoundException(String.format(
                             "Database verification error: Zero records returned from the ledger data pipeline for query: [%s]", query));
                 }
             }
@@ -76,7 +84,10 @@ public final class DatabaseUtil {
         while (System.currentTimeMillis() < endTime) {
             try {
                 return getSingleValue(query, columnName, params);
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
+                if (!isRetryable(e)) {
+                    throw e;
+                }
                 lastException = e;
                 try {
                     Thread.sleep(pollIntervalMillis);
@@ -96,6 +107,15 @@ public final class DatabaseUtil {
                 ConfigReader.getInt("db.retry.max.timeout.sec", 5),
                 ConfigReader.getInt("db.retry.poll.interval.ms", 500),
                 query, columnName, params);
+    }
+
+    private static boolean isRetryable(RuntimeException exception) {
+        if (exception instanceof DatabaseRecordNotFoundException) {
+            return true;
+        }
+
+        Throwable cause = exception.getCause();
+        return cause instanceof SQLTransientException || cause instanceof SQLRecoverableException;
     }
 
     public static void closePool() {

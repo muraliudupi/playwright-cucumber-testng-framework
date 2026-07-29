@@ -28,7 +28,7 @@ public class ConfigReader {
         }
     }
 
-    public static String getProperty(String key) {
+    private static String getProperty(String key) {
         if (properties == null) {
             loadProperties();
         }

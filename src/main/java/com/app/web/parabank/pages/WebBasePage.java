@@ -17,6 +17,12 @@ public abstract class WebBasePage {
         return WebDriverFactory.getPage();
     }
 
+    protected void waitUntilReady(Locator locator) {
+        locator.waitFor(new Locator.WaitForOptions()
+                .setState(WaitForSelectorState.VISIBLE)
+                .setTimeout(ConfigReader.getInt("web.element.wait.timeout.ms", 5000)));
+    }
+
     protected String selectAccountWithFallback(Locator dropdown, String requestedAccount, int fallbackIndex) {
         boolean requestedAccountFound = true;
         try {

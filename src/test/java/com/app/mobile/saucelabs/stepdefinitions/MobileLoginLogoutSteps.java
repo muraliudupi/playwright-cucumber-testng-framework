@@ -1,6 +1,7 @@
 package com.app.mobile.saucelabs.stepdefinitions;
 
 import com.app.mobile.saucelabs.pages.MobileProductPage;
+import com.framework.context.ContextKeys;
 import com.framework.context.ScenarioContext;
 import com.app.mobile.saucelabs.pages.MobileLoginPage;
 import com.framework.steps.BaseSteps;
@@ -34,7 +35,7 @@ public class MobileLoginLogoutSteps extends BaseSteps {
     public void the_user_logs_into_mobile_app_using_credentials_from_data_key(String testCaseId, String sheetName) {
         Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
 
-        context.setContext("USER_DATA", rowData);
+        context.setContext(ContextKeys.USER_DATA, rowData);
 
         String username = rowData.get("Username");
         String password = rowData.get("Password");

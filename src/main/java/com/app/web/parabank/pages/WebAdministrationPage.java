@@ -1,8 +1,6 @@
 package com.app.web.parabank.pages;
 
-import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.options.LoadState;
 import java.math.BigDecimal;
 
 public class WebAdministrationPage extends WebBasePage {
@@ -20,9 +18,7 @@ public class WebAdministrationPage extends WebBasePage {
 
     public WebAdministrationPage navigateToAdministration() {
         adminPageLink().click();
-        page().waitForLoadState(LoadState.NETWORKIDLE);
-        threshold().waitFor(new Locator.WaitForOptions()
-                .setTimeout(ConfigReader.getInt("web.element.wait.timeout.ms", 5000)));
+        waitUntilReady(threshold());
         return this;
     }
 
