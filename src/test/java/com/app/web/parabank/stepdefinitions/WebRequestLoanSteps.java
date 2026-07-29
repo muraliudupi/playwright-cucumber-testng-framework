@@ -6,11 +6,12 @@ import com.app.web.parabank.pages.WebRequestLoanPage;
 import com.framework.context.ContextKeys;
 import com.framework.context.ScenarioContext;
 import com.framework.steps.BaseSteps;
+import com.framework.utils.LoanScenarioCalculator;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Map;
+
 import static org.testng.Assert.assertTrue;
 
 public class WebRequestLoanSteps extends BaseSteps {
@@ -62,37 +63,39 @@ public class WebRequestLoanSteps extends BaseSteps {
 
     @And("the system decides loan amount required for approval")
     public void the_system_decides_loan_amount_required_for_approval() {
-        BigDecimal totalAmount = webAccountsOverviewPage
+        BigDecimal totalBalance = webAccountsOverviewPage
                 .navigateToAccountsOverview()
-                .calculateTotalAvailableAmount();
+                .calculateTotalBalanceAmount();
 
-        // Need to navigate to Admin page and get 'Loan Processor' & 'Threshold' value to calculate 'Loan amount' that can be approved.
-        // E.g. if Loan Processor=Available Funds & Threshold=20%, then multiply totalAmount with 0.2 and assign to "loanAmount"
-        // if Loan Processor=Down Payment & Threshold=20%, then TBD
-        // if Loan Processor=Combined & Threshold=20%, then TBD
+        WebAdministrationPage.LoanProcess loanProcess = webAdministrationPage
+                .navigateToAdministration()
+                .findloanProcessorAndthreshold();
 
-        BigDecimal loanAmount = totalAmount.multiply(new BigDecimal("0.2"));
+        LoanScenarioCalculator.LoanTerms approvalTerms = LoanScenarioCalculator.forApproval(
+                loanProcess.loanProcessor(), loanProcess.threshold(), totalBalance);
+        LoanScenarioCalculator.LoanTerms denialTerms = LoanScenarioCalculator.forDenial(
+                loanProcess.loanProcessor(), loanProcess.threshold(), totalBalance);
 
-        context.setContext(ContextKeys.LOAN_AMOUNT, loanAmount);
+        context.setContext(ContextKeys.LOAN_APPROVAL_AMOUNT, approvalTerms.loanAmount());
+        context.setContext(ContextKeys.LOAN_APPROVAL_DOWN_PAYMENT, approvalTerms.downPayment());
+        context.setContext(ContextKeys.LOAN_DENIAL_AMOUNT, denialTerms.loanAmount());
+        context.setContext(ContextKeys.LOAN_DENIAL_DOWN_PAYMENT, denialTerms.downPayment());
     }
+
 
     @And("the user requests a loan for less than the noted amount")
     public void the_user_requests_loan_less_than_noted_amount() {
-        BigDecimal available = new BigDecimal(context.getStringContext(ContextKeys.LOAN_AMOUNT));
-        BigDecimal loanAmount = available.divide(BigDecimal.valueOf(2), 2, RoundingMode.HALF_UP);
-
         context.setContext(ContextKeys.LOAN_EXPECTED_STATUS, "Approved");
-        webRequestLoanPage.navigateToRequestLoan()
-                .requestLoan(loanAmount.toPlainString(), "10");
+        webRequestLoanPage.navigateToRequestLoan().requestLoan(
+                context.getStringContext(ContextKeys.LOAN_APPROVAL_AMOUNT),
+                context.getStringContext(ContextKeys.LOAN_APPROVAL_DOWN_PAYMENT));
     }
 
     @And("the user requests a loan for much more than the noted amount")
     public void the_user_requests_loan_more_than_noted_amount() {
-        BigDecimal available = new BigDecimal(context.getStringContext(ContextKeys.LOAN_AMOUNT));
-        BigDecimal loanAmount = available.multiply(BigDecimal.valueOf(100));
-
         context.setContext(ContextKeys.LOAN_EXPECTED_STATUS, "Denied");
-        webRequestLoanPage.navigateToRequestLoan()
-                .requestLoan(loanAmount.toPlainString(), "10");
+        webRequestLoanPage.navigateToRequestLoan().requestLoan(
+                context.getStringContext(ContextKeys.LOAN_DENIAL_AMOUNT),
+                context.getStringContext(ContextKeys.LOAN_DENIAL_DOWN_PAYMENT));
     }
 }

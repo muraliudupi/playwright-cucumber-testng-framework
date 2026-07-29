@@ -31,6 +31,60 @@ public class WebAccountsOverviewPage extends WebBasePage {
         return this;
     }
 
+    public BigDecimal calculateTotalBalanceAmount() {
+        int rowCount = accountRows().count();
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        int processedAccountsCount = 0;
+
+        for (int i = 0; i < rowCount; i++) {
+            Locator row = accountRows().nth(i);
+            Locator accountLink = row.locator("a[href*='activity.htm']");
+            if (accountLink.count() == 0) {
+                continue;
+            }
+
+            List<String> cells = row.locator("td").allInnerTexts();
+            if (cells.size() < 3) {
+                continue;
+            }
+
+            BigDecimal balance = parseCurrency(cells.get(1));
+            totalAmount = totalAmount.add(balance);
+            processedAccountsCount++;
+        }
+
+        if (processedAccountsCount == 0) {
+            throw new IllegalStateException("No usable account rows found on Accounts Overview.");
+        }
+
+        LOG.info("Accounts Overview: total account Balance across {} accounts is - ${}.", processedAccountsCount, totalAmount);
+        return totalAmount;
+    }
+
+
+    private BigDecimal parseCurrency(String text) {
+        if (text == null || text.trim().isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        String trimmed = text.trim();
+
+        // Detect negative formats: ($100.00), -$100.00, $100.00-, or unicode minus (− / –)
+        boolean isNegative = (trimmed.startsWith("(") && trimmed.endsWith(")"))
+                || trimmed.contains("-")
+                || trimmed.contains("−")
+                || trimmed.contains("–");
+
+        // Strip everything except digits and decimal point
+        String cleaned = trimmed.replaceAll("[^0-9.]", "");
+        if (cleaned.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal amount = new BigDecimal(cleaned);
+        return isNegative ? amount.negate() : amount;
+    }
+
     public AccountBalance findAccountWithHighestAvailableAmount() {
         int rowCount = accountRows().count();
         String bestAccount = null;
@@ -93,29 +147,5 @@ public class WebAccountsOverviewPage extends WebBasePage {
 
         LOG.info("Accounts Overview: total available balance across {} accounts is - ${}.", processedAccountsCount, totalAmount);
         return totalAmount;
-    }
-
-
-    private BigDecimal parseCurrency(String text) {
-        if (text == null || text.trim().isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-
-        String trimmed = text.trim();
-
-        // Detect negative formats: ($100.00), -$100.00, $100.00-, or unicode minus (− / –)
-        boolean isNegative = (trimmed.startsWith("(") && trimmed.endsWith(")"))
-                || trimmed.contains("-")
-                || trimmed.contains("−")
-                || trimmed.contains("–");
-
-        // Strip everything except digits and decimal point
-        String cleaned = trimmed.replaceAll("[^0-9.]", "");
-        if (cleaned.isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-
-        BigDecimal amount = new BigDecimal(cleaned);
-        return isNegative ? amount.negate() : amount;
     }
 }

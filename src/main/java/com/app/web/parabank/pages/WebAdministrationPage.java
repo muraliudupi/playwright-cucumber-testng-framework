@@ -27,9 +27,8 @@ public class WebAdministrationPage extends WebBasePage {
     }
 
     public LoanProcess findloanProcessorAndthreshold() {
-
-        String loanProcessor = ""; //assign value in loanProcessor dropdown.
-        BigDecimal threshold = null; //assign value in threshold textbox.
+        String loanProcessor = loanProcessor().inputValue();
+        BigDecimal threshold = new BigDecimal(threshold().inputValue().trim());
 
         LOG.info("Application Settings: Loan Processor - '{}' with Threshold - {}%.", loanProcessor, threshold);
         return new LoanProcess(loanProcessor, threshold);
