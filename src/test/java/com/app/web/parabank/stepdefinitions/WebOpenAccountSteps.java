@@ -8,6 +8,9 @@ import com.framework.utils.DatabaseUtil;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import java.util.Map;
+import com.framework.context.ContextKeys;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertEquals;
 
 public class WebOpenAccountSteps extends BaseSteps {
 
@@ -37,7 +40,7 @@ public class WebOpenAccountSteps extends BaseSteps {
             LOG.warn("Test data requested FromAccount '{}' but framework substituted '{}' due to dropdown unavailability.",
                     fundingAccount, actualFundingAccount);
         }
-        context.setContext("ACTUAL_FUNDING_ACCOUNT", actualFundingAccount);
+        context.setContext(ContextKeys.ACTUAL_FUNDING_ACCOUNT, actualFundingAccount);
     }
 
     @Then("the system creates the account showing a confirmation page")
@@ -45,9 +48,9 @@ public class WebOpenAccountSteps extends BaseSteps {
         webOpenAccountPage.verifyAccountCreationLayoutVisible();
         String generatedId = webOpenAccountPage.getGeneratedAccountId();
 
-        org.testng.Assert.assertFalse(generatedId.isEmpty(), "Generated Account ID was blank!");
+        assertFalse(generatedId.isEmpty(), "Generated Account ID was blank!");
 
-        context.setContext("SHARED_ACCOUNT_ID", generatedId);
+        context.setContext(ContextKeys.SHARED_ACCOUNT_ID, generatedId);
         LOG.info("UI Confirmation verified. Isolated runtime context mapping bounded for ID: [{}]", generatedId);
     }
 
@@ -60,13 +63,12 @@ public class WebOpenAccountSteps extends BaseSteps {
         }
 
         String query = "SELECT account_type FROM customer_accounts WHERE account_id = ?";
-        String targetAccountId = context.getStringContext("SHARED_ACCOUNT_ID");
+        String targetAccountId = context.getStringContext(ContextKeys.SHARED_ACCOUNT_ID);
 
         String actualDbAccountType = DatabaseUtil.getSingleValueWithRetry(
-                ConfigReader.getInt("db.retry.max.timeout.sec", 5),
-                ConfigReader.getInt("db.retry.poll.interval.ms", 500),
                 query, "account_type", targetAccountId);
-        org.testng.Assert.assertEquals(
+
+        assertEquals(
                 actualDbAccountType,
                 expectedType.toUpperCase(),
                 String.format("DATABASE AUDIT FAILURE: New Account ID %s is out of sync or missing in DB ledger!", targetAccountId)

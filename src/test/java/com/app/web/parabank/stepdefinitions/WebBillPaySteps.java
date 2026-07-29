@@ -1,11 +1,11 @@
 package com.app.web.parabank.stepdefinitions;
 
+import com.framework.context.ContextKeys;
 import com.framework.context.ScenarioContext;
 import com.app.web.parabank.pages.WebBillPayPage;
 import com.framework.steps.BaseSteps;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
-
 import java.util.Map;
 
 public class WebBillPaySteps extends BaseSteps {
@@ -28,9 +28,9 @@ public class WebBillPaySteps extends BaseSteps {
                 rowData.get("ZipCode"), rowData.get("Phone"), rowData.get("AccountNumber"),
                 rowData.get("Amount"), rowData.get("FromAccount"));
 
-        context.setContext("BILLPAY_PAYEE_NAME", rowData.get("PayeeName"));
-        context.setContext("BILLPAY_AMOUNT", rowData.get("Amount"));
-        context.setContext("BILLPAY_FROM_ACCOUNT", actualFromAccount);
+        context.setContext(ContextKeys.BILLPAY_PAYEE_NAME, rowData.get("PayeeName"));
+        context.setContext(ContextKeys.BILLPAY_AMOUNT, rowData.get("Amount"));
+        context.setContext(ContextKeys.BILLPAY_FROM_ACCOUNT, actualFromAccount);
     }
 
     @Then("the bill payment is confirmed")

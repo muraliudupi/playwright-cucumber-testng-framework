@@ -1,13 +1,17 @@
 package com.app.web.parabank.stepdefinitions;
 
-import com.framework.context.ScenarioContext;
 import com.app.web.parabank.pages.WebTransferPage;
+import com.framework.context.ContextKeys;
+import com.framework.context.ScenarioContext;
 import com.framework.steps.BaseSteps;
 import com.framework.utils.ConfigReader;
 import com.framework.utils.DatabaseUtil;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import java.util.Map;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.fail;
 
 public class WebTransferSteps extends BaseSteps {
 
@@ -34,10 +38,9 @@ public class WebTransferSteps extends BaseSteps {
 
         WebTransferPage.TransferAccounts actualAccounts = webTransferPage.executeTransfer(amount, fromAccount, toAccount);
 
-
-        context.setContext("TX_AMOUNT", amount);
-        context.setContext("TX_FROM", actualAccounts.actualFromAccount());
-        context.setContext("TX_TO", actualAccounts.actualToAccount());
+        context.setContext(ContextKeys.TX_AMOUNT, amount);
+        context.setContext(ContextKeys.TX_FROM, actualAccounts.actualFromAccount());
+        context.setContext(ContextKeys.TX_TO, actualAccounts.actualToAccount());
 
         if (!actualAccounts.actualFromAccount().equals(fromAccount) || !actualAccounts.actualToAccount().equals(toAccount)) {
             LOG.warn("Test data requested From={}, To={} but framework substituted From={}, To={}.",
@@ -68,13 +71,12 @@ public class WebTransferSteps extends BaseSteps {
     @Then("the transfer completes successfully with a validated dynamic confirmation message")
     public void the_transfer_completes_successfully_with_a_validated_dynamic_confirmation_message() {
         webTransferPage.verifyTransferLayoutVisible();
-        String expectedAmount = context.getStringContext("TX_AMOUNT");
+        String expectedAmount = context.getStringContext(ContextKeys.TX_AMOUNT);
 
         boolean isValid = webTransferPage.isResultMessageValidFor(expectedAmount);
         String actualMessage = webTransferPage.getActualResultMessage();
 
-
-        org.testng.Assert.assertTrue(
+        assertTrue(
                 isValid,
                 String.format("Format Mismatch!\nActual: '%s'\nExpected Amount: '%s'", actualMessage, expectedAmount)
         );
@@ -92,23 +94,21 @@ public class WebTransferSteps extends BaseSteps {
                 "WHERE from_account = ? AND to_account = ? AND amount = ? " +
                 "ORDER BY timestamp DESC LIMIT 1";
 
-        String expectedAmount = context.getStringContext("TX_AMOUNT");
-        String expectedFrom = context.getStringContext("TX_FROM");
-        String expectedTo = context.getStringContext("TX_TO"); // Bounded context value
+        String expectedAmount = context.getStringContext(ContextKeys.TX_AMOUNT);
+        String expectedFrom = context.getStringContext(ContextKeys.TX_FROM);
+        String expectedTo = context.getStringContext(ContextKeys.TX_TO);
 
         String sanitizedAmountStr = expectedAmount.replaceAll("[\\$, ]", "").trim();
         if (sanitizedAmountStr.isEmpty()) {
-            org.testng.Assert.fail("AUTOMATION ERROR: Context execution transaction evaluate string parameter returned blank value.");
+            fail("AUTOMATION ERROR: Context execution transaction evaluate string parameter returned blank value.");
         }
 
         java.math.BigDecimal amountForQuery = new java.math.BigDecimal(sanitizedAmountStr).setScale(2, java.math.RoundingMode.HALF_UP);
 
         String actualDbStatus = DatabaseUtil.getSingleValueWithRetry(
-                ConfigReader.getInt("db.retry.max.timeout.sec", 5),
-                ConfigReader.getInt("db.retry.poll.interval.ms", 500),
                 sqlQuery, "transaction_status", expectedFrom, expectedTo, amountForQuery);
 
-        org.testng.Assert.assertEquals(actualDbStatus, expectedDbStatus,
+        assertEquals(actualDbStatus, expectedDbStatus,
                 String.format("CRITICAL DESYNC FAILURE: Thread clashing or missing ledger row! " +
                                 "UI displayed success, but DB ledger transaction status resolved to: '%s' for transfer from %s to %s.",
                         actualDbStatus, expectedFrom, expectedTo));

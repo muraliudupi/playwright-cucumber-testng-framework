@@ -9,6 +9,7 @@ import io.cucumber.java.en.When;
 import java.util.Map;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.assertEquals;
+import com.framework.context.ContextKeys;
 
 public class WebLoginSteps extends BaseSteps {
 
@@ -34,7 +35,7 @@ public class WebLoginSteps extends BaseSteps {
     public void the_user_logs_in_using_credentials_from_data_key(String testCaseId, String sheetName) {
         Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
 
-        context.setContext("USER_DATA", rowData);
+        context.setContext(ContextKeys.USER_DATA, rowData);
 
         String username = rowData.get("Username");
         String password = rowData.get("Password");

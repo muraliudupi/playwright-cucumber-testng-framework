@@ -4,7 +4,6 @@ import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.LoadState;
 import com.microsoft.playwright.options.SelectOption;
-import com.microsoft.playwright.options.WaitForSelectorState;
 
 public class WebOpenAccountPage extends WebBasePage {
 
@@ -43,23 +42,8 @@ public class WebOpenAccountPage extends WebBasePage {
         String sanitizedType = accountType.trim().toUpperCase();
 
         accountTypeDropdown().selectOption(new SelectOption().setLabel(sanitizedType));
-        boolean requestedAccountFound = true;
 
-        try {
-            Locator optionTarget = fromAccountDropdown().locator(String.format("option[value='%s']", fundingAccount));
-            optionTarget.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.ATTACHED)
-                    .setTimeout(ConfigReader.getInt("web.dropdown.wait.timeout.ms", 3000)));
-            fromAccountDropdown().selectOption(fundingAccount);
-        } catch (Exception e) {
-            requestedAccountFound = false;
-            fromAccountDropdown().selectOption(new SelectOption().setIndex(0));
-        }
-
-        String actualFundingAccount = fromAccountDropdown().inputValue();
-        if (!requestedAccountFound) {
-            LOG.warn("Requested FromAccount '{}' was not available in the dropdown; framework substituted account '{}' instead.",
-                    fundingAccount, actualFundingAccount);
-        }
+        String actualFundingAccount = selectAccountWithFallback(fromAccountDropdown(), fundingAccount, 0);
 
         openAccountButton().click();
         return actualFundingAccount;

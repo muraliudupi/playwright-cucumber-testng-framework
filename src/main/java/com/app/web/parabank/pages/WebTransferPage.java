@@ -3,8 +3,6 @@ package com.app.web.parabank.pages;
 import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.LoadState;
-import com.microsoft.playwright.options.SelectOption;
-import com.microsoft.playwright.options.WaitForSelectorState;
 
 public class WebTransferPage extends WebBasePage {
 
@@ -49,38 +47,9 @@ public class WebTransferPage extends WebBasePage {
 
     public TransferAccounts executeTransfer(String amount, String fromAccount, String toAccount) {
         amountInput().fill(amount);
-        int dropdownTimeout = ConfigReader.getInt("web.dropdown.wait.timeout.ms", 3000);
 
-        boolean fromFound = true;
-        boolean toFound = true;
-
-        try {
-            Locator fromOption = fromAccountDropdown().locator(String.format("option[value='%s']", fromAccount));
-            fromOption.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.ATTACHED).setTimeout(dropdownTimeout));
-            fromAccountDropdown().selectOption(fromAccount);
-        } catch (Exception e) {
-            fromFound = false;
-            fromAccountDropdown().selectOption(new SelectOption().setIndex(0));
-        }
-
-        try {
-            Locator toOption = toAccountDropdown().locator(String.format("option[value='%s']", toAccount));
-            toOption.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.ATTACHED).setTimeout(dropdownTimeout));
-            toAccountDropdown().selectOption(toAccount);
-        } catch (Exception e) {
-            toFound = false;
-            toAccountDropdown().selectOption(new SelectOption().setIndex(1));
-        }
-
-        String actualFrom = fromAccountDropdown().inputValue();
-        String actualTo = toAccountDropdown().inputValue();
-
-        if (!fromFound) {
-            LOG.warn("Requested FromAccount '{}' unavailable; framework substituted '{}'.", fromAccount, actualFrom);
-        }
-        if (!toFound) {
-            LOG.warn("Requested ToAccount '{}' unavailable; framework substituted '{}'.", toAccount, actualTo);
-        }
+        String actualFrom = selectAccountWithFallback(fromAccountDropdown(), fromAccount, 0);
+        String actualTo = selectAccountWithFallback(toAccountDropdown(), toAccount, 1);
 
         transferButton().click();
         return new TransferAccounts(actualFrom, actualTo);

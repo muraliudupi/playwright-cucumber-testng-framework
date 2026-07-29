@@ -3,8 +3,6 @@ package com.app.web.parabank.pages;
 import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.LoadState;
-import com.microsoft.playwright.options.SelectOption;
-import com.microsoft.playwright.options.WaitForSelectorState;
 
 public class WebRequestLoanPage extends WebBasePage {
 
@@ -29,21 +27,7 @@ public class WebRequestLoanPage extends WebBasePage {
         loanAmount().fill(amount);
         downPayment().fill(downPaymentValue);
 
-        boolean requestedAccountFound = true;
-        try {
-            Locator optionTarget = fromAccountDropdown().locator(String.format("option[value='%s']", fromAccount));
-            optionTarget.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.ATTACHED)
-                    .setTimeout(ConfigReader.getInt("web.dropdown.wait.timeout.ms", 3000)));
-            fromAccountDropdown().selectOption(fromAccount);
-        } catch (Exception e) {
-            requestedAccountFound = false;
-            fromAccountDropdown().selectOption(new SelectOption().setIndex(0));
-        }
-
-        if (!requestedAccountFound) {
-            LOG.warn("Requested FromAccount '{}' was not available in the dropdown; framework substituted account '{}' instead.",
-                    fromAccount, fromAccountDropdown().inputValue());
-        }
+        selectAccountWithFallback(fromAccountDropdown(), fromAccount, 0);
 
         applyButton().click();
         loanStatusHeading().waitFor(new Locator.WaitForOptions()

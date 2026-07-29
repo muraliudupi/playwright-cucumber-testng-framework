@@ -3,8 +3,6 @@ package com.app.web.parabank.pages;
 import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.LoadState;
-import com.microsoft.playwright.options.SelectOption;
-import com.microsoft.playwright.options.WaitForSelectorState;
 
 public class WebBillPayPage extends WebBasePage {
 
@@ -80,21 +78,7 @@ public class WebBillPayPage extends WebBasePage {
         verifyAccount().fill(accountNumber);
         amount().fill(amountValue);
 
-        boolean requestedAccountFound = true;
-        try {
-            Locator optionTarget = fromAccountDropdown().locator(String.format("option[value='%s']", fromAccount));
-            optionTarget.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.ATTACHED)
-                    .setTimeout(ConfigReader.getInt("web.dropdown.wait.timeout.ms", 3000)));
-            fromAccountDropdown().selectOption(fromAccount);
-        } catch (Exception e) {
-            requestedAccountFound = false;
-            fromAccountDropdown().selectOption(new SelectOption().setIndex(0));
-        }
-        String actualFromAccount = fromAccountDropdown().inputValue();
-        if (!requestedAccountFound) {
-            LOG.warn("Requested FromAccount '{}' was not available; framework substituted '{}' instead.",
-                    fromAccount, actualFromAccount);
-        }
+        String actualFromAccount = selectAccountWithFallback(fromAccountDropdown(), fromAccount, 0);
 
         sendPaymentButton().click();
         return actualFromAccount;

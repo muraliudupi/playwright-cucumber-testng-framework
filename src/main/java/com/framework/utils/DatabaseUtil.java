@@ -91,6 +91,13 @@ public final class DatabaseUtil {
                 maxTimeoutSeconds, query), lastException);
     }
 
+    public static String getSingleValueWithRetry(String query, String columnName, Object... params) {
+        return getSingleValueWithRetry(
+                ConfigReader.getInt("db.retry.max.timeout.sec", 5),
+                ConfigReader.getInt("db.retry.poll.interval.ms", 500),
+                query, columnName, params);
+    }
+
     public static void closePool() {
         if (dataSource != null && !dataSource.isClosed()) {
             dataSource.close();
