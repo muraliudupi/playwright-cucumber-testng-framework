@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 public final class LoanScenarioCalculator {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DatabaseUtil.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LoanScenarioCalculator.class);
 
     private LoanScenarioCalculator() {}
 

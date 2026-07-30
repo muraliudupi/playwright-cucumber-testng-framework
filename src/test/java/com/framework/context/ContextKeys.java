@@ -19,4 +19,12 @@ public final class ContextKeys {
     public static final String LOAN_DENIAL_DOWN_PAYMENT   = "LOAN_DENIAL_DOWN_PAYMENT";
     public static final String REGISTERED_USERNAME      = "REGISTERED_USERNAME";
     public static final String REGISTERED_PASSWORD      = "REGISTERED_PASSWORD";
+    public static final String REGISTERED_FIRST_NAME    = "REGISTERED_FIRST_NAME";
+    public static final String REGISTERED_LAST_NAME     = "REGISTERED_LAST_NAME";
+    public static final String REGISTERED_ADDRESS       = "REGISTERED_ADDRESS";
+    public static final String REGISTERED_CITY          = "REGISTERED_CITY";
+    public static final String REGISTERED_STATE         = "REGISTERED_STATE";
+    public static final String REGISTERED_ZIP           = "REGISTERED_ZIP";
+    public static final String REGISTERED_SSN           = "REGISTERED_SSN";
+
 }

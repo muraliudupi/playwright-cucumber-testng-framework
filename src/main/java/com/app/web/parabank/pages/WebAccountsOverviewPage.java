@@ -31,6 +31,13 @@ public class WebAccountsOverviewPage extends WebBasePage {
         return this;
     }
 
+    public String clickFirstAccountNumberLink() {
+        Locator firstLink = accountRows().first().locator("a[href*='activity.htm']");
+        String accountNumber = firstLink.innerText().trim();
+        firstLink.click();
+        return accountNumber;
+    }
+
     public BigDecimal calculateTotalBalanceAmount() {
         List<AccountRow> accounts = readUsableAccounts();
         BigDecimal totalAmount = accounts.stream()

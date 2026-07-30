@@ -23,15 +23,24 @@ public class WebRegisterSteps extends BaseSteps {
     public void the_user_registers_new_user_using_data_key(String testCaseId, String sheetName) {
         Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
 
-        String uniqueUsername = rowData.get("Username") + System.currentTimeMillis();
+        String uniqueSuffix = String.valueOf(System.currentTimeMillis());
+        String uniqueUsername = rowData.get("Username") + uniqueSuffix;
+        String uniqueSsn = uniqueSuffix;
 
         webRegisterPage.navigateToRegister().submitNewRegistration(
                 rowData.get("FirstName"), rowData.get("LastName"), rowData.get("Address"), rowData.get("City"),
-                rowData.get("State"), rowData.get("ZipCode"), rowData.get("Phone"), rowData.get("SSN"),
+                rowData.get("State"), rowData.get("ZipCode"), rowData.get("Phone"), uniqueSsn,
                 uniqueUsername, rowData.get("Password"));
 
         context.setContext(ContextKeys.REGISTERED_USERNAME, uniqueUsername);
         context.setContext(ContextKeys.REGISTERED_PASSWORD, rowData.get("Password"));
+        context.setContext(ContextKeys.REGISTERED_FIRST_NAME, rowData.get("FirstName"));
+        context.setContext(ContextKeys.REGISTERED_LAST_NAME, rowData.get("LastName"));
+        context.setContext(ContextKeys.REGISTERED_ADDRESS, rowData.get("Address"));
+        context.setContext(ContextKeys.REGISTERED_CITY, rowData.get("City"));
+        context.setContext(ContextKeys.REGISTERED_STATE, rowData.get("State"));
+        context.setContext(ContextKeys.REGISTERED_ZIP, rowData.get("ZipCode"));
+        context.setContext(ContextKeys.REGISTERED_SSN, uniqueSsn);
     }
 
     @Then("the registration is confirmed")

@@ -44,8 +44,10 @@ public class WebLoginPage extends WebBasePage {
     }
 
     public void verifyLoginSuccessful() {
-        accountsOverviewHeading().waitFor();
-        welcomeMessage().waitFor();
+        accountsOverviewHeading().waitFor(new Locator.WaitForOptions()
+                .setTimeout(ConfigReader.getInt("web.confirmation.wait.timeout.ms", 20000)));
+        welcomeMessage().waitFor(new Locator.WaitForOptions()
+                .setTimeout(ConfigReader.getInt("web.confirmation.wait.timeout.ms", 20000)));
     }
 
     public String getErrorMessage() {
