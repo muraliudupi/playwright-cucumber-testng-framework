@@ -55,7 +55,7 @@ public class WebFindTransactionsPage extends WebBasePage {
 
     public WebFindTransactionsPage navigateToFindTransactions() {
         findTransactionsLink().click();
-        waitUntilReady(accountDropdown());
+        waitUntilReady(findByAmountButton());
         return this;
     }
 

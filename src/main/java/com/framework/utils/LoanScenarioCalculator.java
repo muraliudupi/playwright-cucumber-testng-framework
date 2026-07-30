@@ -2,8 +2,12 @@ package com.framework.utils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class LoanScenarioCalculator {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DatabaseUtil.class);
 
     private LoanScenarioCalculator() {}
 
@@ -31,6 +35,7 @@ public final class LoanScenarioCalculator {
             default -> throw new IllegalStateException("Unrecognized loan processor: " + loanProcessor);
         };
 
+        LOG.info("Amount required for Loan approval is - ${} and Down payment would be - ${}",loanAmount.max(BigDecimal.ONE), downPayment);
         return new LoanTerms(loanAmount.max(BigDecimal.ONE).toPlainString(), downPayment.toPlainString());
     }
 

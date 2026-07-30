@@ -18,7 +18,7 @@ public class WebUpdateContactPage extends WebBasePage {
 
     public WebUpdateContactPage navigateToUpdateContact() {
         updateContactLink().click();
-        waitUntilReady(firstName());
+        waitUntilReady(updateProfileButton());
         return this;
     }
 

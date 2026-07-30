@@ -49,7 +49,7 @@ public class WebBillPayPage extends WebBasePage {
 
     public WebBillPayPage navigateToBillPay() {
         billPayLink().click();
-        waitUntilReady(payeeName());
+        waitUntilReady(sendPaymentButton());
         return this;
     }
 

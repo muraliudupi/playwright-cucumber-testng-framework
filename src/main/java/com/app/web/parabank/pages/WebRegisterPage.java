@@ -1,5 +1,6 @@
 package com.app.web.parabank.pages;
 
+import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
 
 public class WebRegisterPage extends WebBasePage {
@@ -25,13 +26,13 @@ public class WebRegisterPage extends WebBasePage {
 
     public WebRegisterPage navigateToRegister() {
         registerLink().click();
-        waitUntilReady(firstName());
+        waitUntilReady(registerButton());
         return this;
     }
 
-    public WebRegisterPage registerNewUser(String firstNameVal, String lastNameVal, String addressVal, String cityVal,
-                                           String stateVal, String zipVal, String phoneVal, String ssnVal,
-                                           String usernameVal, String passwordVal) {
+    public void submitNewRegistration(String firstNameVal, String lastNameVal, String addressVal, String cityVal,
+                                      String stateVal, String zipVal, String phoneVal, String ssnVal,
+                                      String usernameVal, String passwordVal) {
         firstName().fill(firstNameVal);
         lastName().fill(lastNameVal);
         address().fill(addressVal);
@@ -44,8 +45,6 @@ public class WebRegisterPage extends WebBasePage {
         password().fill(passwordVal);
         repeatedPassword().fill(passwordVal);
         registerButton().click();
-        waitUntilReady(confirmationText());
-        return this;
     }
 
     public void submitEmptyRegistrationForm() {
@@ -68,6 +67,12 @@ public class WebRegisterPage extends WebBasePage {
     }
 
     public boolean isRegistrationConfirmed() {
-        return confirmationText().isVisible();
+        try {
+            confirmationText().waitFor(new Locator.WaitForOptions()
+                    .setTimeout(ConfigReader.getInt("web.confirmation.wait.timeout.ms", 20000)));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

@@ -4,6 +4,7 @@ import com.framework.core.WebDriverFactory;
 import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.options.LoadState;
 import com.microsoft.playwright.options.SelectOption;
 import com.microsoft.playwright.options.WaitForSelectorState;
 import org.slf4j.Logger;
@@ -18,6 +19,7 @@ public abstract class WebBasePage {
     }
 
     protected void waitUntilReady(Locator locator) {
+        page().waitForLoadState(LoadState.NETWORKIDLE);
         locator.waitFor(new Locator.WaitForOptions()
                 .setState(WaitForSelectorState.VISIBLE)
                 .setTimeout(ConfigReader.getInt("web.element.wait.timeout.ms", 5000)));

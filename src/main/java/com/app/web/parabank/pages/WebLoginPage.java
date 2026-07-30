@@ -32,7 +32,7 @@ public class WebLoginPage extends WebBasePage {
 
     public WebLoginPage open() {
         page().navigate(ConfigReader.get("baseUrl"));
-        waitUntilReady(usernameInput());
+        waitUntilReady(loginButton());
         return this;
     }
 

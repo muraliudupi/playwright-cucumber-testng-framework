@@ -25,7 +25,7 @@ public class WebRegisterSteps extends BaseSteps {
 
         String uniqueUsername = rowData.get("Username") + System.currentTimeMillis();
 
-        webRegisterPage.navigateToRegister().registerNewUser(
+        webRegisterPage.navigateToRegister().submitNewRegistration(
                 rowData.get("FirstName"), rowData.get("LastName"), rowData.get("Address"), rowData.get("City"),
                 rowData.get("State"), rowData.get("ZipCode"), rowData.get("Phone"), rowData.get("SSN"),
                 uniqueUsername, rowData.get("Password"));
@@ -42,7 +42,7 @@ public class WebRegisterSteps extends BaseSteps {
 
     @And("the user attempts to register with an existing username {string}")
     public void the_user_attempts_to_register_with_existing_username(String existingUsername) {
-        webRegisterPage.navigateToRegister().registerNewUser(
+        webRegisterPage.navigateToRegister().submitNewRegistration(
                 "Test", "User", "123 Test St", "Testville", "CA", "90000", "1234567890", "123456789",
                 existingUsername, "TestPass123");
     }

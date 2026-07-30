@@ -16,7 +16,7 @@ public class WebRequestLoanPage extends WebBasePage {
 
     public WebRequestLoanPage navigateToRequestLoan() {
         requestLoanLink().click();
-        waitUntilReady(loanAmount());
+        waitUntilReady(applyButton());
         return this;
     }
 

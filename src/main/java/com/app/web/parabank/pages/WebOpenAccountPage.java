@@ -32,7 +32,7 @@ public class WebOpenAccountPage extends WebBasePage {
 
     public WebOpenAccountPage navigateToOpenAccount() {
         openNewAccountLink().click();
-        waitUntilReady(accountTypeDropdown());
+        waitUntilReady(openAccountButton());
         return this;
     }
 

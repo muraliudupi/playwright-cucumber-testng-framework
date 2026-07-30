@@ -38,7 +38,7 @@ public class WebTransferPage extends WebBasePage {
 
     public WebTransferPage navigateToTransferFunds() {
         transferFundsLink().click();
-        waitUntilReady(amountInput());
+        waitUntilReady(transferButton());
         return this;
     }
 
