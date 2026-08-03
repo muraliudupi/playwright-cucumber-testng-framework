@@ -1,4 +1,4 @@
-Feature: Account Funds Transfer
+Feature: Web - Account Funds Transfer
 
   @sanity @web @transfer
   Scenario Outline: Successful fund transfer between valid customer accounts

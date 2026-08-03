@@ -1,4 +1,4 @@
-Feature: Accounts Overview Navigation
+Feature: Web - Accounts Overview Navigation
 
   @web @accountsoverview
   Scenario: Account number link navigates to Account Details

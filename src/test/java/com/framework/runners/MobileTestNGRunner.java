@@ -17,7 +17,7 @@ import org.testng.annotations.DataProvider;
 )
 public class MobileTestNGRunner extends AbstractTestNGCucumberRunner {
     @Override
-    @DataProvider(parallel = false)
+    @DataProvider(parallel = true)
     public Object[][] scenarios() {
         return super.scenarios();
     }

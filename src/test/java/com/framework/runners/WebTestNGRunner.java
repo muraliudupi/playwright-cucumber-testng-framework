@@ -17,7 +17,7 @@ import org.testng.annotations.DataProvider;
 )
 public class WebTestNGRunner extends AbstractTestNGCucumberRunner {
     @Override
-    @DataProvider(parallel = false)
+    @DataProvider(parallel = false) // Sequential execution due to - Cloudflare rate-limit risk for Parasoft website.
     public Object[][] scenarios() {
         return super.scenarios();
     }

@@ -1,4 +1,4 @@
-Feature: Request Loan
+Feature: Web - Request Loan
 
   @web @requestloan
   Scenario: Loan request is approved

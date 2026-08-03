@@ -1,4 +1,4 @@
-Feature: Bill Pay
+Feature: Web - Bill Pay
 
   @web @billpay
   Scenario: Submit a bill payment successfully

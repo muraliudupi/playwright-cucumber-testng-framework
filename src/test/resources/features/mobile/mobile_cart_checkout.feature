@@ -1,4 +1,4 @@
-Feature: Mobile Cart and Checkout
+Feature: Mobile - Cart and Checkout
 
   # Logged in User
   @mobile @cart @require_login

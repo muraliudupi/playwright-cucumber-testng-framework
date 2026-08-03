@@ -1,6 +1,6 @@
-Feature: Account Open
+Feature: Web - Account Open
 
-  @web @regression @acctOpn
+  @web @acctOpn
   Scenario Outline: Open a New Sub-Account and Validate Core Database Persistence
     Given the user is on the ParaBank login page
     When the web user logs in using credentials from data key "<TestCaseID>" sheet "AccountOpen"

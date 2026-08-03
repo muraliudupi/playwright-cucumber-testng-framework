@@ -1,4 +1,4 @@
-Feature: Customer Login
+Feature: Web - Customer Login
 
   @sanity @web @login
   Scenario Outline: Successful login using external enterprise test data

@@ -8,11 +8,14 @@ import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.MutableCapabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.net.URI;
 import java.net.URL;
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public final class MobileDriverFactory {
 
@@ -20,8 +23,26 @@ public final class MobileDriverFactory {
 
     private static final ThreadLocal<AppiumDriver> DRIVER_THREAD_LOCAL = new ThreadLocal<>();
     private static final Map<Long, AppiumDriver> DRIVER_REGISTRY = new ConcurrentHashMap<>();
+    private static final ThreadLocal<String> ACQUIRED_LOCAL_DEVICE = new ThreadLocal<>();
+    private static final BlockingQueue<String> LOCAL_DEVICE_POOL = new LinkedBlockingQueue<>();
+    private static volatile boolean devicePoolInitialized = false;
 
     private MobileDriverFactory() {
+    }
+
+    private static synchronized void ensureDevicePoolInitialized() {
+        if (devicePoolInitialized) {
+            return;
+        }
+        String poolConfig = ConfigReader.get("mobile.local.device.pool");
+        if (poolConfig == null || poolConfig.isBlank()) {
+            poolConfig = ConfigReader.get("mobile.local.device.name"); // single-device fallback
+        }
+        for (String device : poolConfig.split(",")) {
+            LOCAL_DEVICE_POOL.add(device.trim());
+        }
+        devicePoolInitialized = true;
+        LOG.info("Local device pool initialized with {} device(s): {}", LOCAL_DEVICE_POOL.size(), LOCAL_DEVICE_POOL);
     }
 
     public static void initializeDriver(String platform) {
@@ -34,11 +55,21 @@ public final class MobileDriverFactory {
                 AppiumDriver driver;
 
                 if ("local".equalsIgnoreCase(executionMode)) {
-                    LOG.info("[Thread-{}] Initializing local Android emulator instance.", threadId);
+                    ensureDevicePoolInitialized();
+                    String deviceName;
+                    try {
+                        deviceName = LOCAL_DEVICE_POOL.take(); // blocks until a device is free — never collides
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new IllegalStateException("Interrupted while waiting for an available local device.", e);
+                    }
+                    ACQUIRED_LOCAL_DEVICE.set(deviceName);
+                    LOG.info("[Thread-{}] Initializing local Android emulator instance: {}", threadId, deviceName);
 
                     UiAutomator2Options options = new UiAutomator2Options()
                             .setPlatformName("Android")
-                            .setDeviceName(ConfigReader.get("mobile.local.device.name"))
+                            .setDeviceName(deviceName)
+                            .setUdid(deviceName)
                             .setAutomationName("UiAutomator2")
                             .setApp(System.getProperty("user.dir") + "/" + ConfigReader.get("local.app.path"))
 
@@ -95,6 +126,11 @@ public final class MobileDriverFactory {
         } finally {
             DRIVER_THREAD_LOCAL.remove();
             DRIVER_REGISTRY.remove(threadId);
+            String device = ACQUIRED_LOCAL_DEVICE.get();
+            if (device != null) {
+                LOCAL_DEVICE_POOL.add(device);
+                ACQUIRED_LOCAL_DEVICE.remove();
+            }
         }
     }
 

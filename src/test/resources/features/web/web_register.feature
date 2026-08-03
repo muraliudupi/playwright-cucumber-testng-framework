@@ -1,4 +1,4 @@
-Feature: Registration
+Feature: Web - Registration
 
   @web @register
   Scenario: Register a new user successfully

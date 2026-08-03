@@ -1,4 +1,4 @@
-Feature: Find Transactions
+Feature: Web - Find Transactions
 
   @web @findtransactions
   Scenario: A bill payment made today is findable by date

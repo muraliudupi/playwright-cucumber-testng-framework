@@ -1,4 +1,4 @@
-Feature: Update Contact Info
+Feature: Web - Update Contact Info
 
   @web @updatecontact
   Scenario: Update contact information successfully

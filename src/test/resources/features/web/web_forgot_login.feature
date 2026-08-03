@@ -1,4 +1,4 @@
-Feature: Forgot Login Info
+Feature: Web - Forgot Login Info
 
   @web @register @forgotlogin
   Scenario: Look up login info for a newly registered user
