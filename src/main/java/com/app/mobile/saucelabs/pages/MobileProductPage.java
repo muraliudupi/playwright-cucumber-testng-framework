@@ -35,6 +35,9 @@ public class MobileProductPage extends MobileBasePage {
     //@iOSXCUITFindBy(accessibility = "Logout")
     private WebElement btnPopupLogout;
 
+    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/sortIV")
+    private WebElement btnSort;
+
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/productTV")
     //@iOSXCUITFindBy(accessibility = "title")
     private WebElement lblTitle;
@@ -115,5 +118,24 @@ public class MobileProductPage extends MobileBasePage {
         ensureElementsInitialized();
         wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnCartIcon)).click();
         return mobileCartPage;
+    }
+
+    public void openSortDialog() {
+        ensureElementsInitialized();
+        wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnSort)).click();
+    }
+
+    public java.util.List<String> getVisibleProductTitles() {
+        ensureElementsInitialized();
+        return driver().findElements(org.openqa.selenium.By.id("com.saucelabs.mydemoapp.android:id/titleTV"))
+                .stream().map(org.openqa.selenium.WebElement::getText).collect(java.util.stream.Collectors.toList());
+    }
+
+    public java.util.List<Double> getVisibleProductPrices() {
+        ensureElementsInitialized();
+        return driver().findElements(org.openqa.selenium.By.id("com.saucelabs.mydemoapp.android:id/priceTV"))
+                .stream()
+                .map(e -> Double.parseDouble(e.getText().replaceAll("[^0-9.]", "")))
+                .collect(java.util.stream.Collectors.toList());
     }
 }

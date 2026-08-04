@@ -64,4 +64,23 @@ public class MobileCartPage extends MobileBasePage {
         wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnCheckout)).click();
     }
 
+    public boolean isColorIndicatorDisplayedForProduct(String productLabel) {
+        ensureElementsInitialized();
+        String scrollToProductInCart = String.format(
+                "new UiScrollable(new UiSelector().resourceId(\"com.saucelabs.mydemoapp.android:id/productRV\"))"
+                        + ".scrollIntoView(new UiSelector().text(\"%s\"))",
+                productLabel);
+        try {
+            driver().findElement(AppiumBy.androidUIAutomator(scrollToProductInCart));
+            By colorIcon = By.xpath(String.format(
+                    "//android.widget.TextView[@text='%s']"
+                            + "/ancestor::android.view.ViewGroup[.//android.widget.ImageView[@content-desc='Displays color of selected product']][1]"
+                            + "//android.widget.ImageView[@content-desc='Displays color of selected product']",
+                    productLabel));
+            return wait(existenceCheckTimeout()).until(ExpectedConditions.visibilityOfElementLocated(colorIcon)).isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
 }

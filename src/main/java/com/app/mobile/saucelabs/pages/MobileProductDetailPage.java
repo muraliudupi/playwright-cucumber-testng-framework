@@ -1,6 +1,8 @@
 package com.app.mobile.saucelabs.pages;
 
+import io.appium.java_client.AppiumBy;
 import io.appium.java_client.pagefactory.AndroidFindBy;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
@@ -30,5 +32,13 @@ public class MobileProductDetailPage extends MobileBasePage {
     public void addToCart() {
         ensureElementsInitialized();
         wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnAddToCart)).click();
+    }
+
+    public MobileProductDetailPage selectColor(String colorName) {
+        ensureElementsInitialized();
+        By colorSwatchLocator = AppiumBy.accessibilityId(colorName + " color");
+        WebElement colorSwatch = wait(longWait()).until(ExpectedConditions.presenceOfElementLocated(colorSwatchLocator));
+        wait(shortWait()).until(ExpectedConditions.elementToBeClickable(colorSwatch)).click();
+        return this;
     }
 }

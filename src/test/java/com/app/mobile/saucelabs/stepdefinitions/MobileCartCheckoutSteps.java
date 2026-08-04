@@ -105,6 +105,24 @@ public class MobileCartCheckoutSteps extends BaseSteps {
                 "Order Confirmation Failure: 'Thank You' confirmation screen was not displayed.");
     }
 
+    @When("the user adds {string} in color {string} to the cart with quantity {int}")
+    public void the_user_adds_product_with_color_to_cart(String productLabel, String colorName, int quantity) {
+        context.setContext(CTX_PRODUCT_LABEL, productLabel);
+        mobileProductPage
+                .selectProduct(productLabel)
+                .selectColor(colorName)
+                .setQuantity(quantity)
+                .addToCart();
+        mobileProductPage.openCart();
+    }
+
+    @Then("a color indicator should be displayed for the product in the cart")
+    public void a_color_indicator_should_be_displayed() {
+        String productLabel = context.getStringContext(CTX_PRODUCT_LABEL);
+        Assert.assertTrue(mobileCartPage.isColorIndicatorDisplayedForProduct(productLabel),
+                "Color Selection Failure: no color indicator rendered for '" + productLabel + "' in the cart.");
+    }
+
     private void completeCheckoutFlow(Map<String, String> rowData) {
         String productLabel = rowData.get("ProductLabel");
         context.setContext(CTX_PRODUCT_LABEL, productLabel);
