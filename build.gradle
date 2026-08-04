@@ -24,7 +24,7 @@ ext {
     log4jVersion      = '2.26.1'
     poiVersion        = '5.5.1'
     extentAdapterVersion = '1.14.0'
-    postgresqlVersion = '42.7.13'+
+    postgresqlVersion = '42.7.13'
     hikariCPVersion   = '7.1.0'
     appiumVersion    = '10.1.1'
     seleniumVersion   = '4.46.0'
