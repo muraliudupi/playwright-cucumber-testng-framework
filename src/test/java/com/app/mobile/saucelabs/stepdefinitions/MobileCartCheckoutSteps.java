@@ -85,6 +85,12 @@ public class MobileCartCheckoutSteps extends BaseSteps {
         completeCheckoutFlow(rowData);
     }
 
+    @When("the user proceeds to checkout with different billing address and completes the order using data key {string} sheet {string}")
+    public void the_user_completes_checkout_with_different_billing_addr(String testCaseId, String sheetName) {
+        Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
+        completeCheckoutWithDifferentBillingAddress(rowData);
+    }
+
     @When("the user proceeds to checkout as a guest and completes the order using data key {string} sheet {string}")
     public void the_user_completes_guest_checkout(String testCaseId, String sheetName) {
         Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
@@ -125,7 +131,7 @@ public class MobileCartCheckoutSteps extends BaseSteps {
 
     @When("the user reaches mobile login screen")
     public void the_user_reaches_mobile_login_screen() {
-        mobileProductPage.openCart().tapCheckout();
+        mobileCartPage.tapCheckout();
         Assert.assertTrue(mobileLoginPage.isLoginOptionDisplayed(),
                 "Expected login screen to appear for unauthenticated checkout.");
     }
@@ -140,11 +146,39 @@ public class MobileCartCheckoutSteps extends BaseSteps {
         completeCheckoutDetailsOnly(rowData);
     }
 
+    private void completeCheckoutWithDifferentBillingAddress(Map<String, String> rowData) {
+        String productLabel = rowData.get("ProductLabel");
+        context.setContext(CTX_PRODUCT_LABEL, productLabel);
+
+        addProductToCart(productLabel, Integer.parseInt(rowData.get("Quantity")));
+
+        mobileProductPage.openCart().tapCheckout();
+        completeCheckoutDetailsWithDifferentBillingAddress(rowData);
+    }
+
     private void completeCheckoutDetailsOnly(Map<String, String> rowData) {
         mobileCheckoutPage
                 .enterShippingDetails(rowData.get("FullName"), rowData.get("Address1"), rowData.get("City"),
                         rowData.get("State"), rowData.get("Zip"), rowData.get("Country"))
+                .toPayment()
                 .enterPaymentDetails(rowData.get("FullName"), rowData.get("CardNumber"), rowData.get("ExpirationDate"), rowData.get("SecurityCode"))
+                .reviewOrder()
+                .placeOrder();
+    }
+
+    private void completeCheckoutDetailsWithDifferentBillingAddress(Map<String, String> rowData) {
+        mobileCheckoutPage
+                .enterShippingDetails(rowData.get("FullName"), rowData.get("Address1"), rowData.get("City"),
+                        rowData.get("State"), rowData.get("Zip"), rowData.get("Country"))
+                .toPayment()
+                .enterPaymentDetails(rowData.get("FullName"), rowData.get("CardNumber"), rowData.get("ExpirationDate"), rowData.get("SecurityCode"))
+                .uncheckBillingSameAsShipping();
+
+        // Need Mobile Swipe-UP [Scroll Down] function.
+
+        mobileCheckoutPage.enterBillingAddressDetails(rowData.get("BillFullName"), rowData.get("BillAddress1"), rowData.get("BillCity"),
+                        rowData.get("BillState"), rowData.get("BillZip"), rowData.get("BillCountry"))
+                .reviewOrder()
                 .placeOrder();
     }
 

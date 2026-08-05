@@ -17,6 +17,11 @@ Feature: Mobile - Cart and Checkout
     When the user proceeds to checkout and completes the order using data key "Checkout_001" sheet "MobileCheckoutData"
     Then the order confirmation should be displayed
 
+  @mobile @cart @checkout @require_login @diff
+  Scenario: User Logged In: Complete checkout, different billing address & Order products.
+    When the user proceeds to checkout with different billing address and completes the order using data key "Checkout_002" sheet "MobileCheckoutData"
+    Then the order confirmation should be displayed
+
   # Guest User
   @mobile @cart @guest
   Scenario: Guest User: Add a product to the cart with label and quantity from test data

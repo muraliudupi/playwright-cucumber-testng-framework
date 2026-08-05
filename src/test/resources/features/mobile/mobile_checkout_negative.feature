@@ -16,7 +16,7 @@ Feature: Mobile Checkout Field Validation
   Scenario: Payment form shows validation errors when submitted empty, billing same as shipping
     When the user adds a product to the cart using data key "Cart_001" sheet "MobileCartData"
     And the user proceeds to checkout using the cart's current contents
-    And the user enters valid shipping details
+    And the user enters shipping details using data key "Checkout_001" sheet "MobileCheckoutData"
     And the user submits the payment form without entering any values
     Then the following checkout validation messages are displayed:
       | Value looks invalid. |
@@ -25,9 +25,10 @@ Feature: Mobile Checkout Field Validation
   Scenario: Payment form shows both card and billing address errors when billing differs and form is empty
     When the user adds a product to the cart using data key "Cart_001" sheet "MobileCartData"
     And the user proceeds to checkout using the cart's current contents
-    And the user enters valid shipping details
+    And the user enters shipping details using data key "Checkout_001" sheet "MobileCheckoutData"
     And the user unchecks billing same as shipping
     And the user submits the payment form without entering any values
+    # Need Mobile Swipe-UP [Scroll Down] function.
     Then the following checkout validation messages are displayed:
       | Value looks invalid.           |
       | Please provide your full name. |

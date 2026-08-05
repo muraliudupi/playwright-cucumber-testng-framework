@@ -8,8 +8,8 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.testng.Assert;
-
 import java.util.List;
+import java.util.Map;
 
 import static org.testng.Assert.assertTrue;
 
@@ -54,8 +54,16 @@ public class MobileCheckoutSteps extends BaseSteps {
                 "Expected Mobile Checkout screen.");
     }
 
-    @And("the user enters valid shipping details")
-    public void the_user_enters_valid_shipping_details() {
-        //Code to be written.
+    @And("the user enters shipping details using data key {string} sheet {string}")
+    public void the_user_enters_shipping_details(String testCaseId, String sheetName) {
+        Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
+        completeShipmentDetailsOnly(rowData);
+    }
+
+    private void completeShipmentDetailsOnly(Map<String, String> rowData) {
+        mobileCheckoutPage
+                .enterShippingDetails(rowData.get("FullName"), rowData.get("Address1"), rowData.get("City"),
+                        rowData.get("State"), rowData.get("Zip"), rowData.get("Country"))
+                .toPayment();
     }
 }
