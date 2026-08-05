@@ -14,3 +14,15 @@ Feature: Mobile - Customer Login
   Scenario: Successful logout from mobile app
     When the user logs out from the mobile app
     Then the login screen should be displayed
+
+  @mobile @login @negative
+  Scenario Outline: Login fails when username or password are empty
+    Given the user is on the mobile login screen
+    When the user attempts login with username "<username>" and password "<password>"
+    Then the login error "<message>" should be displayed
+
+    Examples:
+      | username | password | message              |
+      |          |          | Username is required |
+      |          | demo     | Username is required |
+      | john     |          | Enter Password       |

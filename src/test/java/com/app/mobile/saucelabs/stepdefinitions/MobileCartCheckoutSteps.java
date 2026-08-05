@@ -123,6 +123,13 @@ public class MobileCartCheckoutSteps extends BaseSteps {
                 "Color Selection Failure: no color indicator rendered for '" + productLabel + "' in the cart.");
     }
 
+    @When("the user reaches mobile login screen")
+    public void the_user_reaches_mobile_login_screen() {
+        mobileProductPage.openCart().tapCheckout();
+        Assert.assertTrue(mobileLoginPage.isLoginOptionDisplayed(),
+                "Expected login screen to appear for unauthenticated checkout.");
+    }
+
     private void completeCheckoutFlow(Map<String, String> rowData) {
         String productLabel = rowData.get("ProductLabel");
         context.setContext(CTX_PRODUCT_LABEL, productLabel);

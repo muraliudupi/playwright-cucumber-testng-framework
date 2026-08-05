@@ -74,4 +74,18 @@ public class MobileLoginLogoutSteps extends BaseSteps {
                 "Authentication State Failure: 'Log In' option was not visible.");
 
     }
+
+    @When("the user attempts login with username {string} and password {string}")
+    public void the_user_attempts_login(String username, String password) {
+        mobileLoginPage.login(username, password);
+    }
+
+    @Then("the login error {string} should be displayed")
+    public void the_login_error_should_be_displayed(String expectedError) {
+        String actual = expectedError.contains("Username")
+                ? mobileLoginPage.getUsernameErrorText()
+                : mobileLoginPage.getPasswordErrorText();
+        Assert.assertEquals(actual, expectedError,
+                "Login Validation Failure: expected '" + expectedError + "' but got '" + actual + "'.");
+    }
 }

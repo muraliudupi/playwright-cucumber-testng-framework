@@ -14,6 +14,12 @@ public class MobileLoginPage extends MobileBasePage {
     //@iOSXCUITFindBy(accessibility = "Password Input Field")
     private WebElement txtPassword;
 
+    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/nameErrorTV")
+    private WebElement lblUsernameError;
+
+    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/passwordErrorTV")
+    private WebElement lblPasswordError;
+
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/loginBtn")
     //@iOSXCUITFindBy(accessibility = "Login Button Element")
     private WebElement btnLogin;
@@ -45,6 +51,24 @@ public class MobileLoginPage extends MobileBasePage {
             return wait(existenceCheckTimeout()).until(ExpectedConditions.visibilityOf(txtUsername)).isDisplayed();
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    public String getUsernameErrorText() {
+        ensureElementsInitialized();
+        try {
+            return wait(shortWait()).until(ExpectedConditions.visibilityOf(lblUsernameError)).getText();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public String getPasswordErrorText() {
+        ensureElementsInitialized();
+        try {
+            return wait(shortWait()).until(ExpectedConditions.visibilityOf(lblPasswordError)).getText();
+        } catch (Exception e) {
+            return null;
         }
     }
 
