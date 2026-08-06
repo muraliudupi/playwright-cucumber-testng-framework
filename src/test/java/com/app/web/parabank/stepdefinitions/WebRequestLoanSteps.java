@@ -5,13 +5,12 @@ import com.app.web.parabank.pages.WebAdministrationPage;
 import com.app.web.parabank.pages.WebRequestLoanPage;
 import com.framework.context.ContextKeys;
 import com.framework.context.ScenarioContext;
+import com.framework.models.RequestLoanData;
 import com.framework.steps.BaseSteps;
 import com.framework.utils.LoanScenarioCalculator;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import java.math.BigDecimal;
-import java.util.Map;
-
 import static org.testng.Assert.assertTrue;
 
 public class WebRequestLoanSteps extends BaseSteps {
@@ -33,11 +32,14 @@ public class WebRequestLoanSteps extends BaseSteps {
 
     @And("the user requests a loan using data key {string} sheet {string}")
     public void the_user_requests_a_loan_using_data_key(String testCaseId, String sheetName) {
-        Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
-        context.setContext(ContextKeys.LOAN_EXPECTED_STATUS, rowData.get("ExpectedStatus"));
+        RequestLoanData requestLoanData = getExcelModelByKey(testCaseId, sheetName, RequestLoanData::fromMap);
+        context.setContext(ContextKeys.LOAN_EXPECTED_STATUS, requestLoanData.expectedStatus());
 
         webRequestLoanPage.navigateToRequestLoan().requestLoan(
-                rowData.get("LoanAmount"), rowData.get("DownPayment"), rowData.get("FromAccount"));
+                String.valueOf(requestLoanData.loanAmount()),
+                String.valueOf(requestLoanData.downPayment()),
+                requestLoanData.fromAccount()
+        );
     }
 
     @Then("the loan status matches the expected outcome")

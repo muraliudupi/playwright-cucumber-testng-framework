@@ -6,7 +6,6 @@ import com.framework.context.ScenarioContext;
 import com.framework.steps.BaseSteps;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
-
 import static org.testng.Assert.assertTrue;
 
 public class WebForgotLoginSteps extends BaseSteps {

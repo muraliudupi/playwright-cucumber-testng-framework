@@ -7,7 +7,6 @@ import com.framework.steps.BaseSteps;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 

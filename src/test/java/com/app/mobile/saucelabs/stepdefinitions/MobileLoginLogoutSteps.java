@@ -4,10 +4,10 @@ import com.app.mobile.saucelabs.pages.MobileProductPage;
 import com.framework.context.ContextKeys;
 import com.framework.context.ScenarioContext;
 import com.app.mobile.saucelabs.pages.MobileLoginPage;
+import com.framework.models.LoginData;
 import com.framework.steps.BaseSteps;
 import io.cucumber.java.en.*;
 import org.testng.Assert;
-import java.util.Map;
 
 public class MobileLoginLogoutSteps extends BaseSteps {
 
@@ -33,14 +33,10 @@ public class MobileLoginLogoutSteps extends BaseSteps {
 
     @When("the mobile user logs into the mobile app using credentials from data key {string} sheet {string}")
     public void the_user_logs_into_mobile_app_using_credentials_from_data_key(String testCaseId, String sheetName) {
-        Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
+        LoginData credentials = getExcelModelByKey(testCaseId, sheetName, LoginData::fromMap);
+        context.setContext(ContextKeys.USER_DATA, credentials);
 
-        context.setContext(ContextKeys.USER_DATA, rowData);
-
-        String username = rowData.get("Username");
-        String password = rowData.get("Password");
-
-        mobileLoginPage.login(username, password);
+        mobileLoginPage.login(credentials.details().username(), credentials.details().password());
     }
 
     @Then("the mobile dashboard should be displayed")

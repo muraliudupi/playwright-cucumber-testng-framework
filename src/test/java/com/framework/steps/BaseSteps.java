@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public abstract class BaseSteps {
     protected final Logger LOG = LoggerFactory.getLogger(getClass());
@@ -20,5 +21,10 @@ public abstract class BaseSteps {
                 .orElseThrow(() -> new IllegalArgumentException(String.format(
                         "Data Key Verification Error: TestCaseID '%s' not resolved in sheet '%s'.",
                         uniqueTestCaseId, sheetName)));
+    }
+
+    protected <T> T getExcelModelByKey(String uniqueTestCaseId, String sheetName, Function<Map<String, String>, T> mapper) {
+        Map<String, String> rowData = getExcelRowByKey(uniqueTestCaseId, sheetName);
+        return mapper.apply(rowData);
     }
 }

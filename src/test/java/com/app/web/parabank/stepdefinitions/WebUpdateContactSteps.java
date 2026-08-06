@@ -1,10 +1,10 @@
 package com.app.web.parabank.stepdefinitions;
 
 import com.app.web.parabank.pages.WebUpdateContactPage;
+import com.framework.models.UpdateContactData;
 import com.framework.steps.BaseSteps;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
-import java.util.Map;
 
 public class WebUpdateContactSteps extends BaseSteps {
 
@@ -16,11 +16,17 @@ public class WebUpdateContactSteps extends BaseSteps {
 
     @And("the user updates contact info using data key {string} sheet {string}")
     public void the_user_updates_contact_info_using_data_key(String testCaseId, String sheetName) {
-        Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
+        UpdateContactData updateContactData = getExcelModelByKey(testCaseId, sheetName, UpdateContactData::fromMap);
 
         webUpdateContactPage.navigateToUpdateContact().updateContactInfo(
-                rowData.get("FirstName"), rowData.get("LastName"), rowData.get("Address"),
-                rowData.get("City"), rowData.get("State"), rowData.get("ZipCode"), rowData.get("Phone"));
+                updateContactData.firstName(),
+                updateContactData.lastName(),
+                updateContactData.address().address(),
+                updateContactData.address().city(),
+                updateContactData.address().state(),
+                updateContactData.address().zip(),
+                updateContactData.phone()
+        );
     }
 
     @Then("the contact info update is confirmed")

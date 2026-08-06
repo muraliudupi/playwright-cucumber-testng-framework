@@ -5,11 +5,9 @@ import com.app.mobile.saucelabs.pages.MobileSortDialogPage;
 import com.framework.steps.BaseSteps;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-
 import static org.testng.Assert.assertEquals;
 
 public class MobileSortSteps extends BaseSteps {

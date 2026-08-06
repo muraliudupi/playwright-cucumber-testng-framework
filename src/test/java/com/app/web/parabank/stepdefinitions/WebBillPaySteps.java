@@ -3,10 +3,10 @@ package com.app.web.parabank.stepdefinitions;
 import com.framework.context.ContextKeys;
 import com.framework.context.ScenarioContext;
 import com.app.web.parabank.pages.WebBillPayPage;
+import com.framework.models.BillPayData;
 import com.framework.steps.BaseSteps;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
-import java.util.Map;
 
 public class WebBillPaySteps extends BaseSteps {
 
@@ -20,16 +20,23 @@ public class WebBillPaySteps extends BaseSteps {
 
     @And("the user navigates to Bill Pay and submits a payment using data key {string} sheet {string}")
     public void the_user_pays_a_bill_using_data_key(String testCaseId, String sheetName) {
-        Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
+        BillPayData billPayData = getExcelModelByKey(testCaseId, sheetName, BillPayData::fromMap);
 
         webBillPayPage.navigateToBillPay();
         String actualFromAccount = webBillPayPage.payBill(
-                rowData.get("PayeeName"), rowData.get("Address"), rowData.get("City"), rowData.get("State"),
-                rowData.get("ZipCode"), rowData.get("Phone"), rowData.get("AccountNumber"),
-                rowData.get("Amount"), rowData.get("FromAccount"));
+                billPayData.payeeName(),
+                billPayData.address().address(),
+                billPayData.address().city(),
+                billPayData.address().state(),
+                billPayData.address().zip(),
+                billPayData.phone(),
+                billPayData.accountNumber(),
+                String.valueOf(billPayData.amount()),
+                billPayData.fromAccount()
+        );
 
-        context.setContext(ContextKeys.BILLPAY_PAYEE_NAME, rowData.get("PayeeName"));
-        context.setContext(ContextKeys.BILLPAY_AMOUNT, rowData.get("Amount"));
+        context.setContext(ContextKeys.BILLPAY_PAYEE_NAME, billPayData.payeeName());
+        context.setContext(ContextKeys.BILLPAY_AMOUNT, String.valueOf(billPayData.amount()));
         context.setContext(ContextKeys.BILLPAY_FROM_ACCOUNT, actualFromAccount);
     }
 

@@ -2,45 +2,50 @@ package com.app.mobile.saucelabs.stepdefinitions;
 
 import com.app.mobile.saucelabs.pages.*;
 import com.framework.context.ScenarioContext;
+import com.framework.models.CheckoutDetails;
+import com.framework.models.MobileCartData;
+import com.framework.models.MobileCheckoutData;
+import com.framework.models.MobileCheckoutGuestData;
 import com.framework.steps.BaseSteps;
-import io.cucumber.java.en.*;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import org.testng.Assert;
-import java.util.Map;
 
 public class MobileCartCheckoutSteps extends BaseSteps {
 
     private static final String CTX_PRODUCT_LABEL = "CART_PRODUCT_LABEL";
 
     private final MobileProductPage mobileProductPage;
-    private final MobileProductDetailPage mobileProductDetailPage;
     private final MobileCartPage mobileCartPage;
-    private final MobileCheckoutPage mobileCheckoutPage;
     private final MobileLoginPage mobileLoginPage;
+    private final MobileShippingPage mobileShippingPage;
+    private final MobilePaymentPage mobilePaymentPage;
     private final ScenarioContext context;
 
     public MobileCartCheckoutSteps(MobileProductPage mobileProductPage,
-                                   MobileProductDetailPage mobileProductDetailPage,
                                    MobileCartPage mobileCartPage,
-                                   MobileCheckoutPage mobileCheckoutPage,
+                                   MobileShippingPage mobileShippingPage,
+                                   MobilePaymentPage mobilePaymentPage,
                                    MobileLoginPage mobileLoginPage,
                                    ScenarioContext context) {
         this.mobileProductPage = mobileProductPage;
-        this.mobileProductDetailPage = mobileProductDetailPage;
         this.mobileCartPage = mobileCartPage;
-        this.mobileCheckoutPage = mobileCheckoutPage;
+        this.mobileShippingPage = mobileShippingPage;
+        this.mobilePaymentPage = mobilePaymentPage;
         this.mobileLoginPage = mobileLoginPage;
         this.context = context;
     }
 
     @When("the user adds a product to the cart using data key {string} sheet {string}")
     public void the_user_adds_a_product_to_the_cart(String testCaseId, String sheetName) {
-        Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
-        String productLabel = rowData.get("ProductLabel");
-        int quantity = Integer.parseInt(rowData.get("Quantity"));
+        MobileCartData mobileCartData = getExcelModelByKey(testCaseId, sheetName, MobileCartData::fromMap);
+
+        String productLabel = mobileCartData.item().productLabel();
+        int quantity = mobileCartData.item().quantity();
 
         context.setContext(CTX_PRODUCT_LABEL, productLabel);
         addProductToCart(productLabel, quantity);
-
         mobileProductPage.openCart();
     }
 
@@ -81,33 +86,34 @@ public class MobileCartCheckoutSteps extends BaseSteps {
 
     @When("the user proceeds to checkout and completes the order using data key {string} sheet {string}")
     public void the_user_completes_checkout(String testCaseId, String sheetName) {
-        Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
-        completeCheckoutFlow(rowData);
+        MobileCheckoutData mobileCheckoutData = getExcelModelByKey(testCaseId, sheetName, MobileCheckoutData::fromMap);
+        completeCheckoutFlow(mobileCheckoutData);
     }
 
     @When("the user proceeds to checkout with different billing address and completes the order using data key {string} sheet {string}")
     public void the_user_completes_checkout_with_different_billing_addr(String testCaseId, String sheetName) {
-        Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
-        completeCheckoutWithDifferentBillingAddress(rowData);
+        MobileCheckoutData mobileCheckoutData = getExcelModelByKey(testCaseId, sheetName, MobileCheckoutData::fromMap);
+        completeCheckoutWithDifferentBillingAddress(mobileCheckoutData);
     }
 
     @When("the user proceeds to checkout as a guest and completes the order using data key {string} sheet {string}")
     public void the_user_completes_guest_checkout(String testCaseId, String sheetName) {
-        Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
-
+        MobileCheckoutGuestData mobileCheckoutGuestData = getExcelModelByKey(testCaseId, sheetName, MobileCheckoutGuestData::fromMap);
         mobileProductPage.openCart().tapCheckout();
-
         boolean loginPromptShown = mobileLoginPage.isLoginOptionDisplayed();
         Assert.assertTrue(loginPromptShown,
                 "Guest Checkout Failure: expected login screen to appear for an unauthenticated checkout attempt.");
 
-        mobileLoginPage.login(rowData.get("Username"), rowData.get("Password"));
-        completeCheckoutDetailsOnly(rowData);
+        mobileLoginPage.login(
+                mobileCheckoutGuestData.details().username(),
+                mobileCheckoutGuestData.details().password()
+        );
+        enterShippingAndPaymentDetails(mobileCheckoutGuestData).proceedToReview().placeOrder();
     }
 
     @Then("the order confirmation should be displayed")
     public void the_order_confirmation_should_be_displayed() {
-        Assert.assertTrue(mobileCheckoutPage.isOrderConfirmationDisplayed(),
+        Assert.assertTrue(mobilePaymentPage.isOrderConfirmationDisplayed(),
                 "Order Confirmation Failure: 'Thank You' confirmation screen was not displayed.");
     }
 
@@ -136,50 +142,39 @@ public class MobileCartCheckoutSteps extends BaseSteps {
                 "Expected login screen to appear for unauthenticated checkout.");
     }
 
-    private void completeCheckoutFlow(Map<String, String> rowData) {
-        String productLabel = rowData.get("ProductLabel");
-        context.setContext(CTX_PRODUCT_LABEL, productLabel);
-
-        addProductToCart(productLabel, Integer.parseInt(rowData.get("Quantity")));
-
-        mobileProductPage.openCart().tapCheckout();
-        completeCheckoutDetailsOnly(rowData);
+    private void completeCheckoutFlow(MobileCheckoutData mobileCheckoutData) {
+        MobilePaymentPage payment = enterTillPaymentDetails(mobileCheckoutData);
+        payment.proceedToReview().placeOrder();
     }
 
-    private void completeCheckoutWithDifferentBillingAddress(Map<String, String> rowData) {
-        String productLabel = rowData.get("ProductLabel");
-        context.setContext(CTX_PRODUCT_LABEL, productLabel);
+    private void completeCheckoutWithDifferentBillingAddress(MobileCheckoutData mobileCheckoutData) {
+        MobilePaymentPage payment = enterTillPaymentDetails(mobileCheckoutData);
 
-        addProductToCart(productLabel, Integer.parseInt(rowData.get("Quantity")));
-
-        mobileProductPage.openCart().tapCheckout();
-        completeCheckoutDetailsWithDifferentBillingAddress(rowData);
-    }
-
-    private void completeCheckoutDetailsOnly(Map<String, String> rowData) {
-        mobileCheckoutPage
-                .enterShippingDetails(rowData.get("FullName"), rowData.get("Address1"), rowData.get("City"),
-                        rowData.get("State"), rowData.get("Zip"), rowData.get("Country"))
-                .toPayment()
-                .enterPaymentDetails(rowData.get("FullName"), rowData.get("CardNumber"), rowData.get("ExpirationDate"), rowData.get("SecurityCode"))
-                .reviewOrder()
+        payment.uncheckBillingSameAsShipping()
+                .enterBillingAddressDetails(
+                        mobileCheckoutData.billFullName(),
+                        mobileCheckoutData.billingAddress()
+                )
+                .proceedToReview()
                 .placeOrder();
     }
 
-    private void completeCheckoutDetailsWithDifferentBillingAddress(Map<String, String> rowData) {
-        mobileCheckoutPage
-                .enterShippingDetails(rowData.get("FullName"), rowData.get("Address1"), rowData.get("City"),
-                        rowData.get("State"), rowData.get("Zip"), rowData.get("Country"))
-                .toPayment()
-                .enterPaymentDetails(rowData.get("FullName"), rowData.get("CardNumber"), rowData.get("ExpirationDate"), rowData.get("SecurityCode"))
-                .uncheckBillingSameAsShipping();
+    private MobilePaymentPage enterTillPaymentDetails(MobileCheckoutData mobileCheckoutData) {
+        String productLabel = mobileCheckoutData.item().productLabel();
+        int quantity = mobileCheckoutData.item().quantity();
 
-        // Need Mobile Swipe-UP [Scroll Down] function.
+        context.setContext(CTX_PRODUCT_LABEL, productLabel);
+        addProductToCart(productLabel, quantity);
+        mobileProductPage.openCart().tapCheckout();
 
-        mobileCheckoutPage.enterBillingAddressDetails(rowData.get("BillFullName"), rowData.get("BillAddress1"), rowData.get("BillCity"),
-                        rowData.get("BillState"), rowData.get("BillZip"), rowData.get("BillCountry"))
-                .reviewOrder()
-                .placeOrder();
+        return enterShippingAndPaymentDetails(mobileCheckoutData);
+    }
+
+    private MobilePaymentPage enterShippingAndPaymentDetails(CheckoutDetails checkoutDetails) {
+        return mobileShippingPage
+                .fillShippingDetails(checkoutDetails.fullName(), checkoutDetails.shippingAddress())
+                .proceedToPayment()
+                .enterPaymentDetails(checkoutDetails.billFullName(), checkoutDetails.paymentDetails());
     }
 
     private void addProductToCart(String productLabel, int quantity) {

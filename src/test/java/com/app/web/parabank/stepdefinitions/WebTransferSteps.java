@@ -3,12 +3,12 @@ package com.app.web.parabank.stepdefinitions;
 import com.app.web.parabank.pages.WebTransferPage;
 import com.framework.context.ContextKeys;
 import com.framework.context.ScenarioContext;
+import com.framework.models.TransferData;
 import com.framework.steps.BaseSteps;
 import com.framework.utils.ConfigReader;
 import com.framework.utils.DatabaseUtil;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
-import java.util.Map;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
@@ -30,11 +30,11 @@ public class WebTransferSteps extends BaseSteps {
 
     @And("executes a transfer using data from data key {string} sheet {string}")
     public void executes_a_transfer_using_data_from_sheet(String testCaseId, String sheetName) {
-        Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
+        TransferData transferData = getExcelModelByKey(testCaseId, sheetName, TransferData::fromMap);
 
-        String amount = rowData.get("Amount");
-        String fromAccount = rowData.get("FromAccount");
-        String toAccount = rowData.get("ToAccount");
+        String amount = String.valueOf(transferData.amount());
+        String fromAccount = transferData.fromAccount();
+        String toAccount = transferData.toAccount();
 
         WebTransferPage.TransferAccounts actualAccounts = webTransferPage.executeTransfer(amount, fromAccount, toAccount);
 

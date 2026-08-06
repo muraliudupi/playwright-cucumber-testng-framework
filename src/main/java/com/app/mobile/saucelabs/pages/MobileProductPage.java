@@ -1,9 +1,9 @@
 package com.app.mobile.saucelabs.pages;
 
-import io.appium.java_client.pagefactory.AndroidFindBy;
-import org.openqa.selenium.WebElement;
 import io.appium.java_client.AppiumBy;
+import io.appium.java_client.pagefactory.AndroidFindBy;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class MobileProductPage extends MobileBasePage {
@@ -42,7 +42,7 @@ public class MobileProductPage extends MobileBasePage {
     //@iOSXCUITFindBy(accessibility = "title")
     private WebElement lblTitle;
 
-    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/cartIV")
+    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/cartRL")
     private WebElement btnCartIcon;
 
 
@@ -127,13 +127,13 @@ public class MobileProductPage extends MobileBasePage {
 
     public java.util.List<String> getVisibleProductTitles() {
         ensureElementsInitialized();
-        return driver().findElements(org.openqa.selenium.By.id("com.saucelabs.mydemoapp.android:id/titleTV"))
-                .stream().map(org.openqa.selenium.WebElement::getText).collect(java.util.stream.Collectors.toList());
+        return driver().findElements(By.id("com.saucelabs.mydemoapp.android:id/titleTV"))
+                .stream().map(WebElement::getText).collect(java.util.stream.Collectors.toList());
     }
 
     public java.util.List<Double> getVisibleProductPrices() {
         ensureElementsInitialized();
-        return driver().findElements(org.openqa.selenium.By.id("com.saucelabs.mydemoapp.android:id/priceTV"))
+        return driver().findElements(By.id("com.saucelabs.mydemoapp.android:id/priceTV"))
                 .stream()
                 .map(e -> Double.parseDouble(e.getText().replaceAll("[^0-9.]", "")))
                 .collect(java.util.stream.Collectors.toList());

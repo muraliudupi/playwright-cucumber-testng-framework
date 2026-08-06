@@ -2,12 +2,12 @@ package com.app.web.parabank.stepdefinitions;
 
 import com.framework.context.ScenarioContext;
 import com.app.web.parabank.pages.WebOpenAccountPage;
+import com.framework.models.AccountOpen;
 import com.framework.steps.BaseSteps;
 import com.framework.utils.ConfigReader;
 import com.framework.utils.DatabaseUtil;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
-import java.util.Map;
 import com.framework.context.ContextKeys;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertEquals;
@@ -29,8 +29,8 @@ public class WebOpenAccountSteps extends BaseSteps {
 
     @And("requests a new {string} account using funding account from data key {string} sheet {string}")
     public void requests_a_new_account_using_funding_account(String accountType, String testCaseId, String sheetName) {
-        Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
-        String fundingAccount = rowData.get("FromAccount");
+        AccountOpen accountOpen = getExcelModelByKey(testCaseId, sheetName, AccountOpen::fromMap);
+        String fundingAccount = accountOpen.fromAccount();
 
         // Gets first From & Open Account.
         // webOpenAccountPage.configureAndOpenAccount(accountType);

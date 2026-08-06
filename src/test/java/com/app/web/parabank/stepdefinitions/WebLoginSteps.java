@@ -2,11 +2,11 @@ package com.app.web.parabank.stepdefinitions;
 
 import com.framework.context.ScenarioContext;
 import com.app.web.parabank.pages.WebLoginPage;
+import com.framework.models.LoginData;
 import com.framework.steps.BaseSteps;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import java.util.Map;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.assertEquals;
 import com.framework.context.ContextKeys;
@@ -33,14 +33,10 @@ public class WebLoginSteps extends BaseSteps {
 
     @When("the web user logs in using credentials from data key {string} sheet {string}")
     public void the_user_logs_in_using_credentials_from_data_key(String testCaseId, String sheetName) {
-        Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
+        LoginData credentials = getExcelModelByKey(testCaseId, sheetName, LoginData::fromMap);
+        context.setContext(ContextKeys.USER_DATA, credentials);
 
-        context.setContext(ContextKeys.USER_DATA, rowData);
-
-        String username = rowData.get("Username");
-        String password = rowData.get("Password");
-
-        webLoginPage.login(username, password);
+        webLoginPage.login(credentials.details().username(), credentials.details().password());
     }
 
     @Then("the Welcome message and the Accounts Overview page are displayed")

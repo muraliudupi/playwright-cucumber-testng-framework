@@ -3,10 +3,10 @@ package com.app.web.parabank.stepdefinitions;
 import com.app.web.parabank.pages.WebRegisterPage;
 import com.framework.context.ContextKeys;
 import com.framework.context.ScenarioContext;
+import com.framework.models.RegisterData;
 import com.framework.steps.BaseSteps;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
-import java.util.Map;
 import static org.testng.Assert.assertTrue;
 
 public class WebRegisterSteps extends BaseSteps {
@@ -21,25 +21,33 @@ public class WebRegisterSteps extends BaseSteps {
 
     @And("the user registers a new user using data key {string} sheet {string}")
     public void the_user_registers_new_user_using_data_key(String testCaseId, String sheetName) {
-        Map<String, String> rowData = getExcelRowByKey(testCaseId, sheetName);
+        RegisterData registerData = getExcelModelByKey(testCaseId, sheetName, RegisterData::fromMap);
 
         String uniqueSuffix = String.valueOf(System.currentTimeMillis());
-        String uniqueUsername = rowData.get("Username") + uniqueSuffix;
+        String uniqueUsername = registerData.loginDetails().username() + uniqueSuffix;
         String uniqueSsn = uniqueSuffix;
 
         webRegisterPage.navigateToRegister().submitNewRegistration(
-                rowData.get("FirstName"), rowData.get("LastName"), rowData.get("Address"), rowData.get("City"),
-                rowData.get("State"), rowData.get("ZipCode"), rowData.get("Phone"), uniqueSsn,
-                uniqueUsername, rowData.get("Password"));
+                registerData.firstName(),
+                registerData.lastName(),
+                registerData.address().address(),
+                registerData.address().city(),
+                registerData.address().state(),
+                registerData.address().zip(),
+                registerData.phone(),
+                uniqueSsn,
+                uniqueUsername,
+                registerData.loginDetails().password()
+        );
 
         context.setContext(ContextKeys.REGISTERED_USERNAME, uniqueUsername);
-        context.setContext(ContextKeys.REGISTERED_PASSWORD, rowData.get("Password"));
-        context.setContext(ContextKeys.REGISTERED_FIRST_NAME, rowData.get("FirstName"));
-        context.setContext(ContextKeys.REGISTERED_LAST_NAME, rowData.get("LastName"));
-        context.setContext(ContextKeys.REGISTERED_ADDRESS, rowData.get("Address"));
-        context.setContext(ContextKeys.REGISTERED_CITY, rowData.get("City"));
-        context.setContext(ContextKeys.REGISTERED_STATE, rowData.get("State"));
-        context.setContext(ContextKeys.REGISTERED_ZIP, rowData.get("ZipCode"));
+        context.setContext(ContextKeys.REGISTERED_PASSWORD, registerData.loginDetails().password());
+        context.setContext(ContextKeys.REGISTERED_FIRST_NAME, registerData.firstName());
+        context.setContext(ContextKeys.REGISTERED_LAST_NAME, registerData.lastName());
+        context.setContext(ContextKeys.REGISTERED_ADDRESS, registerData.address().address());
+        context.setContext(ContextKeys.REGISTERED_CITY, registerData.address().city());
+        context.setContext(ContextKeys.REGISTERED_STATE, registerData.address().state());
+        context.setContext(ContextKeys.REGISTERED_ZIP, registerData.address().zip());
         context.setContext(ContextKeys.REGISTERED_SSN, uniqueSsn);
     }
 
