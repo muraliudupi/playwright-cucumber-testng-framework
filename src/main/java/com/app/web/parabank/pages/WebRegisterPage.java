@@ -1,5 +1,6 @@
 package com.app.web.parabank.pages;
 
+import com.framework.models.RegisterData;
 import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
 
@@ -30,24 +31,37 @@ public class WebRegisterPage extends WebBasePage {
         return this;
     }
 
-    public void submitNewRegistration(String firstNameVal, String lastNameVal, String addressVal, String cityVal,
-                                      String stateVal, String zipVal, String phoneVal, String ssnVal,
-                                      String usernameVal, String passwordVal) {
-        firstName().fill(firstNameVal);
-        lastName().fill(lastNameVal);
-        address().fill(addressVal);
-        city().fill(cityVal);
-        state().fill(stateVal);
-        zip().fill(zipVal);
-        phone().fill(phoneVal);
+    public void submitNewRegistration(RegisterData registerData, String ssnVal, String usernameVal) {
+        firstName().fill(registerData.firstName());
+        lastName().fill(registerData.lastName());
+        address().fill(registerData.address().address());
+        city().fill(registerData.address().city());
+        state().fill(registerData.address().state());
+        zip().fill(registerData.address().zip());
+        phone().fill(registerData.phone());
         ssn().fill(ssnVal);
         username().fill(usernameVal);
-        password().fill(passwordVal);
-        repeatedPassword().fill(passwordVal);
+        password().fill(registerData.loginDetails().password());
+        repeatedPassword().fill(registerData.loginDetails().password());
         registerButton().click();
     }
 
     public void submitEmptyRegistrationForm() {
+        registerButton().click();
+    }
+
+    public void submitNewRegistration(String existingUsername) {
+        firstName().fill("Test");
+        lastName().fill("User");
+        address().fill("123 Test St");
+        city().fill("Testville");
+        state().fill("CA");
+        zip().fill("90000");
+        phone().fill("1234567890");
+        ssn().fill("123456789");
+        username().fill(existingUsername);
+        password().fill("password1");
+        repeatedPassword().fill("password1");
         registerButton().click();
     }
 

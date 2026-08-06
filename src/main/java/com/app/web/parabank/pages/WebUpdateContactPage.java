@@ -1,5 +1,6 @@
 package com.app.web.parabank.pages;
 
+import com.framework.models.UpdateContactData;
 import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
 
@@ -22,15 +23,14 @@ public class WebUpdateContactPage extends WebBasePage {
         return this;
     }
 
-    public WebUpdateContactPage updateContactInfo(String first, String last, String addr, String cityVal,
-                                                  String stateVal, String zipVal, String phoneVal) {
-        firstName().fill(first);
-        lastName().fill(last);
-        address().fill(addr);
-        city().fill(cityVal);
-        state().fill(stateVal);
-        zip().fill(zipVal);
-        phone().fill(phoneVal);
+    public WebUpdateContactPage updateContactInfo(UpdateContactData updateContactData) {
+        firstName().fill(updateContactData.firstName());
+        lastName().fill(updateContactData.lastName());
+        address().fill(updateContactData.address().address());
+        city().fill(updateContactData.address().city());
+        state().fill(updateContactData.address().state());
+        zip().fill(updateContactData.address().zip());
+        phone().fill(updateContactData.phone());
         updateProfileButton().click();
         return this;
     }

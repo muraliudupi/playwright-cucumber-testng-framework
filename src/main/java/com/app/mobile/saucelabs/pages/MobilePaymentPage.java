@@ -2,6 +2,7 @@ package com.app.mobile.saucelabs.pages;
 
 import com.framework.models.Address;
 import com.framework.models.PaymentDetails;
+import com.framework.utils.MobileScrollUtils;
 import io.appium.java_client.pagefactory.AndroidFindBy;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -23,9 +24,9 @@ public class MobilePaymentPage extends MobileBasePage {
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/zipET")       private WebElement txtBillingZip;
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/countryET")   private WebElement txtBillingCountry;
 
-    public MobilePaymentPage enterPaymentDetails(String billFullName, PaymentDetails paymentDetails) {
+    public MobilePaymentPage enterPaymentDetails(PaymentDetails paymentDetails) {
         ensureElementsInitialized();
-        wait(longWait()).until(ExpectedConditions.visibilityOf(txtCardHolderName)).sendKeys(billFullName);
+        wait(longWait()).until(ExpectedConditions.visibilityOf(txtCardHolderName)).sendKeys(paymentDetails.fullName());
         txtCardNumber.sendKeys(paymentDetails.cardNumber());
         txtExpirationDate.sendKeys(paymentDetails.expirationDate());
         txtSecurityCode.sendKeys(paymentDetails.securityCode());
@@ -34,13 +35,8 @@ public class MobilePaymentPage extends MobileBasePage {
 
     public MobilePaymentPage enterBillingAddressDetails(String billFullName, Address billingAddress) {
         ensureElementsInitialized();
-        String scrollToBillingSection =
-                "new UiScrollable(new UiSelector().scrollable(true))"
-                        + ".scrollIntoView(new UiSelector().resourceId(\"com.saucelabs.mydemoapp.android:id/countryET\"))";
-        try {
-            driver().findElement(io.appium.java_client.AppiumBy.androidUIAutomator(scrollToBillingSection));
-        } catch (Exception ignored) {
-            // Field may already be on-screen
+        for (int i = 0; i < 3 && !isElementVisible(txtBillingCountry); i++) {
+            MobileScrollUtils.scrollDown(driver());
         }
 
         wait(longWait()).until(ExpectedConditions.visibilityOf(txtBillingFullName)).sendKeys(billFullName);
@@ -79,6 +75,15 @@ public class MobilePaymentPage extends MobileBasePage {
         ensureElementsInitialized();
         try {
             return wait(longWait()).until(ExpectedConditions.visibilityOf(lblThankYou)).isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean isElementVisible(WebElement element) {
+        ensureElementsInitialized();
+        try {
+            return wait(longWait()).until(ExpectedConditions.visibilityOf(element)).isDisplayed();
         } catch (Exception e) {
             return false;
         }

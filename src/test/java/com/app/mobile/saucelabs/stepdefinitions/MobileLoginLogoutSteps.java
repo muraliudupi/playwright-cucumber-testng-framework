@@ -12,7 +12,7 @@ import org.testng.Assert;
 public class MobileLoginLogoutSteps extends BaseSteps {
 
     private final MobileLoginPage mobileLoginPage;
-    protected MobileProductPage mobileProductPage;
+    private final MobileProductPage mobileProductPage;
     private final ScenarioContext context;
 
     public MobileLoginLogoutSteps(MobileProductPage productPage, MobileLoginPage loginPage, ScenarioContext context) {

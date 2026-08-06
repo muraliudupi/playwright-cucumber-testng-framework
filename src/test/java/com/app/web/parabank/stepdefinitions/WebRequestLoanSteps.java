@@ -35,11 +35,7 @@ public class WebRequestLoanSteps extends BaseSteps {
         RequestLoanData requestLoanData = getExcelModelByKey(testCaseId, sheetName, RequestLoanData::fromMap);
         context.setContext(ContextKeys.LOAN_EXPECTED_STATUS, requestLoanData.expectedStatus());
 
-        webRequestLoanPage.navigateToRequestLoan().requestLoan(
-                String.valueOf(requestLoanData.loanAmount()),
-                String.valueOf(requestLoanData.downPayment()),
-                requestLoanData.fromAccount()
-        );
+        webRequestLoanPage.navigateToRequestLoan().requestLoan(requestLoanData);
     }
 
     @Then("the loan status matches the expected outcome")

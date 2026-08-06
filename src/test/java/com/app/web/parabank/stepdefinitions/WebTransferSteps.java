@@ -36,7 +36,7 @@ public class WebTransferSteps extends BaseSteps {
         String fromAccount = transferData.fromAccount();
         String toAccount = transferData.toAccount();
 
-        WebTransferPage.TransferAccounts actualAccounts = webTransferPage.executeTransfer(amount, fromAccount, toAccount);
+        WebTransferPage.TransferAccounts actualAccounts = webTransferPage.executeTransfer(transferData);
 
         context.setContext(ContextKeys.TX_AMOUNT, amount);
         context.setContext(ContextKeys.TX_FROM, actualAccounts.actualFromAccount());

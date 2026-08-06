@@ -20,10 +20,6 @@ public abstract class MobileBasePage {
     protected MobileBasePage() {
     }
 
-    public MobileBasePage(boolean isInitialized) {
-        this.isInitialized = isInitialized;
-    }
-
     protected synchronized void ensureElementsInitialized() {
         if (!isInitialized) {
             AppiumDriver driver = MobileDriverFactory.getDriver();

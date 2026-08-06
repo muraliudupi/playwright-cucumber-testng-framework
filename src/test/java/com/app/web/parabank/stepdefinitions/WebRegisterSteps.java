@@ -27,18 +27,7 @@ public class WebRegisterSteps extends BaseSteps {
         String uniqueUsername = registerData.loginDetails().username() + uniqueSuffix;
         String uniqueSsn = uniqueSuffix;
 
-        webRegisterPage.navigateToRegister().submitNewRegistration(
-                registerData.firstName(),
-                registerData.lastName(),
-                registerData.address().address(),
-                registerData.address().city(),
-                registerData.address().state(),
-                registerData.address().zip(),
-                registerData.phone(),
-                uniqueSsn,
-                uniqueUsername,
-                registerData.loginDetails().password()
-        );
+        webRegisterPage.navigateToRegister().submitNewRegistration(registerData, uniqueSsn, uniqueUsername);
 
         context.setContext(ContextKeys.REGISTERED_USERNAME, uniqueUsername);
         context.setContext(ContextKeys.REGISTERED_PASSWORD, registerData.loginDetails().password());
@@ -59,9 +48,8 @@ public class WebRegisterSteps extends BaseSteps {
 
     @And("the user attempts to register with an existing username {string}")
     public void the_user_attempts_to_register_with_existing_username(String existingUsername) {
-        webRegisterPage.navigateToRegister().submitNewRegistration(
-                "Test", "User", "123 Test St", "Testville", "CA", "90000", "1234567890", "123456789",
-                existingUsername, "TestPass123");
+        webRegisterPage.navigateToRegister();
+        webRegisterPage.submitNewRegistration(existingUsername);
     }
 
     @And("the user submits the registration form without entering any values")

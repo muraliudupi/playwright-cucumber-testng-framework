@@ -1,5 +1,6 @@
 package com.app.web.parabank.pages;
 
+import com.framework.models.RequestLoanData;
 import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
 
@@ -20,11 +21,11 @@ public class WebRequestLoanPage extends WebBasePage {
         return this;
     }
 
-    public WebRequestLoanPage requestLoan(String amount, String downPaymentValue, String fromAccount) {
-        loanAmount().fill(amount);
-        downPayment().fill(downPaymentValue);
+    public WebRequestLoanPage requestLoan(RequestLoanData requestLoanData) {
+        loanAmount().fill(String.valueOf(requestLoanData.loanAmount()));
+        downPayment().fill(String.valueOf(requestLoanData.downPayment()));
 
-        selectAccountWithFallback(fromAccountDropdown(), fromAccount, 0);
+        selectAccountWithFallback(fromAccountDropdown(), requestLoanData.fromAccount(), 0);
 
         applyButton().click();
         loanStatusHeading().waitFor(new Locator.WaitForOptions()

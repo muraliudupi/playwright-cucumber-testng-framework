@@ -18,15 +18,7 @@ public class WebUpdateContactSteps extends BaseSteps {
     public void the_user_updates_contact_info_using_data_key(String testCaseId, String sheetName) {
         UpdateContactData updateContactData = getExcelModelByKey(testCaseId, sheetName, UpdateContactData::fromMap);
 
-        webUpdateContactPage.navigateToUpdateContact().updateContactInfo(
-                updateContactData.firstName(),
-                updateContactData.lastName(),
-                updateContactData.address().address(),
-                updateContactData.address().city(),
-                updateContactData.address().state(),
-                updateContactData.address().zip(),
-                updateContactData.phone()
-        );
+        webUpdateContactPage.navigateToUpdateContact().updateContactInfo(updateContactData);
     }
 
     @Then("the contact info update is confirmed")

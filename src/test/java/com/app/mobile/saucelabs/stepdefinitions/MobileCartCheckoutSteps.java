@@ -174,7 +174,7 @@ public class MobileCartCheckoutSteps extends BaseSteps {
         return mobileShippingPage
                 .fillShippingDetails(checkoutDetails.fullName(), checkoutDetails.shippingAddress())
                 .proceedToPayment()
-                .enterPaymentDetails(checkoutDetails.billFullName(), checkoutDetails.paymentDetails());
+                .enterPaymentDetails(checkoutDetails.paymentDetails());
     }
 
     private void addProductToCart(String productLabel, int quantity) {

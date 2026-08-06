@@ -23,17 +23,7 @@ public class WebBillPaySteps extends BaseSteps {
         BillPayData billPayData = getExcelModelByKey(testCaseId, sheetName, BillPayData::fromMap);
 
         webBillPayPage.navigateToBillPay();
-        String actualFromAccount = webBillPayPage.payBill(
-                billPayData.payeeName(),
-                billPayData.address().address(),
-                billPayData.address().city(),
-                billPayData.address().state(),
-                billPayData.address().zip(),
-                billPayData.phone(),
-                billPayData.accountNumber(),
-                String.valueOf(billPayData.amount()),
-                billPayData.fromAccount()
-        );
+        String actualFromAccount = webBillPayPage.payBill(billPayData);
 
         context.setContext(ContextKeys.BILLPAY_PAYEE_NAME, billPayData.payeeName());
         context.setContext(ContextKeys.BILLPAY_AMOUNT, String.valueOf(billPayData.amount()));

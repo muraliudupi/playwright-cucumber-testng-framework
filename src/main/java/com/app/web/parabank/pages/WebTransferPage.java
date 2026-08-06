@@ -1,5 +1,6 @@
 package com.app.web.parabank.pages;
 
+import com.framework.models.TransferData;
 import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
 
@@ -42,15 +43,14 @@ public class WebTransferPage extends WebBasePage {
         return this;
     }
 
-    public TransferAccounts executeTransfer(String amount, String fromAccount, String toAccount) {
-        amountInput().fill(amount);
+    public TransferAccounts executeTransfer(TransferData transferData) {
+        amountInput().fill(String.valueOf(transferData.amount()));
 
-        String actualFrom = selectAccountWithFallback(fromAccountDropdown(), fromAccount, 0);
-        String actualTo = selectAccountWithFallback(toAccountDropdown(), toAccount, 1);
+        String actualFrom = selectAccountWithFallback(fromAccountDropdown(), transferData.fromAccount(), 0);
+        String actualTo = selectAccountWithFallback(toAccountDropdown(), transferData.toAccount(), 1);
 
         transferButton().click();
         return new TransferAccounts(actualFrom, actualTo);
-
     }
 
 /*  Transfer using 1st account in From & To dropdown.

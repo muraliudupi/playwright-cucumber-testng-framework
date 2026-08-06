@@ -1,5 +1,6 @@
 package com.app.web.parabank.pages;
 
+import com.framework.models.BillPayData;
 import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
 
@@ -53,19 +54,18 @@ public class WebBillPayPage extends WebBasePage {
         return this;
     }
 
-    public String payBill(String payeeNameValue, String address, String city, String state,
-                          String zip, String phone, String accountNumber, String amountValue, String fromAccount) {
-        payeeName().fill(payeeNameValue);
-        payeeAddress().fill(address);
-        payeeCity().fill(city);
-        payeeState().fill(state);
-        payeeZip().fill(zip);
-        payeePhone().fill(phone);
-        payeeAccount().fill(accountNumber);
-        verifyAccount().fill(accountNumber);
-        amount().fill(amountValue);
+    public String payBill(BillPayData billPayData) {
+        payeeName().fill(billPayData.payeeName());
+        payeeAddress().fill(billPayData.address().address());
+        payeeCity().fill(billPayData.address().city());
+        payeeState().fill(billPayData.address().state());
+        payeeZip().fill(billPayData.address().zip());
+        payeePhone().fill(billPayData.phone());
+        payeeAccount().fill(billPayData.accountNumber());
+        verifyAccount().fill(billPayData.accountNumber());
+        amount().fill(String.valueOf(billPayData.amount()));
 
-        String actualFromAccount = selectAccountWithFallback(fromAccountDropdown(), fromAccount, 0);
+        String actualFromAccount = selectAccountWithFallback(fromAccountDropdown(), billPayData.fromAccount(), 0);
 
         sendPaymentButton().click();
         return actualFromAccount;
