@@ -9,7 +9,6 @@ out/
 *.iml
 *.iws
 *.ipr
-local.properties
 
 # --- Test Framework Outputs & Reports ---
 # Cucumber, TestNG, ExtentReports or Allure execution reports should not be pushed
@@ -34,6 +33,9 @@ blob-report/
 *.log
 .DS_Store
 Thumbs.db
+local.properties
+review_report.md
+run_safe_review.js
 
 # --- Optional Data Safety Rule ---
 # Uncomment the line below if credentials or sensitive environments in config files

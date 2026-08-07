@@ -1,12 +1,14 @@
 package com.app.mobile.saucelabs.stepdefinitions;
 
 import com.app.mobile.saucelabs.pages.*;
+import com.framework.context.ContextKeys;
 import com.framework.context.ScenarioContext;
 import com.framework.models.CheckoutDetails;
 import com.framework.models.MobileCartData;
 import com.framework.models.MobileCheckoutData;
 import com.framework.models.MobileCheckoutGuestData;
 import com.framework.steps.BaseSteps;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -21,18 +23,21 @@ public class MobileCartCheckoutSteps extends BaseSteps {
     private final MobileLoginPage mobileLoginPage;
     private final MobileShippingPage mobileShippingPage;
     private final MobilePaymentPage mobilePaymentPage;
+    private final MobileReviewPage mobileReviewPage;
     private final ScenarioContext context;
 
     public MobileCartCheckoutSteps(MobileProductPage mobileProductPage,
                                    MobileCartPage mobileCartPage,
                                    MobileShippingPage mobileShippingPage,
                                    MobilePaymentPage mobilePaymentPage,
+                                   MobileReviewPage mobileReviewPage,
                                    MobileLoginPage mobileLoginPage,
                                    ScenarioContext context) {
         this.mobileProductPage = mobileProductPage;
         this.mobileCartPage = mobileCartPage;
         this.mobileShippingPage = mobileShippingPage;
         this.mobilePaymentPage = mobilePaymentPage;
+        this.mobileReviewPage = mobileReviewPage;
         this.mobileLoginPage = mobileLoginPage;
         this.context = context;
     }
@@ -108,12 +113,15 @@ public class MobileCartCheckoutSteps extends BaseSteps {
                 mobileCheckoutGuestData.details().username(),
                 mobileCheckoutGuestData.details().password()
         );
-        enterShippingAndPaymentDetails(mobileCheckoutGuestData).proceedToReview().placeOrder();
+        enterShippingAndPaymentDetails(mobileCheckoutGuestData).proceedToReview();
+        verifyShippingAndPaymentOnReview(mobileCheckoutGuestData);
+
+        mobileReviewPage.placeOrder();
     }
 
     @Then("the order confirmation should be displayed")
     public void the_order_confirmation_should_be_displayed() {
-        Assert.assertTrue(mobilePaymentPage.isOrderConfirmationDisplayed(),
+        Assert.assertTrue(mobileReviewPage.isOrderConfirmationDisplayed(),
                 "Order Confirmation Failure: 'Thank You' confirmation screen was not displayed.");
     }
 
@@ -142,9 +150,20 @@ public class MobileCartCheckoutSteps extends BaseSteps {
                 "Expected login screen to appear for unauthenticated checkout.");
     }
 
+    @And("the user clicks on Continue Shopping button and Catalog page should be displayed")
+    public void the_user_clicks_continue_shopping_Catalog_page_displayed() {
+        mobileReviewPage.continueShopping();
+        Assert.assertTrue(mobileProductPage.verifyDashboard(),
+                "Cross-Platform Validation Failure: Product Catalog header dashboard missing.");
+    }
+
     private void completeCheckoutFlow(MobileCheckoutData mobileCheckoutData) {
         MobilePaymentPage payment = enterTillPaymentDetails(mobileCheckoutData);
-        payment.proceedToReview().placeOrder();
+
+        payment.proceedToReview();
+        verifyShippingAndPaymentOnReview(mobileCheckoutData);
+
+        mobileReviewPage.placeOrder();
     }
 
     private void completeCheckoutWithDifferentBillingAddress(MobileCheckoutData mobileCheckoutData) {
@@ -155,8 +174,13 @@ public class MobileCartCheckoutSteps extends BaseSteps {
                         mobileCheckoutData.billFullName(),
                         mobileCheckoutData.billingAddress()
                 )
-                .proceedToReview()
-                .placeOrder();
+                .proceedToReview();
+
+        verifyShippingAndPaymentOnReview(mobileCheckoutData);
+        Assert.assertTrue(mobileReviewPage.billingDetailsMatch(mobileCheckoutData.billFullName(), mobileCheckoutData.billingAddress()),
+                "Review Order Failure: billing details did not match what was entered.");
+
+        mobileReviewPage.placeOrder();
     }
 
     private MobilePaymentPage enterTillPaymentDetails(MobileCheckoutData mobileCheckoutData) {
@@ -171,10 +195,13 @@ public class MobileCartCheckoutSteps extends BaseSteps {
     }
 
     private MobilePaymentPage enterShippingAndPaymentDetails(CheckoutDetails checkoutDetails) {
-        return mobileShippingPage
+        context.setContext(ContextKeys.CHECKOUT_DETAILS, checkoutDetails);
+
+        mobileShippingPage
                 .fillShippingDetails(checkoutDetails.fullName(), checkoutDetails.shippingAddress())
-                .proceedToPayment()
-                .enterPaymentDetails(checkoutDetails.paymentDetails());
+                .proceedToPayment();
+
+        return mobilePaymentPage.enterPaymentDetails(checkoutDetails.paymentDetails());
     }
 
     private void addProductToCart(String productLabel, int quantity) {
@@ -182,5 +209,12 @@ public class MobileCartCheckoutSteps extends BaseSteps {
                 .selectProduct(productLabel)
                 .setQuantity(quantity)
                 .addToCart();
+    }
+
+    private void verifyShippingAndPaymentOnReview(CheckoutDetails checkoutDetails) {
+        Assert.assertTrue(mobileReviewPage.shippingDetailsMatch(checkoutDetails.fullName(), checkoutDetails.shippingAddress()),
+                "Review Order Failure: shipping details did not match what was entered.");
+        Assert.assertTrue(mobileReviewPage.paymentDetailsMatch(checkoutDetails.paymentDetails()),
+                "Review Order Failure: payment details did not match what was entered.");
     }
 }

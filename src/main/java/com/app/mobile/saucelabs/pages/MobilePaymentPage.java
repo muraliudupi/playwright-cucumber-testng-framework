@@ -15,7 +15,6 @@ public class MobilePaymentPage extends MobileBasePage {
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/securityCodeET")    private WebElement txtSecurityCode;
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/billingAddressCB")  private WebElement chkBillingSameAsShipping;
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/paymentBtn")        private WebElement btnProceed;
-    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/thankYouTV")        private WebElement lblThankYou;
 
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/fullNameET")  private WebElement txtBillingFullName;
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/address1ET")  private WebElement txtBillingAddress1;
@@ -23,6 +22,12 @@ public class MobilePaymentPage extends MobileBasePage {
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/stateET")     private WebElement txtBillingState;
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/zipET")       private WebElement txtBillingZip;
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/countryET")   private WebElement txtBillingCountry;
+
+    private final MobileReviewPage mobileReviewPage;
+
+    public MobilePaymentPage(MobileReviewPage mobileReviewPage) {
+        this.mobileReviewPage = mobileReviewPage;
+    }
 
     public MobilePaymentPage enterPaymentDetails(PaymentDetails paymentDetails) {
         ensureElementsInitialized();
@@ -54,38 +59,14 @@ public class MobilePaymentPage extends MobileBasePage {
         return this;
     }
 
-    public MobilePaymentPage proceedToReview() {
+    public MobileReviewPage proceedToReview() {
         ensureElementsInitialized();
         wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnProceed)).click();
-        return this;
-    }
-
-    public MobilePaymentPage placeOrder() {
-        ensureElementsInitialized();
-        wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnProceed)).click();
-        return this;
+        return mobileReviewPage;
     }
 
     public void submitPaymentEmpty() {
         ensureElementsInitialized();
         wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnProceed)).click();
-    }
-
-    public boolean isOrderConfirmationDisplayed() {
-        ensureElementsInitialized();
-        try {
-            return wait(longWait()).until(ExpectedConditions.visibilityOf(lblThankYou)).isDisplayed();
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    public boolean isElementVisible(WebElement element) {
-        ensureElementsInitialized();
-        try {
-            return wait(longWait()).until(ExpectedConditions.visibilityOf(element)).isDisplayed();
-        } catch (Exception e) {
-            return false;
-        }
     }
 }

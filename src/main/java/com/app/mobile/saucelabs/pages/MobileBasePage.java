@@ -6,7 +6,9 @@ import com.framework.utils.MobileScrollUtils;
 import io.appium.java_client.AppiumDriver;
 import io.appium.java_client.pagefactory.AppiumFieldDecorator;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,5 +74,14 @@ public abstract class MobileBasePage {
             }
         }
         return false;
+    }
+
+    public boolean isElementVisible(WebElement element) {
+        ensureElementsInitialized();
+        try {
+            return wait(existenceCheckTimeout()).until(ExpectedConditions.visibilityOf(element)).isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

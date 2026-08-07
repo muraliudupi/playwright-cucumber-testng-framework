@@ -12,15 +12,16 @@ Feature: Mobile - Cart and Checkout
     When the user removes the added product from the cart
     Then the removed product should no longer be visible in the cart
 
-  @mobile @cart @checkout @require_login
+  @mobile @cart @checkout @require_login @test
   Scenario: User Logged In: Complete checkout & Order products.
     When the user proceeds to checkout and completes the order using data key "Checkout_001" sheet "MobileCheckoutData"
     Then the order confirmation should be displayed
 
-  @mobile @cart @checkout @require_login @diff
+  @mobile @cart @checkout @require_login @diffbilladdr
   Scenario: User Logged In: Complete checkout, different billing address & Order products.
     When the user proceeds to checkout with different billing address and completes the order using data key "Checkout_002" sheet "MobileCheckoutData"
     Then the order confirmation should be displayed
+    And the user clicks on Continue Shopping button and Catalog page should be displayed
 
   # Guest User
   @mobile @cart @guest

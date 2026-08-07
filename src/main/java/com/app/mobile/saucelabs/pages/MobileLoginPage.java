@@ -42,6 +42,7 @@ public class MobileLoginPage extends MobileBasePage {
         btnLogin.click();
 
         return this;
+
     }
 
     public boolean isLoginOptionDisplayed() {
