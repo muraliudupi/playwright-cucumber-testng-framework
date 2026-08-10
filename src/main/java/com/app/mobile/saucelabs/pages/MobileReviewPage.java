@@ -6,8 +6,17 @@ import com.framework.utils.MobileScrollUtils;
 import io.appium.java_client.pagefactory.AndroidFindBy;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import com.framework.models.OrderItem;
+import org.openqa.selenium.By;
 
 public class MobileReviewPage extends MobileBasePage {
+
+    private static final String PRODUCT_TITLE_ID = "com.saucelabs.mydemoapp.android:id/titleTV";
+    private static final String PRODUCT_QTY_ID   = "com.saucelabs.mydemoapp.android:id/noTV";
+    private static final String COLOR_ICON_DESC  = "Displays color of selected product";
+
+    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/itemNumberTV")  private WebElement lblItemCount;
+    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/totalAmountTV") private WebElement lblTotalAmount;
 
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/fullNameTV")   private WebElement lblShippingFullName;
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/addressTV")    private WebElement lblShippingAddress;
@@ -27,6 +36,70 @@ public class MobileReviewPage extends MobileBasePage {
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/thankYouTV")   private WebElement lblThankYou;
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/shoopingBt")
     private WebElement btnContinueShopping;
+
+    public boolean orderItemMatches(OrderItem item) {
+        ensureElementsInitialized();
+        for (int i = 0; i < 3 && !isProductInOrderSummary(item.productLabel()); i++) {
+            MobileScrollUtils.scrollDown(driver());
+        }
+        return isProductInOrderSummary(item.productLabel())
+                && quantityMatches(item.productLabel(), item.quantity())
+                && isColorIndicatorDisplayedForProduct(item.productLabel());
+    }
+
+    private boolean isProductInOrderSummary(String productLabel) {
+        try {
+            By productTitle = By.xpath(String.format(
+                    "//android.widget.TextView[@resource-id='%s' and @text='%s']",
+                    PRODUCT_TITLE_ID, productLabel));
+            return wait(existenceCheckTimeout()).until(ExpectedConditions.visibilityOfElementLocated(productTitle)).isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean quantityMatches(String productLabel, int expectedQuantity) {
+        try {
+            By quantityForProduct = By.xpath(String.format(
+                    "//android.widget.TextView[@text='%s']"
+                            + "/ancestor::android.view.ViewGroup[.//android.widget.TextView[@resource-id='%s']][1]"
+                            + "//android.widget.TextView[@resource-id='%s']",
+                    productLabel, PRODUCT_QTY_ID, PRODUCT_QTY_ID));
+            String actual = wait(existenceCheckTimeout()).until(ExpectedConditions.visibilityOfElementLocated(quantityForProduct)).getText();
+            return String.valueOf(expectedQuantity).equals(actual.trim());
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean isColorIndicatorDisplayedForProduct(String productLabel) {
+        try {
+            By colorIcon = By.xpath(String.format(
+                    "//android.widget.TextView[@text='%s']"
+                            + "/ancestor::android.view.ViewGroup[.//android.widget.ImageView[@content-desc='%s']][1]"
+                            + "//android.widget.ImageView[@content-desc='%s']",
+                    productLabel, COLOR_ICON_DESC, COLOR_ICON_DESC));
+            return wait(existenceCheckTimeout()).until(ExpectedConditions.visibilityOfElementLocated(colorIcon)).isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean itemCountMatches(int expectedQuantity) {
+        ensureElementsInitialized();
+        String actual = wait(existenceCheckTimeout()).until(ExpectedConditions.visibilityOf(lblItemCount)).getText();
+        return actual != null && actual.trim().startsWith(String.valueOf(expectedQuantity));
+    }
+
+    public boolean isTotalAmountDisplayed() {
+        ensureElementsInitialized();
+        try {
+            String actual = wait(existenceCheckTimeout()).until(ExpectedConditions.visibilityOf(lblTotalAmount)).getText();
+            return actual != null && actual.matches(".*\\d+\\.\\d{2}.*");
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     public boolean shippingDetailsMatch(String fullName, Address shippingAddress) {
         ensureElementsInitialized();

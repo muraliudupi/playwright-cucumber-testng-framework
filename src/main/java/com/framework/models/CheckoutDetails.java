@@ -6,4 +6,5 @@ public interface CheckoutDetails {
     String billFullName();
     Address billingAddress();
     PaymentDetails paymentDetails();
+    OrderItem item();
 }

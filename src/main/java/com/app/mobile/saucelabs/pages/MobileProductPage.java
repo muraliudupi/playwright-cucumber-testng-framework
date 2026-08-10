@@ -45,6 +45,9 @@ public class MobileProductPage extends MobileBasePage {
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/cartRL")
     private WebElement btnCartIcon;
 
+    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/cartTV")
+    private WebElement lblCartBadge;
+
 
     public MobileLoginPage openLoginScreen() {
         navigateToLoginScreen();
@@ -137,5 +140,15 @@ public class MobileProductPage extends MobileBasePage {
                 .stream()
                 .map(e -> Double.parseDouble(e.getText().replaceAll("[^0-9.]", "")))
                 .collect(java.util.stream.Collectors.toList());
+    }
+
+    public boolean cartBadgeMatches(int expectedCount) {
+        ensureElementsInitialized();
+        try {
+            String actual = wait(existenceCheckTimeout()).until(ExpectedConditions.visibilityOf(lblCartBadge)).getText();
+            return String.valueOf(expectedCount).equals(actual.trim());
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

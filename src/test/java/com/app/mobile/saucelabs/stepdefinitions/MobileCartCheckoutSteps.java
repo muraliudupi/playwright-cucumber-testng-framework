@@ -205,10 +205,16 @@ public class MobileCartCheckoutSteps extends BaseSteps {
     }
 
     private void addProductToCart(String productLabel, int quantity) {
-        mobileProductPage
-                .selectProduct(productLabel)
-                .setQuantity(quantity)
-                .addToCart();
+        context.setContext(CTX_PRODUCT_LABEL, productLabel);
+        mobileProductPage.selectProduct(productLabel).setQuantity(quantity).addToCart();
+
+        Assert.assertTrue(mobileProductPage.cartBadgeMatches(quantity),
+                "Cart Badge Failure: badge count did not match the quantity just added.");
+
+        mobileProductPage.openCart();
+
+        Assert.assertTrue(mobileCartPage.cartContentsMatch(productLabel, quantity),
+                "Cart Contents Failure: product, quantity, or color in cart did not match what was added.");
     }
 
     private void verifyShippingAndPaymentOnReview(CheckoutDetails checkoutDetails) {
@@ -216,5 +222,11 @@ public class MobileCartCheckoutSteps extends BaseSteps {
                 "Review Order Failure: shipping details did not match what was entered.");
         Assert.assertTrue(mobileReviewPage.paymentDetailsMatch(checkoutDetails.paymentDetails()),
                 "Review Order Failure: payment details did not match what was entered.");
+        Assert.assertTrue(mobileReviewPage.orderItemMatches(checkoutDetails.item()),
+                "Review Order Failure: product label, quantity, or color did not match the cart.");
+        Assert.assertTrue(mobileReviewPage.itemCountMatches(checkoutDetails.item().quantity()),
+                "Review Order Failure: item count summary did not match the ordered quantity.");
+        Assert.assertTrue(mobileReviewPage.isTotalAmountDisplayed(),
+                "Review Order Failure: total amount was not displayed in a recognizable currency format.");
     }
 }

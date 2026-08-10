@@ -1,5 +1,6 @@
 package com.app.mobile.saucelabs.pages;
 
+import com.framework.utils.MobileOrderRowUtils;
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.pagefactory.AndroidFindBy;
 import org.openqa.selenium.By;
@@ -20,7 +21,7 @@ public class MobileCartPage extends MobileBasePage {
             driver().findElement(AppiumBy.androidUIAutomator(productScrollCommand(productLabel)));
 
             return wait(existenceCheckTimeout())
-                    .until(ExpectedConditions.visibilityOfElementLocated(cartItemTitleLocator(productLabel)))
+                    .until(ExpectedConditions.visibilityOfElementLocated(MobileOrderRowUtils.productTitleLocator(productLabel)))
                     .isDisplayed();
         } catch (Exception e) {
             return false;
@@ -48,10 +49,6 @@ public class MobileCartPage extends MobileBasePage {
         return this;
     }
 
-    private By cartItemTitleLocator(String productLabel) {
-        return By.xpath(String.format("//android.widget.TextView[@resource-id='com.saucelabs.mydemoapp.android:id/titleTV' and @text='%s']", productLabel));
-    }
-
     private String productScrollCommand(String productLabel) {
         return String.format(
                 "new UiScrollable(new UiSelector().resourceId(\"com.saucelabs.mydemoapp.android:id/productRV\"))"
@@ -68,15 +65,31 @@ public class MobileCartPage extends MobileBasePage {
         ensureElementsInitialized();
         try {
             driver().findElement(AppiumBy.androidUIAutomator(productScrollCommand(productLabel)));
-            By colorIcon = By.xpath(String.format(
-                    "//android.widget.TextView[@text='%s']"
-                            + "/ancestor::android.view.ViewGroup[.//android.widget.ImageView[@content-desc='Displays color of selected product']][1]"
-                            + "//android.widget.ImageView[@content-desc='Displays color of selected product']",
-                    productLabel));
-            return wait(existenceCheckTimeout()).until(ExpectedConditions.visibilityOfElementLocated(colorIcon)).isDisplayed();
+            return wait(existenceCheckTimeout())
+                    .until(ExpectedConditions.visibilityOfElementLocated(MobileOrderRowUtils.productColorIconLocator(productLabel)))
+                    .isDisplayed();
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public boolean quantityMatches(String productLabel, int expectedQuantity) {
+        ensureElementsInitialized();
+        try {
+            driver().findElement(AppiumBy.androidUIAutomator(productScrollCommand(productLabel)));
+            String actual = wait(existenceCheckTimeout())
+                    .until(ExpectedConditions.visibilityOfElementLocated(MobileOrderRowUtils.productQuantityLocator(productLabel)))
+                    .getText();
+            return String.valueOf(expectedQuantity).equals(actual.trim());
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean cartContentsMatch(String productLabel, int expectedQuantity) {
+        return isProductInCart(productLabel)
+                && quantityMatches(productLabel, expectedQuantity)
+                && isColorIndicatorDisplayedForProduct(productLabel);
     }
 
 }
