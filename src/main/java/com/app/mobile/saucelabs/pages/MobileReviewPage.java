@@ -1,22 +1,25 @@
 package com.app.mobile.saucelabs.pages;
 
 import com.framework.models.Address;
+import com.framework.models.OrderItem;
 import com.framework.models.PaymentDetails;
 import com.framework.utils.MobileScrollUtils;
 import io.appium.java_client.pagefactory.AndroidFindBy;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import com.framework.models.OrderItem;
-import org.openqa.selenium.By;
 
 public class MobileReviewPage extends MobileBasePage {
 
     private static final String PRODUCT_TITLE_ID = "com.saucelabs.mydemoapp.android:id/titleTV";
-    private static final String PRODUCT_QTY_ID   = "com.saucelabs.mydemoapp.android:id/noTV";
+    private static final String PRODUCT_QTY_ID   = "com.saucelabs.mydemoapp.android:id/noTV";  //In Cart Review Page
     private static final String COLOR_ICON_DESC  = "Displays color of selected product";
 
-    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/itemNumberTV")  private WebElement lblItemCount;
-    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/totalAmountTV") private WebElement lblTotalAmount;
+    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/itemsTV")  private WebElement lblItemCount; //In Cart Review Page
+    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/itemNumberTV")  private WebElement lblReviewItemCount; // In Checkout Review Page
+
+    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/totalPriceTV") private WebElement lblTotalAmount; //In Cart Review Page
+    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/totalAmountTV") private WebElement lblReviewTotalAmount; // In Checkout Review Page
 
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/fullNameTV")   private WebElement lblShippingFullName;
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/addressTV")    private WebElement lblShippingAddress;
@@ -39,7 +42,9 @@ public class MobileReviewPage extends MobileBasePage {
 
     public boolean orderItemMatches(OrderItem item) {
         ensureElementsInitialized();
-        for (int i = 0; i < 3 && !isProductInOrderSummary(item.productLabel()); i++) {
+        for (int i = 0; i < 5 && !(isProductInOrderSummary(item.productLabel())
+                && quantityMatches(item.productLabel(), item.quantity())
+                && isColorIndicatorDisplayedForProduct(item.productLabel())); i++) {
             MobileScrollUtils.scrollDown(driver());
         }
         return isProductInOrderSummary(item.productLabel())

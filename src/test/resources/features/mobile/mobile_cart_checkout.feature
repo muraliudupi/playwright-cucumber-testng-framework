@@ -17,7 +17,7 @@ Feature: Mobile - Cart and Checkout
     When the user proceeds to checkout and completes the order using data key "Checkout_001" sheet "MobileCheckoutData"
     Then the order confirmation should be displayed
 
-  @mobile @cart @checkout @require_login @diffbilladdr
+  @mobile @cart @checkout @require_login @diffbilladdr  @test
   Scenario: User Logged In: Complete checkout, different billing address & Order products.
     When the user proceeds to checkout with different billing address and completes the order using data key "Checkout_002" sheet "MobileCheckoutData"
     Then the order confirmation should be displayed
@@ -35,7 +35,7 @@ Feature: Mobile - Cart and Checkout
     When the user removes the added product from the cart
     Then the removed product should no longer be visible in the cart
 
-  @mobile @cart @checkout @guest
+  @mobile @cart @checkout @guest @test
   Scenario: Guest User: Guest checkout, log in mid-flow, and complete the order
     Given the user has a product already added to the cart using data key "CheckoutGuest_001" sheet "MobileCheckoutGuestData"
     When the user proceeds to checkout as a guest and completes the order using data key "CheckoutGuest_001" sheet "MobileCheckoutGuestData"

@@ -12,7 +12,7 @@ public class MobileCartPage extends MobileBasePage {
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/cartBt")
     private WebElement btnCheckout;
 
-    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/itemsTV")
+    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/cartTV")
     private WebElement lblItemCount;
 
     public boolean isProductInCart(String productLabel) {
