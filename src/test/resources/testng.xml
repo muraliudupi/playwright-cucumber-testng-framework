@@ -4,6 +4,7 @@
 <suite name="Playwright-Cucumber-Suite" data-provider-thread-count="2" verbose="1">
     <listeners>
         <listener class-name="com.framework.listeners.FrameworkSuiteListener"/>
+        <listener class-name="com.framework.listeners.RetryAnnotationTransformer"/>
     </listeners>
 
     <test name="Cucumber-Regression-Test">
