@@ -8,7 +8,7 @@
 
     <test name="Cucumber-Regression-Test">
         <classes>
-            <!-- <class name="com.framework.runners.WebTestNGRunner"/> -->
+            <class name="com.framework.runners.WebTestNGRunner"/>
             <class name="com.framework.runners.MobileTestNGRunner"/>
         </classes>
     </test>

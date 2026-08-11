@@ -12,8 +12,11 @@ public class MobileCartPage extends MobileBasePage {
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/cartBt")
     private WebElement btnCheckout;
 
-    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/cartTV")
+    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/itemsTV")
     private WebElement lblItemCount;
+
+    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/totalPriceTV")
+    private WebElement lblTotalPrice;
 
     public boolean isProductInCart(String productLabel) {
         ensureElementsInitialized();
@@ -31,6 +34,11 @@ public class MobileCartPage extends MobileBasePage {
     public String getItemCountLabel() {
         ensureElementsInitialized();
         return wait(longWait()).until(ExpectedConditions.visibilityOf(lblItemCount)).getText();
+    }
+
+    public String getTotalPriceLabel() {
+        ensureElementsInitialized();
+        return wait(longWait()).until(ExpectedConditions.visibilityOf(lblTotalPrice)).getText();
     }
 
     public MobileCartPage removeProduct(String productLabel) {

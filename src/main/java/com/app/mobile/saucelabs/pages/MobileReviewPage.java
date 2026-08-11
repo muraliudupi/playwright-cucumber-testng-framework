@@ -15,11 +15,8 @@ public class MobileReviewPage extends MobileBasePage {
     private static final String PRODUCT_QTY_ID   = "com.saucelabs.mydemoapp.android:id/noTV";  //In Cart Review Page
     private static final String COLOR_ICON_DESC  = "Displays color of selected product";
 
-    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/itemsTV")  private WebElement lblItemCount; //In Cart Review Page
-    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/itemNumberTV")  private WebElement lblReviewItemCount; // In Checkout Review Page
-
-    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/totalPriceTV") private WebElement lblTotalAmount; //In Cart Review Page
-    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/totalAmountTV") private WebElement lblReviewTotalAmount; // In Checkout Review Page
+    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/itemNumberTV")  private WebElement lblItemCount;
+    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/totalAmountTV") private WebElement lblTotalAmount;
 
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/fullNameTV")   private WebElement lblShippingFullName;
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/addressTV")    private WebElement lblShippingAddress;
