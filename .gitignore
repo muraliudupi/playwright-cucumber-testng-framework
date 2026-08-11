@@ -2,6 +2,7 @@
 .gradle/
 build/
 .gradle-user-home/
+.ollamassist/
 
 # --- IntelliJ IDEA Settings ---
 .idea/
