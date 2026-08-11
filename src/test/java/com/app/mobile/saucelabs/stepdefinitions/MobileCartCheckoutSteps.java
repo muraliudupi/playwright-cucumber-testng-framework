@@ -218,12 +218,12 @@ public class MobileCartCheckoutSteps extends BaseSteps {
     }
 
     private void verifyShippingAndPaymentOnReview(CheckoutDetails checkoutDetails) {
+        Assert.assertTrue(mobileReviewPage.orderItemMatches(checkoutDetails.item()),
+                "Review Order Failure: product label, quantity, or color did not match the cart.");
         Assert.assertTrue(mobileReviewPage.shippingDetailsMatch(checkoutDetails.fullName(), checkoutDetails.shippingAddress()),
                 "Review Order Failure: shipping details did not match what was entered.");
         Assert.assertTrue(mobileReviewPage.paymentDetailsMatch(checkoutDetails.paymentDetails()),
                 "Review Order Failure: payment details did not match what was entered.");
-        Assert.assertTrue(mobileReviewPage.orderItemMatches(checkoutDetails.item()),
-                "Review Order Failure: product label, quantity, or color did not match the cart.");
         Assert.assertTrue(mobileReviewPage.itemCountMatches(checkoutDetails.item().quantity()),
                 "Review Order Failure: item count summary did not match the ordered quantity.");
         Assert.assertTrue(mobileReviewPage.isTotalAmountDisplayed(),

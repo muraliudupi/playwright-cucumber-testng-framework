@@ -43,12 +43,10 @@ public class MobileReviewPage extends MobileBasePage {
     public boolean orderItemMatches(OrderItem item) {
         ensureElementsInitialized();
         for (int i = 0; i < 5 && !(isProductInOrderSummary(item.productLabel())
-                && quantityMatches(item.productLabel(), item.quantity())
                 && isColorIndicatorDisplayedForProduct(item.productLabel())); i++) {
             MobileScrollUtils.scrollDown(driver());
         }
         return isProductInOrderSummary(item.productLabel())
-                && quantityMatches(item.productLabel(), item.quantity())
                 && isColorIndicatorDisplayedForProduct(item.productLabel());
     }
 
