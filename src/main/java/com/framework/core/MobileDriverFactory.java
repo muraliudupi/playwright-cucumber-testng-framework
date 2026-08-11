@@ -38,6 +38,10 @@ public final class MobileDriverFactory {
         if (poolConfig == null || poolConfig.isBlank()) {
             poolConfig = ConfigReader.get("mobile.local.device.name"); // single-device fallback
         }
+        if (poolConfig == null || poolConfig.isBlank()) {
+            throw new IllegalStateException(
+                    "Local mobile execution requires 'mobile.local.device.pool' or 'mobile.local.device.name' in config.properties.");
+        }
         for (String device : poolConfig.split(",")) {
             LOCAL_DEVICE_POOL.add(device.trim());
         }

@@ -46,26 +46,6 @@ public class WebTransferSteps extends BaseSteps {
             LOG.warn("Test data requested From={}, To={} but framework substituted From={}, To={}.",
                     fromAccount, toAccount, actualAccounts.actualFromAccount(), actualAccounts.actualToAccount());
         }
-
-/*      Gets first From and To account and perform transfer.
-        com.microsoft.playwright.Page p = com.framework.core.WebDriverFactory.getPage();
-
-        p.locator("#fromAccountId option").first().waitFor();
-
-        java.util.List<String> options = p.locator("#fromAccountId option").allInnerTexts();
-        if (options.size() < 2) {
-            throw new IllegalStateException("Automation Failure: Insufficient dynamic accounts found in UI dropdown to perform a transfer.");
-        }
-
-        String dynamicFromAccount = options.get(0).trim();
-        String dynamicToAccount = options.get(1).trim();
-
-        context.setContext("TX_AMOUNT", amount);
-        context.setContext("TX_FROM", dynamicFromAccount);
-        context.setContext("TX_TO", dynamicToAccount);
-
-        // Execute step cleanly with deterministic state values
-        webTransferPage.executeTransfer(amount, dynamicFromAccount, dynamicToAccount);*/
     }
 
     @Then("the transfer completes successfully with a validated dynamic confirmation message")

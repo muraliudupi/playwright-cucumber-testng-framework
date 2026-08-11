@@ -36,6 +36,12 @@ public final class WebDriverFactory {
     }
 
     private static Browser getBrowser() {
+        Browser existing = BROWSER_THREAD_LOCAL.get();
+        if (existing != null && !existing.isConnected()) {
+            LOG.warn("[Thread-{}] Bound Browser reference is no longer connected (stale from a prior suite run on this thread). Discarding and re-launching.", threadId());
+            BROWSER_THREAD_LOCAL.remove();
+            BROWSER_REGISTRY.remove(threadId());
+        }
         if (BROWSER_THREAD_LOCAL.get() == null) {
             String browserType = resolveSetting("browser", "chromium").trim().toLowerCase();
             boolean headless = Boolean.parseBoolean(resolveSetting("headless", "true"));

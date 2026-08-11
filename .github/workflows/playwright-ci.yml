@@ -66,6 +66,8 @@ jobs:
           path: |
             build/reports/cucumber/*.html
             build/reports/extent/ExtentReport.html
+            build/reports/traces/*.zip
+            build/reports/logs/*.log
           if-no-files-found: ignore
           retention-days: 14
 
