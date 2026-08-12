@@ -8,7 +8,7 @@ Feature: Mobile - Cart and Checkout
 
   @mobile @cart @remove @require_login
   Scenario: User Logged In: Remove a product from the cart
-    Given the user has a product already added to the cart using data key "Cart_001" sheet "MobileCartData"
+    Given the user has a product already added to the cart using data key "Cart_002" sheet "MobileCartData"
     When the user removes the added product from the cart
     Then the removed product should no longer be visible in the cart
 
@@ -31,7 +31,7 @@ Feature: Mobile - Cart and Checkout
 
   @mobile @cart @remove @guest
   Scenario: Guest User: Remove a product from the cart
-    Given the user has a product already added to the cart using data key "Cart_001" sheet "MobileCartData"
+    Given the user has a product already added to the cart using data key "Cart_002" sheet "MobileCartData"
     When the user removes the added product from the cart
     Then the removed product should no longer be visible in the cart
 

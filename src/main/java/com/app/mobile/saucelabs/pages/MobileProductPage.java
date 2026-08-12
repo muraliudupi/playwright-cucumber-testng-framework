@@ -1,10 +1,14 @@
 package com.app.mobile.saucelabs.pages;
 
-import io.appium.java_client.AppiumBy;
+import com.framework.utils.ConfigReader;
+import com.framework.utils.MobileScrollUtils;
 import io.appium.java_client.pagefactory.AndroidFindBy;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class MobileProductPage extends MobileBasePage {
 
@@ -100,18 +104,23 @@ public class MobileProductPage extends MobileBasePage {
     public MobileProductDetailPage selectProduct(String productLabel) {
         ensureElementsInitialized();
 
-        String scrollToProductInCatalog = String.format(
-                "new UiScrollable(new UiSelector().resourceId(\"com.saucelabs.mydemoapp.android:id/productRV\"))"
-                        + ".scrollIntoView(new UiSelector().text(\"%s\"))",
-                productLabel);
-        wait(longWait()).until(d -> {
-            d.findElement(AppiumBy.androidUIAutomator(scrollToProductInCatalog));
-            return true;
-        });
-
         By productImageByLabel = By.xpath(String.format(
                 "//android.widget.TextView[@text='%s']/preceding-sibling::android.widget.ImageView[@resource-id='com.saucelabs.mydemoapp.android:id/productIV']",
                 productLabel));
+
+        int maxScrollAttempts = ConfigReader.getInt("mobile.product.select.max.scroll.attempts", 5);
+        int attempts = 0;
+        while (driver().findElements(productImageByLabel).isEmpty() && attempts < maxScrollAttempts) {
+            MobileScrollUtils.scrollDown(driver());
+            attempts++;
+        }
+
+        if (driver().findElements(productImageByLabel).isEmpty()) {
+            throw new IllegalStateException(String.format(
+                    "Product Selection Failure: '%s' was not found in the catalog after %d scroll attempt(s).",
+                    productLabel, maxScrollAttempts));
+        }
+
         wait(longWait()).until(ExpectedConditions.elementToBeClickable(driver().findElement(productImageByLabel))).click();
 
         return mobileProductDetailPage;
@@ -140,6 +149,30 @@ public class MobileProductPage extends MobileBasePage {
                 .stream()
                 .map(e -> Double.parseDouble(e.getText().replaceAll("[^0-9.]", "")))
                 .collect(java.util.stream.Collectors.toList());
+    }
+
+    public record ProductSummary(String title, double price) {
+    }
+
+    public List<ProductSummary> collectAllProducts(int maxScrolls) {
+        ensureElementsInitialized();
+        LinkedHashMap<String, Double> seen = new LinkedHashMap<>();
+        captureVisibleProductsInto(seen);
+        for (int i = 0; i < maxScrolls; i++) {
+            MobileScrollUtils.scrollDown(driver());
+            captureVisibleProductsInto(seen);
+        }
+        return seen.entrySet().stream()
+                .map(e -> new ProductSummary(e.getKey(), e.getValue()))
+                .collect(Collectors.toList());
+    }
+
+    private void captureVisibleProductsInto(LinkedHashMap<String, Double> seen) {
+        List<String> titles = getVisibleProductTitles();
+        List<Double> prices = getVisibleProductPrices();
+        for (int i = 0; i < titles.size() && i < prices.size(); i++) {
+            seen.putIfAbsent(titles.get(i), prices.get(i));
+        }
     }
 
     public boolean cartBadgeMatches(int expectedCount) {
