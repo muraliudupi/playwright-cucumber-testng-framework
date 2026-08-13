@@ -32,9 +32,6 @@ public class WebOpenAccountSteps extends BaseSteps {
         AccountOpen accountOpen = getExcelModelByKey(testCaseId, sheetName, AccountOpen::fromMap);
         String fundingAccount = accountOpen.fromAccount();
 
-        // Gets first From & Open Account.
-        // webOpenAccountPage.configureAndOpenAccount(accountType);
-
         String actualFundingAccount = webOpenAccountPage.configureAndOpenAccount(accountType, fundingAccount);
         if (!actualFundingAccount.equals(fundingAccount)) {
             LOG.warn("Test data requested FromAccount '{}' but framework substituted '{}' due to dropdown unavailability.",

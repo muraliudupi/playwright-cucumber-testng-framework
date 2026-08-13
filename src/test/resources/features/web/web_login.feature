@@ -11,13 +11,14 @@ Feature: Web - Customer Login
       | Login_001  |
 
   @sanity @web @login @negative
-  Scenario Outline: Login fails when required credentials are missing
+  Scenario Outline: Login fails when required credentials are missing or wrong
     Given the user is on the ParaBank login page
     When the web user logs in with username "<username>" and password "<password>"
-    Then the login error message "Please enter a username and password." is displayed
+    Then the login error message "<message>" is displayed
 
     Examples:
-      | username | password |
-      |          |          |
-      | john     |          |
-      |          | demo     |
+      | username | password         | message                                          |
+      |          |                  | Please enter a username and password.            |
+      | john     |                  | Please enter a username and password.            |
+      |          | demo             | Please enter a username and password.            |
+      | john     | wrongpassword123 | The username and password could not be verified. |
