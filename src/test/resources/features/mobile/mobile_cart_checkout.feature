@@ -26,12 +26,12 @@ Feature: Mobile - Cart and Checkout
   # Guest User
   @mobile @cart @guest
   Scenario: Guest User: Add a product to the cart with label and quantity from test data
-    When the user adds a product to the cart using data key "Cart_001" sheet "MobileCartData"
+    When the user adds a product to the cart using data key "Cart_002" sheet "MobileCartData"
     Then the product should be visible in the cart
 
   @mobile @cart @remove @guest
   Scenario: Guest User: Remove a product from the cart
-    Given the user has a product already added to the cart using data key "Cart_002" sheet "MobileCartData"
+    Given the user has a product already added to the cart using data key "Cart_001" sheet "MobileCartData"
     When the user removes the added product from the cart
     Then the removed product should no longer be visible in the cart
 
