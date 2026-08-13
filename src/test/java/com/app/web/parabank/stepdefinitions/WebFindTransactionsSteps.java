@@ -39,6 +39,12 @@ public class WebFindTransactionsSteps extends BaseSteps {
         webFindTransactionsPage.navigateToFindTransactions().searchByAmount(account, amount);
     }
 
+    @And("the user searches transactions by the noted transaction ID")
+    public void the_user_searches_transactions_by_the_noted_transaction_id() {
+        String transactionId = context.getStringContext(ContextKeys.CAPTURED_TRANSACTION_ID);
+        webFindTransactionsPage.navigateToFindTransactions().searchByTransactionId(transactionId);
+    }
+
     @Then("the bill payment transaction appears in the results")
     public void the_bill_payment_transaction_appears_in_the_results() {
         String payeeName = context.getStringContext(ContextKeys.BILLPAY_PAYEE_NAME);

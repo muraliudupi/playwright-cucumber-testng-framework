@@ -27,4 +27,5 @@ public final class ContextKeys {
     public static final String REGISTERED_ZIP           = "REGISTERED_ZIP";
     public static final String REGISTERED_SSN           = "REGISTERED_SSN";
     public static final String CHECKOUT_DETAILS          = "CHECKOUT_DETAILS";
+    public static final String CAPTURED_TRANSACTION_ID   = "CAPTURED_TRANSACTION_ID";
 }

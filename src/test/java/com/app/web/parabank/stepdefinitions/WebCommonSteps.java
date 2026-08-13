@@ -1,7 +1,6 @@
 package com.app.web.parabank.stepdefinitions;
 
 import com.app.web.parabank.pages.WebLoginPage;
-import com.framework.context.ScenarioContext;
 import com.framework.core.WebDriverFactory;
 import com.framework.steps.BaseSteps;
 import com.framework.utils.ConfigReader;
@@ -18,7 +17,7 @@ public class WebCommonSteps extends BaseSteps {
 
     private final WebLoginPage webLoginPage;
 
-    public WebCommonSteps(WebLoginPage webLoginPage, ScenarioContext context) {
+    public WebCommonSteps(WebLoginPage webLoginPage) {
         this.webLoginPage = webLoginPage;
     }
 

@@ -85,6 +85,13 @@ public class WebFindTransactionsPage extends WebBasePage {
         return this;
     }
 
+    public WebFindTransactionsPage searchByTransactionId(String transactionId) {
+        transactionID().fill(transactionId);
+        findByIdButton().click();
+        awaitSearchOutcome();
+        return this;
+    }
+
     private void selectAccount(String account) {
         accountDropdown().selectOption(new SelectOption().setValue(account));
     }

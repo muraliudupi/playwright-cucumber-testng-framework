@@ -18,6 +18,15 @@ public class WebTransactionDetailsPage extends WebBasePage {
         }
     }
 
+    public String getTransactionIdFromUrl() {
+        String url = page().url();
+        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("[?&]id=(\\d+)").matcher(url);
+        if (!matcher.find()) {
+            throw new IllegalStateException("Could not extract a transaction ID from the Transaction Details URL: " + url);
+        }
+        return matcher.group(1);
+    }
+
     public String getTransactionDetailsText() {
         return detailsTable().innerText();
     }

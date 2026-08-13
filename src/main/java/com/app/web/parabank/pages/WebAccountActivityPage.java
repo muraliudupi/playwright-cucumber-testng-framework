@@ -56,4 +56,14 @@ public class WebAccountActivityPage extends WebBasePage {
     public void clickFirstTransaction() {
         transactionRows().first().locator("a").click();
     }
+
+    public void clickTransactionByDescription(String description) {
+        Locator matchingRow = transactionRows()
+                .filter(new Locator.FilterOptions().setHasText(description));
+        if (matchingRow.count() == 0) {
+            throw new IllegalStateException(String.format(
+                    "No transaction row found matching description '%s' in Account Activity.", description));
+        }
+        matchingRow.first().locator("a").click();
+    }
 }

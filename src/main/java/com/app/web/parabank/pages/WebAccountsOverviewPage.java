@@ -38,6 +38,17 @@ public class WebAccountsOverviewPage extends WebBasePage {
         return accountNumber;
     }
 
+    public String clickAccountNumberLink(String accountNumber) {
+        Locator matchingLink = accountRows().locator("a[href*='activity.htm']")
+                .filter(new Locator.FilterOptions().setHasText(accountNumber));
+        if (matchingLink.count() == 0) {
+            throw new IllegalStateException(String.format(
+                    "No account link found for account number '%s' on Accounts Overview.", accountNumber));
+        }
+        matchingLink.first().click();
+        return accountNumber;
+    }
+
     public BigDecimal calculateTotalBalanceAmount() {
         List<AccountRow> accounts = readUsableAccounts();
         BigDecimal totalAmount = accounts.stream()

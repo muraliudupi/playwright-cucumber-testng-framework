@@ -3,6 +3,8 @@ package com.app.web.parabank.stepdefinitions;
 import com.app.web.parabank.pages.WebAccountActivityPage;
 import com.app.web.parabank.pages.WebAccountsOverviewPage;
 import com.app.web.parabank.pages.WebTransactionDetailsPage;
+import com.framework.context.ContextKeys;
+import com.framework.context.ScenarioContext;
 import com.framework.steps.BaseSteps;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -15,20 +17,30 @@ public class WebAccountsOverviewSteps extends BaseSteps {
     private final WebAccountsOverviewPage webAccountsOverviewPage;
     private final WebAccountActivityPage webAccountActivityPage;
     private final WebTransactionDetailsPage webTransactionDetailsPage;
+    private final ScenarioContext context;
 
     private String clickedAccountNumber;
 
     public WebAccountsOverviewSteps(WebAccountsOverviewPage webAccountsOverviewPage,
                                     WebAccountActivityPage webAccountActivityPage,
-                                    WebTransactionDetailsPage webTransactionDetailsPage) {
+                                    WebTransactionDetailsPage webTransactionDetailsPage,
+                                    ScenarioContext context) {
         this.webAccountsOverviewPage = webAccountsOverviewPage;
         this.webAccountActivityPage = webAccountActivityPage;
         this.webTransactionDetailsPage = webTransactionDetailsPage;
+        this.context = context;
     }
 
     @When("the user clicks the first account number link on Accounts Overview")
     public void the_user_clicks_first_account_number_link() {
         clickedAccountNumber = webAccountsOverviewPage.navigateToAccountsOverview().clickFirstAccountNumberLink();
+        webAccountActivityPage.waitForAccountDetailsLoaded();
+    }
+
+    @And("the user clicks the account number link for the bill payment's funding account")
+    public void the_user_clicks_the_account_number_link_for_the_bill_payment_funding_account() {
+        String fundingAccount = context.getStringContext(ContextKeys.BILLPAY_FROM_ACCOUNT);
+        clickedAccountNumber = webAccountsOverviewPage.navigateToAccountsOverview().clickAccountNumberLink(fundingAccount);
         webAccountActivityPage.waitForAccountDetailsLoaded();
     }
 
@@ -59,9 +71,21 @@ public class WebAccountsOverviewSteps extends BaseSteps {
         webAccountActivityPage.clickFirstTransaction();
     }
 
+    @And("the user clicks the transaction link for the bill payment")
+    public void the_user_clicks_the_transaction_link_for_the_bill_payment() {
+        String payeeName = context.getStringContext(ContextKeys.BILLPAY_PAYEE_NAME);
+        webAccountActivityPage.clickTransactionByDescription(payeeName);
+    }
+
     @Then("the Transaction Details page is displayed")
     public void the_transaction_details_page_is_displayed() {
         assertTrue(webTransactionDetailsPage.isTransactionDetailsDisplayed(),
                 "Transaction Details Failure: details heading was not displayed after clicking a transaction.");
+    }
+
+    @And("the user notes the transaction ID from the details page")
+    public void the_user_notes_the_transaction_id_from_the_details_page() {
+        String transactionId = webTransactionDetailsPage.getTransactionIdFromUrl();
+        context.setContext(ContextKeys.CAPTURED_TRANSACTION_ID, transactionId);
     }
 }
