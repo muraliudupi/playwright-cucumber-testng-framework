@@ -94,6 +94,24 @@ public class MobileCartPage extends MobileBasePage {
         }
     }
 
+    public MobileCartPage increaseQuantity(String productLabel) {
+        ensureElementsInitialized();
+        driver().findElement(AppiumBy.androidUIAutomator(productScrollCommand(productLabel)));
+        WebElement plusButton = wait(existenceCheckTimeout())
+                .until(ExpectedConditions.visibilityOfElementLocated(MobileOrderRowUtils.productQuantityPlusLocator(productLabel)));
+        wait(shortWait()).until(ExpectedConditions.elementToBeClickable(plusButton)).click();
+        return this;
+    }
+
+    public MobileCartPage decreaseQuantity(String productLabel) {
+        ensureElementsInitialized();
+        driver().findElement(AppiumBy.androidUIAutomator(productScrollCommand(productLabel)));
+        WebElement minusButton = wait(existenceCheckTimeout())
+                .until(ExpectedConditions.visibilityOfElementLocated(MobileOrderRowUtils.productQuantityMinusLocator(productLabel)));
+        wait(shortWait()).until(ExpectedConditions.elementToBeClickable(minusButton)).click();
+        return this;
+    }
+
     public boolean cartContentsMatch(String productLabel, int expectedQuantity) {
         return isProductInCart(productLabel)
                 && quantityMatches(productLabel, expectedQuantity)

@@ -84,4 +84,8 @@ public abstract class MobileBasePage {
             return false;
         }
     }
+
+    protected void navigateBack() {
+        driver().navigate().back();
+    }
 }

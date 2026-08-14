@@ -25,6 +25,7 @@ public class MobileCartCheckoutSteps extends BaseSteps {
     private final MobilePaymentPage mobilePaymentPage;
     private final MobileReviewPage mobileReviewPage;
     private final ScenarioContext context;
+    private final java.util.Map<String, Integer> multiItemQuantities = new java.util.LinkedHashMap<>();
 
     public MobileCartCheckoutSteps(MobileProductPage mobileProductPage,
                                    MobileCartPage mobileCartPage,
@@ -141,6 +142,72 @@ public class MobileCartCheckoutSteps extends BaseSteps {
         String productLabel = context.getStringContext(CTX_PRODUCT_LABEL);
         Assert.assertTrue(mobileCartPage.isColorIndicatorDisplayedForProduct(productLabel),
                 "Color Selection Failure: no color indicator rendered for '" + productLabel + "' in the cart.");
+    }
+
+    @When("the user adds a product to the multi-item cart using data key {string} sheet {string}")
+    public void the_user_adds_a_product_to_the_multi_item_cart(String testCaseId, String sheetName) {
+        MobileCartData mobileCartData = getExcelModelByKey(testCaseId, sheetName, MobileCartData::fromMap);
+        String productLabel = mobileCartData.item().productLabel();
+        int quantity = mobileCartData.item().quantity();
+
+        MobileProductDetailPage detailPage = mobileProductPage.selectProduct(productLabel).setQuantity(quantity);
+        detailPage.addToCart();
+
+        multiItemQuantities.put(productLabel, quantity);
+        int cumulativeQuantity = multiItemQuantities.values().stream().mapToInt(Integer::intValue).sum();
+
+        Assert.assertTrue(mobileProductPage.cartBadgeMatches(cumulativeQuantity),
+                "Cart Badge Failure: badge count did not reflect the cumulative quantity across all added products.");
+
+        detailPage.backToCatalog();
+    }
+
+    @Then("all added products should be visible in the cart with correct quantities")
+    public void all_added_products_should_be_visible_with_correct_quantities() {
+        mobileProductPage.openCart();
+        multiItemQuantities.forEach((productLabel, quantity) ->
+                Assert.assertTrue(mobileCartPage.cartContentsMatch(productLabel, quantity),
+                        "Cart Contents Failure: product '" + productLabel + "' did not show quantity " + quantity + " in the cart."));
+    }
+
+    @When("the user adds {string} to the cart after increasing quantity to {int} and decreasing to {int}")
+    public void the_user_adds_product_with_quantity_adjustment(String productLabel, int increaseTo, int decreaseTo) {
+        context.setContext(CTX_PRODUCT_LABEL, productLabel);
+        mobileProductPage.selectProduct(productLabel)
+                .setQuantity(increaseTo)
+                .setQuantity(decreaseTo)
+                .addToCart();
+
+        Assert.assertTrue(mobileProductPage.cartBadgeMatches(decreaseTo),
+                "Cart Badge Failure: badge count did not match after decreasing quantity.");
+
+        mobileProductPage.openCart();
+
+        Assert.assertTrue(mobileCartPage.cartContentsMatch(productLabel, decreaseTo),
+                "Cart Contents Failure: final quantity after decrease did not match in the cart.");
+    }
+
+    @When("the user increases the cart quantity for that product by {int}")
+    public void the_user_increases_the_cart_quantity_for_that_product(int times) {
+        String productLabel = context.getStringContext(CTX_PRODUCT_LABEL);
+        for (int i = 0; i < times; i++) {
+            mobileCartPage.increaseQuantity(productLabel);
+        }
+    }
+
+    @When("the user decreases the cart quantity for that product by {int}")
+    public void the_user_decreases_the_cart_quantity_for_that_product(int times) {
+        String productLabel = context.getStringContext(CTX_PRODUCT_LABEL);
+        for (int i = 0; i < times; i++) {
+            mobileCartPage.decreaseQuantity(productLabel);
+        }
+    }
+
+    @Then("the cart quantity for that product should be {int}")
+    public void the_cart_quantity_for_that_product_should_be(int expectedQuantity) {
+        String productLabel = context.getStringContext(CTX_PRODUCT_LABEL);
+        Assert.assertTrue(mobileCartPage.quantityMatches(productLabel, expectedQuantity),
+                "Cart Quantity Failure: quantity did not match " + expectedQuantity + " after in-cart adjustment.");
     }
 
     @When("the user reaches mobile login screen")

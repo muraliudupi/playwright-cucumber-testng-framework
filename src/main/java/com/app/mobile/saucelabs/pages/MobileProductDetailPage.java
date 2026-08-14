@@ -11,6 +11,9 @@ public class MobileProductDetailPage extends MobileBasePage {
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/plusIV")
     private WebElement btnQuantityPlus;
 
+    @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/minusIV")
+    private WebElement btnQuantityMinus;
+
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/noTV")
     private WebElement lblQuantity;
 
@@ -26,6 +29,10 @@ public class MobileProductDetailPage extends MobileBasePage {
             wait(shortWait()).until(ExpectedConditions.elementToBeClickable(btnQuantityPlus)).click();
             currentQuantity++;
         }
+        while (currentQuantity > targetQuantity) {
+            wait(shortWait()).until(ExpectedConditions.elementToBeClickable(btnQuantityMinus)).click();
+            currentQuantity--;
+        }
         return this;
     }
 
@@ -40,5 +47,9 @@ public class MobileProductDetailPage extends MobileBasePage {
         WebElement colorSwatch = wait(longWait()).until(ExpectedConditions.presenceOfElementLocated(colorSwatchLocator));
         wait(shortWait()).until(ExpectedConditions.elementToBeClickable(colorSwatch)).click();
         return this;
+    }
+
+    public void backToCatalog() {
+        navigateBack();
     }
 }

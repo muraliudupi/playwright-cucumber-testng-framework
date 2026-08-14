@@ -15,12 +15,15 @@ public class MobileProductPage extends MobileBasePage {
     private final MobileLoginPage mobileLoginPage;
     private final MobileProductDetailPage mobileProductDetailPage;
     private final MobileCartPage mobileCartPage;
+    private final MobileQrScannerPage mobileQrScannerPage;
 
-    public MobileProductPage(MobileLoginPage mobileLoginPage, MobileProductDetailPage mobileProductDetailPage, MobileCartPage mobileCartPage) {
+    public MobileProductPage(MobileLoginPage mobileLoginPage, MobileProductDetailPage mobileProductDetailPage,
+                             MobileCartPage mobileCartPage, MobileQrScannerPage mobileQrScannerPage) {
         super();
         this.mobileLoginPage = mobileLoginPage;
         this.mobileProductDetailPage = mobileProductDetailPage;
         this.mobileCartPage = mobileCartPage;
+        this.mobileQrScannerPage = mobileQrScannerPage;
     }
 
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/menuIV")
@@ -34,6 +37,9 @@ public class MobileProductPage extends MobileBasePage {
     @AndroidFindBy(accessibility = "Logout Menu Item")
     //@iOSXCUITFindBy(accessibility = "Logout Menu Item")
     private WebElement btnMenuLogout;
+
+    @AndroidFindBy(uiAutomator = "new UiSelector().text(\"QR Code Scanner\")")
+    private WebElement btnMenuQrScanner;
 
     @AndroidFindBy(id = "android:id/button1")
     //@iOSXCUITFindBy(accessibility = "Logout")
@@ -56,6 +62,14 @@ public class MobileProductPage extends MobileBasePage {
     public MobileLoginPage openLoginScreen() {
         navigateToLoginScreen();
         return mobileLoginPage;
+    }
+
+    public MobileQrScannerPage openQrScanner() {
+        ensureElementsInitialized();
+        wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnMenu)).click();
+        wait(shortWait()).until(ExpectedConditions.elementToBeClickable(btnMenuQrScanner)).click();
+        mobileQrScannerPage.grantCameraPermissionIfPrompted();
+        return mobileQrScannerPage;
     }
 
     public boolean verifyDashboard() {
