@@ -24,7 +24,7 @@ public class MobileQrScannerPage extends MobileBasePage {
                     .until(ExpectedConditions.elementToBeClickable(driver().findElement(ALLOW_WHILE_USING_APP)))
                     .click();
         } catch (Exception e) {
-            // Dialog didn't appear — permission already granted from a prior run.
+            LOG.info("Dialog didn't appear — permission already granted from a prior run.");
         }
     }
 

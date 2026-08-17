@@ -54,6 +54,11 @@ public class ConfigReader {
         return getProperty(key);
     }
 
+    public static String get(String key, String defaultValue) {
+        String value = get(key);
+        return (value != null && !value.isBlank()) ? value : defaultValue;
+    }
+
     public static boolean getBoolean(String key, boolean defaultValue) {
         String value = get(key);
         return (value != null && !value.isBlank()) ? Boolean.parseBoolean(value) : defaultValue;

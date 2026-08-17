@@ -4,6 +4,8 @@ import com.app.mobile.saucelabs.pages.MobileProductPage;
 import com.app.mobile.saucelabs.pages.MobileQrScannerPage;
 import com.framework.steps.BaseSteps;
 import com.framework.utils.ConfigReader;
+import com.framework.utils.VirtualScenePosterUtils;
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.testng.Assert;
@@ -16,6 +18,13 @@ public class MobileQrScannerSteps extends BaseSteps {
     public MobileQrScannerSteps(MobileProductPage mobileProductPage, MobileQrScannerPage mobileQrScannerPage) {
         this.mobileProductPage = mobileProductPage;
         this.mobileQrScannerPage = mobileQrScannerPage;
+    }
+
+    @Given("the emulator virtual scene camera shows a QR code image")
+    public void the_emulator_virtual_scene_camera_shows_a_qr_code_image() throws Exception {
+        String posterImagePath = ConfigReader.get("mobile.qr.scanner.poster.image.path",
+                "src/test/resources/qrcodes/My-Git.png");
+        VirtualScenePosterUtils.setVirtualScenePoster(posterImagePath);
     }
 
     @When("the user opens the QR code scanner from the menu")
