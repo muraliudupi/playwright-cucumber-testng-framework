@@ -89,26 +89,27 @@ pipeline {
                     def jsonSlurper = new groovy.json.JsonSlurper()
                     jsonFiles.each { file ->
                         try {
+                            // Read content from file path string first
                             def fileContent = readFile(file.path)
-                            def parsedJson = new groovy.json.JsonSlurper().parseText(fileContent)
+                            def parsedJson = jsonSlurper.parseText(fileContent)
 
                             parsedJson.each { feature ->
-                            feature.elements?.each { element ->
-                            if (element.type == 'scenario') {
-                                totalCount++
-                                boolean hasFailedStep = element.steps?.any { it.result?.status == 'failed' }
-                                if (hasFailedStep) {
-                                    failedCount++
-                                } else {
-                                    passedCount++
+                                feature.elements?.each { element ->
+                                    if (element.type == 'scenario') {
+                                        totalCount++
+                                        boolean hasFailedStep = element.steps?.any { it.result?.status == 'failed' }
+                                        if (hasFailedStep) {
+                                            failedCount++
+                                        } else {
+                                            passedCount++
+                                        }
+                                    }
                                 }
                             }
+                        } catch (Exception e) {
+                            echo "Error parsing ${file.path}: ${e.message}"
                         }
                     }
-                } catch (Exception e) {
-                    echo "Error parsing ${file.path}: ${e.message}"
-                }
-            }
 
                     if (failedCount > 0) {
                         emailStatus = "❌ FAILED (${failedCount} Scenarios Failed)"
@@ -122,10 +123,10 @@ pipeline {
                 def attachmentPath = extentExists ? 'build/reports/extent/ExtentReport.html' : ''
 
                 def extentNote = extentExists ?
-                    'Please find the interactive Extent Report attached to this email for full stack traces.' :
-                    '⚠️ Note: Interactive Extent Report attachment is missing because the build or execution cycle was cut short.'
+                'Please find the interactive Extent Report attached to this email for full stack traces.' :
+                '⚠️ Note: Interactive Extent Report attachment is missing because the build or execution cycle was cut short.'
 
-                // 3. Construct GitHub-aligned Body
+                // 3. Construct Body
                 def emailBody = """Hi Team,
 
 The automation test execution has completed.
@@ -149,7 +150,7 @@ ${extentNote}
 Regards,
 QA Automation Bot"""
 
-                // 4. Send Email matching GitHub formatting style
+                // 4. Send Email
                 emailext (
                     from: 'Automation Framework <udupimk@gmail.com>',
                     to: "${params.NOTIFICATION_EMAIL}",
