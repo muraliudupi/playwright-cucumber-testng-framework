@@ -18,10 +18,12 @@ public class MobileProductPage extends MobileBasePage {
     private final MobileQrScannerPage mobileQrScannerPage;
     private final MobileGeoLocationPage mobileGeoLocationPage;
     private final MobileDrawingPage mobileDrawingPage;
+    private final MobileWebViewPage mobileWebViewPage;
 
     public MobileProductPage(MobileLoginPage mobileLoginPage, MobileProductDetailPage mobileProductDetailPage,
                              MobileCartPage mobileCartPage, MobileQrScannerPage mobileQrScannerPage,
-                             MobileGeoLocationPage mobileGeoLocationPage, MobileDrawingPage mobileDrawingPage) {
+                             MobileGeoLocationPage mobileGeoLocationPage, MobileDrawingPage mobileDrawingPage,
+                             MobileWebViewPage mobileWebViewPage) {
         super();
         this.mobileLoginPage = mobileLoginPage;
         this.mobileProductDetailPage = mobileProductDetailPage;
@@ -29,6 +31,7 @@ public class MobileProductPage extends MobileBasePage {
         this.mobileQrScannerPage = mobileQrScannerPage;
         this.mobileGeoLocationPage = mobileGeoLocationPage;
         this.mobileDrawingPage = mobileDrawingPage;
+        this.mobileWebViewPage = mobileWebViewPage;
     }
 
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/menuIV")
@@ -51,6 +54,9 @@ public class MobileProductPage extends MobileBasePage {
 
     @AndroidFindBy(uiAutomator = "new UiSelector().text(\"Drawing\")")
     private WebElement btnMenuDrawing;
+
+    @AndroidFindBy(uiAutomator = "new UiSelector().text(\"WebView\")")
+    private WebElement btnMenuWebView;
 
     @AndroidFindBy(id = "android:id/button1")
     //@iOSXCUITFindBy(accessibility = "Logout")
@@ -96,6 +102,13 @@ public class MobileProductPage extends MobileBasePage {
         wait(shortWait()).until(ExpectedConditions.elementToBeClickable(btnMenuDrawing)).click();
         mobileDrawingPage.grantMediaPermissionIfPrompted();
         return mobileDrawingPage;
+    }
+
+    public MobileWebViewPage openWebView() {
+        ensureElementsInitialized();
+        wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnMenu)).click();
+        wait(shortWait()).until(ExpectedConditions.elementToBeClickable(btnMenuWebView)).click();
+        return mobileWebViewPage;
     }
 
     public boolean verifyDashboard() {

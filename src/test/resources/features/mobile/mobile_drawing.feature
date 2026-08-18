@@ -1,6 +1,6 @@
 Feature: Mobile - Drawing
 
-  @mobile @drawing @require_login @test
+  @mobile @drawing @require_login
   Scenario: User Logged In: Drawing screen accepts a stroke, clear, and save
     When the user opens Drawing from the menu
     Then the Drawing screen should be displayed
