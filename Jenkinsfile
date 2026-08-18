@@ -42,14 +42,9 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh '''
-                            npx playwright install-deps chromium
-                            npx playwright install chromium
-                        '''
+                        sh 'npx playwright install-deps'
                     } else {
-                        bat '''
-                            call npx playwright install chromium
-                        '''
+                        bat 'call npx playwright install'
                     }
                 }
             }
