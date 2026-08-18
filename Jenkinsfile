@@ -88,21 +88,27 @@ pipeline {
                 if (jsonFiles.length > 0) {
                     def jsonSlurper = new groovy.json.JsonSlurper()
                     jsonFiles.each { file ->
-                        def parsedJson = jsonSlurper.parse(file.path)
-                        parsedJson.each { feature ->
+                        try {
+                            def fileContent = readFile(file.path)
+                            def parsedJson = new groovy.json.JsonSlurper().parseText(fileContent)
+
+                            parsedJson.each { feature ->
                             feature.elements?.each { element ->
-                                if (element.type == 'scenario') {
-                                    totalCount++
-                                    boolean hasFailedStep = element.steps?.any { it.result?.status == 'failed' }
-                                    if (hasFailedStep) {
-                                        failedCount++
-                                    } else {
-                                        passedCount++
-                                    }
+                            if (element.type == 'scenario') {
+                                totalCount++
+                                boolean hasFailedStep = element.steps?.any { it.result?.status == 'failed' }
+                                if (hasFailedStep) {
+                                    failedCount++
+                                } else {
+                                    passedCount++
                                 }
                             }
                         }
                     }
+                } catch (Exception e) {
+                    echo "Error parsing ${file.path}: ${e.message}"
+                }
+            }
 
                     if (failedCount > 0) {
                         emailStatus = "❌ FAILED (${failedCount} Scenarios Failed)"
