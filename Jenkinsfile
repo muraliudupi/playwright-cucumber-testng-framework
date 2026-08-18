@@ -19,7 +19,7 @@ pipeline {
         )
         string(
             name: 'NOTIFICATION_EMAIL',
-            defaultValue: 'qa-team@example.com',
+            defaultValue: 'qamurali@outlook.com',
             description: 'Recipient address for test report emails'
         )
     }
