@@ -122,29 +122,30 @@ pipeline {
                 // 3. Construct GitHub-aligned Body
                 def emailBody = """Hi Team,
 
-                    The automation test execution has completed.
+The automation test execution has completed.
 
-                    =========================================
-                            📊 EXECUTION SUMMARY
-                    =========================================
-                    • Status:            ${emailStatus}
-                    • Total Scenarios:   ${totalCount}
-                    • Passed Scenarios:  ${passedCount}
-                    • Failed Scenarios:  ${failedCount}
-                    =========================================
+=========================================
+📊 EXECUTION SUMMARY
+=========================================
+• Status:            ${emailStatus}
+• Total Scenarios:   ${totalCount}
+• Passed Scenarios:  ${passedCount}
+• Failed Scenarios:  ${failedCount}
+=========================================
 
-                    - Repository:   ${env.JOB_NAME}
-                    - Branch:       ${env.GIT_BRANCH ?: 'N/A'}
-                    - Triggered By: ${env.BUILD_USER_ID ?: 'Jenkins'}
-                    - Action Link:  ${env.BUILD_URL}
+- Repository:   ${env.JOB_NAME}
+- Branch:       ${env.GIT_BRANCH ?: 'N/A'}
+- Triggered By: ${env.BUILD_USER_ID ?: 'Jenkins'}
+- Action Link:  ${env.BUILD_URL}
 
-                    ${extentNote}
+${extentNote}
 
-                    Regards,
-                    QA Automation"""
+Regards,
+QA Automation Bot"""
 
                 // 4. Send Email matching GitHub formatting style
                 emailext (
+                    from: 'Automation Framework <udupimk@gmail.com>',
                     to: "${params.NOTIFICATION_EMAIL}",
                     subject: "Automation Results: ${emailStatus} | ${env.JOB_NAME} (Build #${env.BUILD_NUMBER})",
                     body: emailBody,
