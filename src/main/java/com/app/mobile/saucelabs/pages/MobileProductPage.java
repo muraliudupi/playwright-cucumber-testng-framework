@@ -17,16 +17,18 @@ public class MobileProductPage extends MobileBasePage {
     private final MobileCartPage mobileCartPage;
     private final MobileQrScannerPage mobileQrScannerPage;
     private final MobileGeoLocationPage mobileGeoLocationPage;
+    private final MobileDrawingPage mobileDrawingPage;
 
     public MobileProductPage(MobileLoginPage mobileLoginPage, MobileProductDetailPage mobileProductDetailPage,
                              MobileCartPage mobileCartPage, MobileQrScannerPage mobileQrScannerPage,
-                             MobileGeoLocationPage mobileGeoLocationPage) {
+                             MobileGeoLocationPage mobileGeoLocationPage, MobileDrawingPage mobileDrawingPage) {
         super();
         this.mobileLoginPage = mobileLoginPage;
         this.mobileProductDetailPage = mobileProductDetailPage;
         this.mobileCartPage = mobileCartPage;
         this.mobileQrScannerPage = mobileQrScannerPage;
         this.mobileGeoLocationPage = mobileGeoLocationPage;
+        this.mobileDrawingPage = mobileDrawingPage;
     }
 
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/menuIV")
@@ -46,6 +48,9 @@ public class MobileProductPage extends MobileBasePage {
 
     @AndroidFindBy(uiAutomator = "new UiSelector().text(\"Geo Location\")")
     private WebElement btnMenuGeoLocation;
+
+    @AndroidFindBy(uiAutomator = "new UiSelector().text(\"Drawing\")")
+    private WebElement btnMenuDrawing;
 
     @AndroidFindBy(id = "android:id/button1")
     //@iOSXCUITFindBy(accessibility = "Logout")
@@ -83,6 +88,14 @@ public class MobileProductPage extends MobileBasePage {
         wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnMenu)).click();
         wait(shortWait()).until(ExpectedConditions.elementToBeClickable(btnMenuGeoLocation)).click();
         return mobileGeoLocationPage;
+    }
+
+    public MobileDrawingPage openDrawing() {
+        ensureElementsInitialized();
+        wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnMenu)).click();
+        wait(shortWait()).until(ExpectedConditions.elementToBeClickable(btnMenuDrawing)).click();
+        mobileDrawingPage.grantMediaPermissionIfPrompted();
+        return mobileDrawingPage;
     }
 
     public boolean verifyDashboard() {
