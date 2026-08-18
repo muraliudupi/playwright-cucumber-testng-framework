@@ -20,9 +20,10 @@ public class MobileQrScannerPage extends MobileBasePage {
 
     public void grantCameraPermissionIfPrompted() {
         try {
-            wait(existenceCheckTimeout())
-                    .until(ExpectedConditions.elementToBeClickable(driver().findElement(ALLOW_WHILE_USING_APP)))
+            wait(longWait())
+                    .until(ExpectedConditions.elementToBeClickable(ALLOW_WHILE_USING_APP))
                     .click();
+            LOG.info("Dialog appeared — permission granted.");
         } catch (Exception e) {
             LOG.info("Dialog didn't appear — permission already granted from a prior run.");
         }

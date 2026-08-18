@@ -16,14 +16,17 @@ public class MobileProductPage extends MobileBasePage {
     private final MobileProductDetailPage mobileProductDetailPage;
     private final MobileCartPage mobileCartPage;
     private final MobileQrScannerPage mobileQrScannerPage;
+    private final MobileGeoLocationPage mobileGeoLocationPage;
 
     public MobileProductPage(MobileLoginPage mobileLoginPage, MobileProductDetailPage mobileProductDetailPage,
-                             MobileCartPage mobileCartPage, MobileQrScannerPage mobileQrScannerPage) {
+                             MobileCartPage mobileCartPage, MobileQrScannerPage mobileQrScannerPage,
+                             MobileGeoLocationPage mobileGeoLocationPage) {
         super();
         this.mobileLoginPage = mobileLoginPage;
         this.mobileProductDetailPage = mobileProductDetailPage;
         this.mobileCartPage = mobileCartPage;
         this.mobileQrScannerPage = mobileQrScannerPage;
+        this.mobileGeoLocationPage = mobileGeoLocationPage;
     }
 
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/menuIV")
@@ -40,6 +43,9 @@ public class MobileProductPage extends MobileBasePage {
 
     @AndroidFindBy(uiAutomator = "new UiSelector().text(\"QR Code Scanner\")")
     private WebElement btnMenuQrScanner;
+
+    @AndroidFindBy(uiAutomator = "new UiSelector().text(\"Geo Location\")")
+    private WebElement btnMenuGeoLocation;
 
     @AndroidFindBy(id = "android:id/button1")
     //@iOSXCUITFindBy(accessibility = "Logout")
@@ -70,6 +76,13 @@ public class MobileProductPage extends MobileBasePage {
         wait(shortWait()).until(ExpectedConditions.elementToBeClickable(btnMenuQrScanner)).click();
         mobileQrScannerPage.grantCameraPermissionIfPrompted();
         return mobileQrScannerPage;
+    }
+
+    public MobileGeoLocationPage openGeoLocation() {
+        ensureElementsInitialized();
+        wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnMenu)).click();
+        wait(shortWait()).until(ExpectedConditions.elementToBeClickable(btnMenuGeoLocation)).click();
+        return mobileGeoLocationPage;
     }
 
     public boolean verifyDashboard() {
