@@ -44,7 +44,7 @@ pipeline {
                     if (isUnix()) {
                         sh 'npx playwright install-deps'
                     } else {
-                        bat 'call npx playwright install'
+                        echo 'Skipping CLI browser install; Playwright Java manages versioned binaries automatically.'
                     }
                 }
             }
