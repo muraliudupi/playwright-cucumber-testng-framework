@@ -12,14 +12,23 @@ pipeline {
         string(
             name: 'CUCUMBER_TAGS',
             defaultValue: '@sanity and not @wip',
-            description: 'Cucumber tags to filter test execution.'
-                'NOTE: @sanity currently only exists on 4 web scenarios (web_login x2, web_transfer, web_logout) — the default run does not exercise mobile at all.'
+            description: '''Cucumber tags to filter test execution.
+                Examples: '@web', '@mobile', '@sanity'.'''
         )
         choice(
             name: 'ENVIRONMENT',
             choices: ['staging', 'qa', 'dev', 'prod'],
-            description: 'Target environment.'
-                'NOTE: Not currently consumed anywhere in ConfigReader/config.properties. Intended wiring for future usage.'
+            description: '''Target environment.'''
+        )
+        booleanParam(
+            name: 'RUN_MOBILE',
+            defaultValue: false,
+            description: 'Check this to boot the Android emulator and run mobile/Appium tests.'
+        )
+        string(
+            name: 'AVD_NAME',
+            defaultValue: 'Pixel_6_API_34',
+            description: 'Name of the Android Virtual Device (AVD) configured on the Jenkins agent node.'
         )
         booleanParam(
             name: 'CLEAN_BUILD',
@@ -30,18 +39,17 @@ pipeline {
             name: 'NOTIFICATION_EMAIL',
             defaultValue: '',
             description: 'Recipient address for the test report email.'
-                'Required — the build fails fast in the first stage if left blank, rather than silently emailing nobody or erroring inside the email step.'
         )
     }
 
     environment {
-        JAVA_HOME           = tool 'JDK-21'
-        CUCUMBER_TAGS_ENV   = "${params.CUCUMBER_TAGS}"
-        TARGET_ENV          = "${params.ENVIRONMENT}"
+        JAVA_HOME         = tool 'JDK-21'
+        CUCUMBER_TAGS_ENV = "${params.CUCUMBER_TAGS}"
+        TARGET_ENV        = "${params.ENVIRONMENT}"
+        ANDROID_HOME      = "C:/Users/mural/AppData/Local/Android/Sdk"
     }
 
     stages {
-
         stage('Validate Parameters') {
             steps {
                 script {
@@ -58,22 +66,68 @@ pipeline {
             }
         }
 
-        stage('Install System & Playwright Dependencies') {
+        stage('Install Playwright & System Dependencies') {
             steps {
                 script {
                     if (isUnix()) {
-                        // Scoped to chromium for now.
                         sh 'npx playwright install-deps chromium'
                         sh './gradlew installPlaywrightBrowsers --no-daemon'
                     } else {
-                        echo 'Skipping CLI OS-dependency install on Windows agents (not applicable).'
                         bat 'gradlew.bat installPlaywrightBrowsers --no-daemon'
                     }
                 }
             }
         }
 
-        stage('Execute Playwright Tests') {
+        stage('Start Android Emulator') {
+            when {
+                expression { return params.RUN_MOBILE }
+            }
+            steps {
+                script {
+                    echo "Starting Android Emulator: ${params.AVD_NAME}..."
+                    if (isUnix()) {
+                        sh """
+                            # Boot emulator in background
+                            \$ANDROID_HOME/emulator/emulator -avd ${params.AVD_NAME} -no-window -no-audio -no-snapshot -delay-adb > /dev/null 2>&1 &
+
+                            # Wait until adb detects device and boot is complete
+                            \$ANDROID_HOME/platform-tools/adb wait-for-device
+
+                            echo "Waiting for emulator boot completion..."
+                            while [ "\$(\$ANDROID_HOME/platform-tools/adb shell getprop sys.boot_completed 2>&1 | tr -d '\r')" != "1" ]; do
+                                sleep 3
+                            done
+                            echo "Android Emulator booted successfully!"
+                        """
+                    } else {
+                        def winSdk = env.ANDROID_HOME.replace('/', '\\')
+
+                        bat """
+                            @echo off
+                            set ANDROID_SDK_WIN=${winSdk}
+
+                            rem Launch emulator in detached background process
+                            start "" "%ANDROID_SDK_WIN%\\emulator\\emulator.exe" -avd ${params.AVD_NAME} -no-window -no-audio -no-snapshot
+
+                            echo Waiting for ADB device recognition...
+                            "%ANDROID_SDK_WIN%\\platform-tools\\adb.exe" wait-for-device
+
+                            echo Waiting for Android OS boot completion...
+                            :LOOP
+                            for /f "tokens=*" %%a in ('"%ANDROID_SDK_WIN%\\platform-tools\\adb.exe" shell getprop sys.boot_completed 2^>nul') do set BOOT_STATE=%%a
+                            if not "%BOOT_STATE%"=="1" (
+                                timeout /t 3 /nobreak >nul
+                                goto LOOP
+                            )
+                            echo Android Emulator booted successfully!
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Execute Tests') {
             environment {
                 DB_PASSWORD = credentials('ENTERPRISE_DB_PASSWORD')
             }
@@ -84,8 +138,8 @@ pipeline {
                     if (isUnix()) {
                         sh """
                             xvfb-run ./gradlew ${cleanTask} test \
-                              "-Dcucumber.filter.tags=\$CUCUMBER_TAGS_ENV" \
-                              "-Denv=\$TARGET_ENV" \
+                              "-Dcucumber.filter.tags=${env.CUCUMBER_TAGS_ENV}" \
+                              "-Denv=${env.TARGET_ENV}" \
                               --no-daemon
                         """
                     } else {
@@ -100,8 +154,20 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'build/reports/**/*', allowEmptyArchive: true
+            script {
+                // Kill emulator if it was started during build
+                if (params.RUN_MOBILE) {
+                    echo "Cleaning up Android Emulator instance..."
+                    if (isUnix()) {
+                        sh '$ANDROID_HOME/platform-tools/adb emu kill || true'
+                    } else {
+                        def winSdk = env.ANDROID_HOME.replace('/', '\\')
+                        bat "@echo off\n\"${winSdk}\\platform-tools\\adb.exe\" emu kill || exit /b 0"
+                    }
+                }
+            }
 
+            archiveArtifacts artifacts: 'build/reports/**/*', allowEmptyArchive: true
             junit testResults: 'build/test-results/**/*.xml', allowEmptyResults: true
 
             script {
@@ -162,22 +228,18 @@ pipeline {
 
                 def extentReportPath = 'build/reports/extent/ExtentReport.html'
                 def extentExists = fileExists(extentReportPath)
-                env.ATTACHMENT_PATH = extentExists ? extentReportPath : ''
-                if (!extentExists) {
-                    echo '⚠️ WARNING: ExtentReport.html was not generated — likely a compilation or early framework failure.'
-                }
-            }
+                def attachmentPattern = extentExists ? extentReportPath : ''
 
-            withCredentials([
-                    string(credentialsId: 'MAIL_USERNAME', variable: 'MAIL_USER'),
-                    string(credentialsId: 'MAIL_PASSWORD', variable: 'MAIL_PASS')
-                ]) {
-                emailext(
-                    subject: "Automation Results: ${env.EMAIL_STATUS} | ${env.JOB_NAME} (Build #${env.BUILD_NUMBER})",
-                    to: params.NOTIFICATION_EMAIL,
-                    from: "Automation Framework Jenkins <${MAIL_USER}>",
-                    mimeType: 'text/plain',
-                    body: """Hi Team,
+                withCredentials([
+                        string(credentialsId: 'MAIL_USERNAME', variable: 'MAIL_USER'),
+                        string(credentialsId: 'MAIL_PASSWORD', variable: 'MAIL_PASS')
+                    ]) {
+                    emailext(
+                        subject: "Automation Results: ${env.EMAIL_STATUS} | ${env.JOB_NAME} (Build #${env.BUILD_NUMBER})",
+                        to: params.NOTIFICATION_EMAIL,
+                        from: "Automation Framework Jenkins <${MAIL_USER}>",
+                        mimeType: 'text/plain',
+                        body: """Hi Team,
 
 The automation test execution has completed.
 
@@ -195,16 +257,17 @@ The automation test execution has completed.
 - Build:        #${env.BUILD_NUMBER}
 - Build Link:   ${env.BUILD_URL}
 
-${env.ATTACHMENT_PATH ? 'Please find the interactive Extent Report attached to this email for full stack traces.' : '⚠️ Note: Interactive Extent Report attachment is missing because the build or execution cycle was cut short.'}
+${extentExists ? 'Please find the interactive Extent Report attached to this email for full stack traces.' : '⚠️ Note: Interactive Extent Report attachment is missing because the build or execution cycle was cut short.'}
 
 Regards,
 QA Automation
 """,
-                    attachmentsPattern: env.ATTACHMENT_PATH
-                )
-            }
+                        attachmentsPattern: attachmentPattern
+                    )
+                }
 
-            cleanWs(deleteDirs: true, notFailBuild: true)
+                cleanWs(deleteDirs: true, notFailBuild: true)
+            }
         }
     }
 }
