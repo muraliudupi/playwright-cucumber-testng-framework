@@ -1,6 +1,6 @@
 Feature: Mobile - WebView
 
-  @mobile @webview @require_login
+  @mobile @webview @require_login @test
   Scenario: User Logged In: WebView loads a configured URL
     When the user opens WebView from the menu
     Then the WebView screen should be displayed

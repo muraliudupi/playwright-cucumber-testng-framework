@@ -1,16 +1,25 @@
 pipeline {
-    agent any
+    agent { label 'android-emulator' }
+
+    options {
+        timeout(time: 90, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '30'))
+        disableConcurrentBuilds()
+        timestamps()
+    }
 
     parameters {
         string(
             name: 'CUCUMBER_TAGS',
             defaultValue: '@sanity and not @wip',
-            description: 'Cucumber tags to filter test execution'
+            description: 'Cucumber tags to filter test execution.'
+                'NOTE: @sanity currently only exists on 4 web scenarios (web_login x2, web_transfer, web_logout) — the default run does not exercise mobile at all.'
         )
         choice(
             name: 'ENVIRONMENT',
             choices: ['staging', 'qa', 'dev', 'prod'],
-            description: 'Target environment'
+            description: 'Target environment.'
+                'NOTE: Not currently consumed anywhere in ConfigReader/config.properties. Intended wiring for future usage.'
         )
         booleanParam(
             name: 'CLEAN_BUILD',
@@ -19,19 +28,30 @@ pipeline {
         )
         string(
             name: 'NOTIFICATION_EMAIL',
-            defaultValue: 'qamurali@outlook.com',
-            description: 'Recipient address for test report emails'
+            defaultValue: '',
+            description: 'Recipient address for the test report email.'
+                'Required — the build fails fast in the first stage if left blank, rather than silently emailing nobody or erroring inside the email step.'
         )
     }
 
     environment {
-        DB_PASSWORD   = credentials('ENTERPRISE_DB_PASSWORD')
-        MAIL_USER     = credentials('MAIL_USERNAME')
-        MAIL_PASS     = credentials('MAIL_PASSWORD')
-        JAVA_HOME     = tool 'JDK-21'
+        JAVA_HOME           = tool 'JDK-21'
+        CUCUMBER_TAGS_ENV   = "${params.CUCUMBER_TAGS}"
+        TARGET_ENV          = "${params.ENVIRONMENT}"
     }
 
     stages {
+
+        stage('Validate Parameters') {
+            steps {
+                script {
+                    if (!params.NOTIFICATION_EMAIL?.trim()) {
+                        error("NOTIFICATION_EMAIL is required — set it when triggering the build.")
+                    }
+                }
+            }
+        }
+
         stage('Checkout Baseline') {
             steps {
                 checkout scm
@@ -42,15 +62,21 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh 'npx playwright install-deps'
+                        // Scoped to chromium for now.
+                        sh 'npx playwright install-deps chromium'
+                        sh './gradlew installPlaywrightBrowsers --no-daemon'
                     } else {
-                        echo 'Skipping CLI browser install; Playwright Java manages versioned binaries automatically.'
+                        echo 'Skipping CLI OS-dependency install on Windows agents (not applicable).'
+                        bat 'gradlew.bat installPlaywrightBrowsers --no-daemon'
                     }
                 }
             }
         }
 
         stage('Execute Playwright Tests') {
+            environment {
+                DB_PASSWORD = credentials('ENTERPRISE_DB_PASSWORD')
+            }
             steps {
                 script {
                     def cleanTask = params.CLEAN_BUILD ? 'clean' : ''
@@ -58,13 +84,13 @@ pipeline {
                     if (isUnix()) {
                         sh """
                             xvfb-run ./gradlew ${cleanTask} test \
-                              "-Dcucumber.filter.tags=${params.CUCUMBER_TAGS}" \
-                              "-Denv=${params.ENVIRONMENT}" \
+                              "-Dcucumber.filter.tags=\$CUCUMBER_TAGS_ENV" \
+                              "-Denv=\$TARGET_ENV" \
                               --no-daemon
                         """
                     } else {
                         bat """
-                            gradlew.bat ${cleanTask} test "-Dcucumber.filter.tags=${params.CUCUMBER_TAGS}" "-Denv=${params.ENVIRONMENT}" --no-daemon
+                            gradlew.bat ${cleanTask} test "-Dcucumber.filter.tags=%CUCUMBER_TAGS_ENV%" "-Denv=%TARGET_ENV%" --no-daemon
                         """
                     }
                 }
@@ -76,30 +102,37 @@ pipeline {
         always {
             archiveArtifacts artifacts: 'build/reports/**/*', allowEmptyArchive: true
 
+            junit testResults: 'build/test-results/**/*.xml', allowEmptyResults: true
+
             script {
-                // 1. Parse Cucumber JSON results to capture counts and status text
                 def totalCount = 0
                 def passedCount = 0
                 def failedCount = 0
+                def skippedCount = 0
                 def emailStatus = "⚠️ ERROR (No Report Found)"
 
                 def jsonFiles = findFiles(glob: 'build/reports/cucumber/*.json')
 
                 if (jsonFiles.length > 0) {
-                    def jsonSlurper = new groovy.json.JsonSlurper()
                     jsonFiles.each { file ->
                         try {
-                            // Read content from file path string first
                             def fileContent = readFile(file.path)
-                            def parsedJson = jsonSlurper.parseText(fileContent)
+                            def slurper = new groovy.json.JsonSlurper()
+                            def parsedJson = slurper.parseText(fileContent)
 
                             parsedJson.each { feature ->
                                 feature.elements?.each { element ->
                                     if (element.type == 'scenario') {
                                         totalCount++
-                                        boolean hasFailedStep = element.steps?.any { it.result?.status == 'failed' }
-                                        if (hasFailedStep) {
+                                        def steps = element.steps ?: []
+                                        boolean hasFailed = steps.any { it.result?.status == 'failed' }
+                                        boolean hasSkippedLike = steps.any {
+                                            ['skipped', 'pending', 'undefined', 'ambiguous'].contains(it.result?.status)
+                                        }
+                                        if (hasFailed) {
                                             failedCount++
+                                        } else if (hasSkippedLike) {
+                                            skippedCount++
                                         } else {
                                             passedCount++
                                         }
@@ -111,55 +144,67 @@ pipeline {
                         }
                     }
 
-                    if (failedCount > 0) {
+                    if (totalCount == 0) {
+                        emailStatus = "⚠️ WARNING (0 Scenarios Matched — check CUCUMBER_TAGS or report parsing)"
+                        currentBuild.result = 'UNSTABLE'
+                    } else if (failedCount > 0) {
                         emailStatus = "❌ FAILED (${failedCount} Scenarios Failed)"
                     } else {
                         emailStatus = "✅ PASSED (All Scenarios Clean)"
                     }
                 }
 
-                // 2. Check for Extent Report attachment & message setup
-                def extentExists = fileExists('build/reports/extent/ExtentReport.html')
-                def attachmentPath = extentExists ? 'build/reports/extent/ExtentReport.html' : ''
+                env.TOTAL_COUNT   = totalCount.toString()
+                env.PASSED_COUNT  = passedCount.toString()
+                env.FAILED_COUNT  = failedCount.toString()
+                env.SKIPPED_COUNT = skippedCount.toString()
+                env.EMAIL_STATUS  = emailStatus
 
-                def extentNote = extentExists ?
-                'Please find the interactive Extent Report attached to this email for full stack traces.' :
-                '⚠️ Note: Interactive Extent Report attachment is missing because the build or execution cycle was cut short.'
+                def extentReportPath = 'build/reports/extent/ExtentReport.html'
+                def extentExists = fileExists(extentReportPath)
+                env.ATTACHMENT_PATH = extentExists ? extentReportPath : ''
+                if (!extentExists) {
+                    echo '⚠️ WARNING: ExtentReport.html was not generated — likely a compilation or early framework failure.'
+                }
+            }
 
-                // 3. Construct Body
-                def emailBody = """Hi Team,
+            withCredentials([
+                    string(credentialsId: 'MAIL_USERNAME', variable: 'MAIL_USER'),
+                    string(credentialsId: 'MAIL_PASSWORD', variable: 'MAIL_PASS')
+                ]) {
+                emailext(
+                    subject: "Automation Results: ${env.EMAIL_STATUS} | ${env.JOB_NAME} (Build #${env.BUILD_NUMBER})",
+                    to: params.NOTIFICATION_EMAIL,
+                    from: "Automation Framework Jenkins <${MAIL_USER}>",
+                    mimeType: 'text/plain',
+                    body: """Hi Team,
 
 The automation test execution has completed.
 
 =========================================
 📊 EXECUTION SUMMARY
 =========================================
-• Status:            ${emailStatus}
-• Total Scenarios:   ${totalCount}
-• Passed Scenarios:  ${passedCount}
-• Failed Scenarios:  ${failedCount}
+• Status:            ${env.EMAIL_STATUS}
+• Total Scenarios:   ${env.TOTAL_COUNT}
+• Passed Scenarios:  ${env.PASSED_COUNT}
+• Failed Scenarios:  ${env.FAILED_COUNT}
+• Skipped Scenarios: ${env.SKIPPED_COUNT}
 =========================================
 
-- Repository:   ${env.JOB_NAME}
-- Branch:       ${env.GIT_BRANCH ?: 'N/A'}
-- Triggered By: ${env.BUILD_USER_ID ?: 'Jenkins'}
-- Action Link:  ${env.BUILD_URL}
+- Job:          ${env.JOB_NAME}
+- Build:        #${env.BUILD_NUMBER}
+- Build Link:   ${env.BUILD_URL}
 
-${extentNote}
+${env.ATTACHMENT_PATH ? 'Please find the interactive Extent Report attached to this email for full stack traces.' : '⚠️ Note: Interactive Extent Report attachment is missing because the build or execution cycle was cut short.'}
 
 Regards,
-QA Automation Bot"""
-
-                // 4. Send Email
-                emailext (
-                    from: 'Automation Framework <udupimk@gmail.com>',
-                    to: "${params.NOTIFICATION_EMAIL}",
-                    subject: "Automation Results: ${emailStatus} | ${env.JOB_NAME} (Build #${env.BUILD_NUMBER})",
-                    body: emailBody,
-                    attachmentsPattern: attachmentPath,
-                    mimeType: 'text/plain'
+QA Automation
+""",
+                    attachmentsPattern: env.ATTACHMENT_PATH
                 )
             }
+
+            cleanWs(deleteDirs: true, notFailBuild: true)
         }
     }
 }

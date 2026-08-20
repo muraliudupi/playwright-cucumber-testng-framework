@@ -1,9 +1,11 @@
 package com.app.mobile.saucelabs.pages;
 
+import io.appium.java_client.remote.SupportsContextSwitching;
 import io.appium.java_client.pagefactory.AndroidFindBy;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import java.net.URI;
 import java.time.Duration;
 
 public class MobileWebViewPage extends MobileBasePage {
@@ -49,14 +51,39 @@ public class MobileWebViewPage extends MobileBasePage {
         }
     }
 
-    public boolean verifyLoadedUrlMatches(String url, int timeoutSeconds){
+    public boolean verifyLoadedUrlMatches(String url, int timeoutSeconds) {
         ensureElementsInitialized();
+        String expectedHost = extractHost(url);
+        SupportsContextSwitching contextDriver = (SupportsContextSwitching) driver();
+
         try {
-            // Code to verify that webpage loaded with matching url and within timeoutSeconds.
-            LOG.info("Inside verifyLoadedUrlMatches");
-            return true;
+            wait(Duration.ofSeconds(timeoutSeconds)).until(d ->
+                    contextDriver.getContextHandles().stream().anyMatch(c -> c.startsWith("WEBVIEW")));
+
+            String webviewContext = contextDriver.getContextHandles().stream()
+                    .filter(c -> c.startsWith("WEBVIEW"))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException(
+                            "No WEBVIEW context appeared — this app may not have WebView debugging enabled."));
+
+            contextDriver.context(webviewContext);
+            String actualUrl = driver().getCurrentUrl();
+            LOG.info("WebView loaded URL: {}", actualUrl);
+
+            return actualUrl != null && expectedHost != null && actualUrl.contains(expectedHost);
         } catch (Exception e) {
+            LOG.warn("Could not verify loaded URL via WebView context switch: {}", e.getMessage());
             return false;
+        } finally {
+            contextDriver.context("NATIVE_APP");
+        }
+    }
+
+    private String extractHost(String url) {
+        try {
+            return URI.create(url).getHost();
+        } catch (Exception e) {
+            return url;
         }
     }
 }
