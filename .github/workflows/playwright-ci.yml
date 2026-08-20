@@ -53,6 +53,17 @@ jobs:
       - name: Validate Gradle Wrapper Execution Permissions
         run: chmod +x gradlew
 
+      - name: Stage Application APK
+        if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.run_mobile == true }}
+        run: |
+          if [ -f "src/test/resources/apps/mda-2.2.0-25.apk" ]; then
+            echo "✅ APK successfully verified in workspace."
+            echo "APK_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "⚠️ WARNING: APK file missing! Falling back to Web test execution."
+            echo "APK_EXISTS=false" >> $GITHUB_ENV
+          fi
+
       - name: Cache Playwright Browser Binaries
         uses: actions/cache@v5
         id: playwright-cache
@@ -67,31 +78,20 @@ jobs:
         run: npx playwright install chromium
 
       - name: Setup Node.js & Install Appium
-        if: ${{ github.event.inputs.run_mobile == 'true' || github.event_name != 'workflow_dispatch' }}
+        if: ${{ (github.event_name != 'workflow_dispatch' || github.event.inputs.run_mobile == true) && env.APK_EXISTS == 'true' }}
         uses: actions/setup-node@v5
         with:
           node-version: '22'
 
       - name: Install Appium & Drivers
-        if: ${{ github.event.inputs.run_mobile == 'true' || github.event_name != 'workflow_dispatch' }}
+        if: ${{ (github.event_name != 'workflow_dispatch' || github.event.inputs.run_mobile == true) && env.APK_EXISTS == 'true' }}
         run: |
           npm install -g appium
           appium driver install uiautomator2
           appium --port 4723 > appium.log 2>&1 &
 
-      - name: Stage Application APK
-        if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.run_mobile == true || github.event.inputs.run_mobile == 'true' }}
-        run: |
-          if [ -f "src/test/resources/apps/mda-2.2.0-25.apk" ]; then
-            echo "✅ APK successfully verified in workspace."
-            echo "APK_EXISTS=true" >> $GITHUB_ENV
-          else
-            echo "⚠️ WARNING: APK file missing! Falling back to Web test execution."
-            echo "APK_EXISTS=false" >> $GITHUB_ENV
-          fi
-
       - name: Boot Android Emulator & Execute Mobile Tests
-        if: ${{ (github.event_name != 'workflow_dispatch' || github.event.inputs.run_mobile == true || github.event.inputs.run_mobile == 'true') && env.APK_EXISTS == 'true' }}
+        if: ${{ (github.event_name != 'workflow_dispatch' || github.event.inputs.run_mobile == true) && env.APK_EXISTS == 'true' }}
         continue-on-error: true
         id: test_execution_mobile
         uses: reactivecircus/android-emulator-runner@v2
