@@ -86,16 +86,17 @@ pipeline {
             steps {
                 script {
                     if (isUnix()) {
-                        sh '''
+                        sh """
                             mkdir -p src/test/resources/apps
-                            cp "$APP_PATH" src/test/resources/apps/mda-2.2.0-25.apk
-                        '''
+                            cp "${env.APP_PATH}" src/test/resources/apps/mda-2.2.0-25.apk
+                        """
                     } else {
-                        bat '''
+                        def winSource = env.APP_PATH.replace('/', '\\')
+                        bat """
                             @echo off
                             if not exist "src\\test\\resources\\apps" mkdir "src\\test\\resources\\apps"
-                            copy /Y "%APP_PATH%" "src\\test\\resources\\apps\\mda-2.2.0-25.apk"
-                        '''
+                            copy /Y "${winSource}" "src\\test\\resources\\apps\\mda-2.2.0-25.apk"
+                        """
                     }
                 }
             }
@@ -118,17 +119,20 @@ pipeline {
                                 \$ANDROID_HOME/emulator/emulator -avd Pixel_6a_2 -port 5556 -no-window -no-audio -no-snapshot > /dev/null 2>&1 &
                             fi
 
-                            \$ANDROID_HOME/platform-tools/adb wait-for-device
                             echo "Waiting for Primary Emulator (emulator-5554)..."
+                            \$ANDROID_HOME/platform-tools/adb -s emulator-5554 wait-for-device
                             while [ "\$(\$ANDROID_HOME/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed 2>&1 | tr -d '\r')" != "1" ]; do
                                 sleep 3
                             done
+                            echo "Primary Emulator booted!"
 
                             if [ "${devCount}" -ge 2 ]; then
                                 echo "Waiting for Secondary Emulator (emulator-5556)..."
+                                \$ANDROID_HOME/platform-tools/adb -s emulator-5556 wait-for-device
                                 while [ "\$(\$ANDROID_HOME/platform-tools/adb -s emulator-5556 shell getprop sys.boot_completed 2>&1 | tr -d '\r')" != "1" ]; do
                                     sleep 3
-                                done
+                                me
+                                echo "Secondary Emulator booted!"
                             fi
                             echo "All requested emulators booted successfully!"
                         """
@@ -157,10 +161,8 @@ pipeline {
                             @echo off
                             set ANDROID_SDK_WIN=${winSdk}
 
-                            echo Waiting for ADB device recognition...
-                            "%ANDROID_SDK_WIN%\\platform-tools\\adb.exe" wait-for-device
-
                             echo Waiting for Primary Emulator (emulator-5554) boot completion...
+                            "%ANDROID_SDK_WIN%\\platform-tools\\adb.exe" -s emulator-5554 wait-for-device
                             :LOOP1
                             for /f "tokens=*" %%a in ('"%ANDROID_SDK_WIN%\\platform-tools\\adb.exe" -s emulator-5554 shell getprop sys.boot_completed 2^>nul') do set BOOT_STATE1=%%a
                             if not "%BOOT_STATE1%"=="1" (
@@ -176,6 +178,7 @@ pipeline {
                                 set ANDROID_SDK_WIN=${winSdk}
 
                                 echo Waiting for Secondary Emulator (emulator-5556) boot completion...
+                                "%ANDROID_SDK_WIN%\\platform-tools\\adb.exe" -s emulator-5556 wait-for-device
                                 :LOOP2
                                 for /f "tokens=*" %%a in ('"%ANDROID_SDK_WIN%\\platform-tools\\adb.exe" -s emulator-5556 shell getprop sys.boot_completed 2^>nul') do set BOOT_STATE2=%%a
                                 if not "%BOOT_STATE2%"=="1" (
@@ -218,14 +221,32 @@ pipeline {
     post {
         always {
             script {
-                // Kill emulator if it was started during build
+                // Kill all targeted emulator instances if started during build
                 if (params.RUN_MOBILE) {
-                    echo "Cleaning up Android Emulator instance..."
+                    echo "Cleaning up Android Emulator instances..."
+                    def devCount = params.PARALLEL_DEVICES as Integer
+
                     if (isUnix()) {
-                        sh '$ANDROID_HOME/platform-tools/adb emu kill || true'
+                        sh """
+                            ${env.ANDROID_HOME}/platform-tools/adb -s emulator-5554 emu kill || true
+                        """
+                        if (devCount >= 2) {
+                            sh """
+                                ${env.ANDROID_HOME}/platform-tools/adb -s emulator-5556 emu kill || true
+                            """
+                        }
                     } else {
                         def winSdk = env.ANDROID_HOME.replace('/', '\\')
-                        bat "@echo off\n\"${winSdk}\\platform-tools\\adb.exe\" emu kill || exit /b 0"
+                        bat """
+                            @echo off
+                            "${winSdk}\\platform-tools\\adb.exe" -s emulator-5554 emu kill 2>nul || exit /b 0
+                        """
+                        if (devCount >= 2) {
+                            bat """
+                                @echo off
+                                "${winSdk}\\platform-tools\\adb.exe" -s emulator-5556 emu kill 2>nul || exit /b 0
+                            """
+                        }
                     }
                 }
             }
