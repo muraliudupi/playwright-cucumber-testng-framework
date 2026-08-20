@@ -8,7 +8,6 @@ import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.MutableCapabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.net.URI;
 import java.net.URL;
 import java.time.Duration;
@@ -81,7 +80,8 @@ public final class MobileDriverFactory {
                             .setNewCommandTimeout(Duration.ofSeconds(
                                     ConfigReader.getInt("mobile.local.new.command.timeout.sec", 60)))
 
-                            .amend("appium:ensureWebviewsHavePages", true); // Recommended helper for hybrid components if any
+                            .amend("appium:ensureWebviewsHavePages", true)
+                            .amend("appium:chromedriverAutodownload", true);
 
                     URL localUrl = URI.create("http://127.0.0.1:4723/").toURL();
                     driver = new AndroidDriver(localUrl, options);

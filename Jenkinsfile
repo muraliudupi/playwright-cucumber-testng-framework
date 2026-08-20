@@ -37,7 +37,7 @@ pipeline {
         )
         string(
             name: 'NOTIFICATION_EMAIL',
-            defaultValue: '',
+            defaultValue: 'qamurali@outlook.com',
             description: 'Recipient address for the test report email.'
         )
     }
@@ -237,7 +237,7 @@ pipeline {
                     emailext(
                         subject: "Automation Results: ${env.EMAIL_STATUS} | ${env.JOB_NAME} (Build #${env.BUILD_NUMBER})",
                         to: params.NOTIFICATION_EMAIL,
-                        from: "Automation Framework Jenkins <${MAIL_USER}>",
+                        from: 'Automation Framework Jenkins <${MAIL_USER}>',
                         mimeType: 'text/plain',
                         body: """Hi Team,
 

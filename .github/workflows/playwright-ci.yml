@@ -151,7 +151,7 @@ jobs:
 
           subject: "Automation Results: ${{ env.EMAIL_STATUS }} | ${{ github.repository }} (Build #${{ github.run_number }})"
           to: ${{ vars.QA_NOTIFICATION_EMAIL }}
-          from: Automation Framework <${{ secrets.MAIL_USERNAME }}>
+          from: Automation Framework GitHub <${{ secrets.MAIL_USERNAME }}>
           body: |
             Hi Team,
             
@@ -174,7 +174,7 @@ jobs:
             ${{ env.EXTENT_EXISTS == 'true' && 'Please find the interactive Extent Report attached to this email for full stack traces.' || '⚠️ Note: Interactive Extent Report attachment is missing because the build or execution cycle was cut short.' }}            
             
             Regards,
-            QA Automation Bot
+            QA Automation
 
           attachments: ${{ env.ATTACHMENT_PATH }}
 

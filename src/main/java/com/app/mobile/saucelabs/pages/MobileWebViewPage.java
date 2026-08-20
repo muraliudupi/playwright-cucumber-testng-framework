@@ -68,9 +68,10 @@ public class MobileWebViewPage extends MobileBasePage {
 
             contextDriver.context(webviewContext);
             String actualUrl = driver().getCurrentUrl();
-            LOG.info("WebView loaded URL: {}", actualUrl);
+            String actualHost = extractHost(actualUrl);
+            LOG.info("WebView loaded URL: {} (host: {})", actualUrl, actualHost);
 
-            return actualUrl != null && expectedHost != null && actualUrl.contains(expectedHost);
+            return actualHost != null && expectedHost != null && actualHost.equalsIgnoreCase(expectedHost);
         } catch (Exception e) {
             LOG.warn("Could not verify loaded URL via WebView context switch: {}", e.getMessage());
             return false;
@@ -81,9 +82,17 @@ public class MobileWebViewPage extends MobileBasePage {
 
     private String extractHost(String url) {
         try {
-            return URI.create(url).getHost();
+            String host = URI.create(url).getHost();
+            return normalizeHost(host);
         } catch (Exception e) {
-            return url;
+            return normalizeHost(url);
         }
+    }
+
+    private String normalizeHost(String host) {
+        if (host == null) {
+            return null;
+        }
+        return host.startsWith("www.") ? host.substring(4) : host;
     }
 }
