@@ -11,14 +11,14 @@ pipeline {
     parameters {
         string(
             name: 'CUCUMBER_TAGS',
-            defaultValue: '@sanity and not @wip',
+            defaultValue: '@mobile and @login',
             description: '''Cucumber tags to filter test execution.
                 Examples: '@web', '@mobile', '@sanity'.'''
         )
         choice(
             name: 'ENVIRONMENT',
             choices: ['staging', 'qa', 'dev', 'prod'],
-            description: '''Target environment.'''
+            description: 'Target environment.'
         )
         booleanParam(
             name: 'RUN_MOBILE',
@@ -27,7 +27,7 @@ pipeline {
         )
         string(
             name: 'AVD_NAME',
-            defaultValue: 'Pixel_6_API_34',
+            choices: ['Pixel_6a', 'Pixel_6a_2', 'Pixel_6a_3', 'Pixel_6a_4'],
             description: 'Name of the Android Virtual Device (AVD) configured on the Jenkins agent node.'
         )
         booleanParam(
@@ -117,7 +117,7 @@ pipeline {
                             :LOOP
                             for /f "tokens=*" %%a in ('"%ANDROID_SDK_WIN%\\platform-tools\\adb.exe" shell getprop sys.boot_completed 2^>nul') do set BOOT_STATE=%%a
                             if not "%BOOT_STATE%"=="1" (
-                                timeout /t 3 /nobreak >nul
+                                ping 127.0.0.1 -n 4 >nul
                                 goto LOOP
                             )
                             echo Android Emulator booted successfully!
