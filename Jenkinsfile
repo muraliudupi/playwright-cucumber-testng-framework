@@ -12,23 +12,12 @@ pipeline {
         string(
             name: 'CUCUMBER_TAGS',
             defaultValue: '@mobile and @login',
-            description: '''Cucumber tags to filter test execution.
-                Examples: '@web', '@mobile', '@sanity'.'''
+            description: '''Cucumber tags to filter test execution. Examples: '@web', '@mobile', '@sanity'.'''
         )
         choice(
             name: 'ENVIRONMENT',
             choices: ['staging', 'qa', 'dev', 'prod'],
             description: 'Target environment.'
-        )
-        booleanParam(
-            name: 'RUN_MOBILE',
-            defaultValue: false,
-            description: 'Check this to boot the Android emulator and run mobile/Appium tests.'
-        )
-        string(
-            name: 'AVD_NAME',
-            choices: ['Pixel_6a', 'Pixel_6a_2', 'Pixel_6a_3', 'Pixel_6a_4'],
-            description: 'Name of the Android Virtual Device (AVD) configured on the Jenkins agent node.'
         )
         booleanParam(
             name: 'CLEAN_BUILD',
@@ -38,7 +27,17 @@ pipeline {
         string(
             name: 'NOTIFICATION_EMAIL',
             defaultValue: 'qamurali@outlook.com',
-            description: 'Recipient address for the test report email.'
+            description: 'Recipient address for the test report email'
+        )
+        booleanParam(
+            name: 'RUN_MOBILE',
+            defaultValue: false,
+            description: 'Check this to boot the Android emulator and run mobile/Appium tests.'
+        )
+        choice(
+            name: 'PARALLEL_DEVICES',
+            choices: ['2', '1'],
+            description: 'Number of Android Emulators to boot for parallel execution.'
         )
     }
 
@@ -47,6 +46,7 @@ pipeline {
         CUCUMBER_TAGS_ENV = "${params.CUCUMBER_TAGS}"
         TARGET_ENV        = "${params.ENVIRONMENT}"
         ANDROID_HOME      = "C:/Users/mural/AppData/Local/Android/Sdk"
+        APP_PATH          = "D:/Automation/playwright-cucumber-testng-framework/src/test/resources/apps/mda-2.2.0-25.apk"
     }
 
     stages {
@@ -79,49 +79,112 @@ pipeline {
             }
         }
 
-        stage('Start Android Emulator') {
+        stage('Stage Application APK') {
             when {
                 expression { return params.RUN_MOBILE }
             }
             steps {
                 script {
-                    echo "Starting Android Emulator: ${params.AVD_NAME}..."
+                    if (isUnix()) {
+                        sh '''
+                            mkdir -p src/test/resources/apps
+                            cp "$APP_PATH" src/test/resources/apps/mda-2.2.0-25.apk
+                        '''
+                    } else {
+                        bat '''
+                            @echo off
+                            if not exist "src\\test\\resources\\apps" mkdir "src\\test\\resources\\apps"
+                            copy /Y "%APP_PATH%" "src\\test\\resources\\apps\\mda-2.2.0-25.apk"
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Start Android Emulator & Appium') {
+            when {
+                expression { return params.RUN_MOBILE }
+            }
+            steps {
+                script {
+                    def winSdk = env.ANDROID_HOME.replace('/', '\\')
+                    def devCount = params.PARALLEL_DEVICES as Integer
+
                     if (isUnix()) {
                         sh """
-                            # Boot emulator in background
-                            \$ANDROID_HOME/emulator/emulator -avd ${params.AVD_NAME} -no-window -no-audio -no-snapshot -delay-adb > /dev/null 2>&1 &
+                            appium --port 4723 > appium.log 2>&1 &
+                            \$ANDROID_HOME/emulator/emulator -avd Pixel_6a -port 5554 -no-window -no-audio -no-snapshot > /dev/null 2>&1 &
+                            if [ "${devCount}" -ge 2 ]; then
+                                \$ANDROID_HOME/emulator/emulator -avd Pixel_6a_2 -port 5556 -no-window -no-audio -no-snapshot > /dev/null 2>&1 &
+                            fi
 
-                            # Wait until adb detects device and boot is complete
                             \$ANDROID_HOME/platform-tools/adb wait-for-device
-
-                            echo "Waiting for emulator boot completion..."
-                            while [ "\$(\$ANDROID_HOME/platform-tools/adb shell getprop sys.boot_completed 2>&1 | tr -d '\r')" != "1" ]; do
+                            echo "Waiting for Primary Emulator (emulator-5554)..."
+                            while [ "\$(\$ANDROID_HOME/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed 2>&1 | tr -d '\r')" != "1" ]; do
                                 sleep 3
                             done
-                            echo "Android Emulator booted successfully!"
+
+                            if [ "${devCount}" -ge 2 ]; then
+                                echo "Waiting for Secondary Emulator (emulator-5556)..."
+                                while [ "\$(\$ANDROID_HOME/platform-tools/adb -s emulator-5556 shell getprop sys.boot_completed 2>&1 | tr -d '\r')" != "1" ]; do
+                                    sleep 3
+                                done
+                            fi
+                            echo "All requested emulators booted successfully!"
                         """
                     } else {
-                        def winSdk = env.ANDROID_HOME.replace('/', '\\')
+                        bat """
+                            @echo off
+                            set ANDROID_SDK_WIN=${winSdk}
+
+                            rem Always start Appium
+                            start "" appium --port 4723
+
+                            rem Launch Primary Emulator
+                            start "" "%ANDROID_SDK_WIN%\\emulator\\emulator.exe" -avd Pixel_6a -port 5554 -no-window -no-audio -no-snapshot
+                        """
+
+                        if (devCount >= 2) {
+                            bat """
+                                @echo off
+                                set ANDROID_SDK_WIN=${winSdk}
+                                rem Launch Secondary Emulator
+                                start "" "%ANDROID_SDK_WIN%\\emulator\\emulator.exe" -avd Pixel_6a_2 -port 5556 -no-window -no-audio -no-snapshot
+                            """
+                        }
 
                         bat """
                             @echo off
                             set ANDROID_SDK_WIN=${winSdk}
 
-                            rem Launch emulator in detached background process
-                            start "" "%ANDROID_SDK_WIN%\\emulator\\emulator.exe" -avd ${params.AVD_NAME} -no-window -no-audio -no-snapshot
-
                             echo Waiting for ADB device recognition...
                             "%ANDROID_SDK_WIN%\\platform-tools\\adb.exe" wait-for-device
 
-                            echo Waiting for Android OS boot completion...
-                            :LOOP
-                            for /f "tokens=*" %%a in ('"%ANDROID_SDK_WIN%\\platform-tools\\adb.exe" shell getprop sys.boot_completed 2^>nul') do set BOOT_STATE=%%a
-                            if not "%BOOT_STATE%"=="1" (
+                            echo Waiting for Primary Emulator (emulator-5554) boot completion...
+                            :LOOP1
+                            for /f "tokens=*" %%a in ('"%ANDROID_SDK_WIN%\\platform-tools\\adb.exe" -s emulator-5554 shell getprop sys.boot_completed 2^>nul') do set BOOT_STATE1=%%a
+                            if not "%BOOT_STATE1%"=="1" (
                                 ping 127.0.0.1 -n 4 >nul
-                                goto LOOP
+                                goto LOOP1
                             )
-                            echo Android Emulator booted successfully!
+                            echo Primary Emulator booted!
                         """
+
+                        if (devCount >= 2) {
+                            bat """
+                                @echo off
+                                set ANDROID_SDK_WIN=${winSdk}
+
+                                echo Waiting for Secondary Emulator (emulator-5556) boot completion...
+                                :LOOP2
+                                for /f "tokens=*" %%a in ('"%ANDROID_SDK_WIN%\\platform-tools\\adb.exe" -s emulator-5556 shell getprop sys.boot_completed 2^>nul') do set BOOT_STATE2=%%a
+                                if not "%BOOT_STATE2%"=="1" (
+                                    ping 127.0.0.1 -n 4 >nul
+                                    goto LOOP2
+                                )
+                                echo Secondary Emulator booted!
+                            """
+                        }
                     }
                 }
             }
