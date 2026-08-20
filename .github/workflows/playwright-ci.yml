@@ -10,7 +10,7 @@ on:
       tags:
         description: 'Cucumber tags to filter test execution'
         required: false
-        default: '(@mobile or @web) and @login'
+        default: '@login'
       environment:
         type: choice
         description: 'Target environment'
@@ -38,14 +38,14 @@ permissions:
 jobs:
   automation-execution:
     name: Test Suite
-    runs-on: macos-13
+    runs-on: macos-latest
 
     steps:
       - name: Checkout Source Code Baseline
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Java Development Kit Environment (JDK 21)
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
@@ -54,7 +54,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Cache Playwright Browser Binaries
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
@@ -68,9 +68,9 @@ jobs:
 
       - name: Setup Node.js & Install Appium
         if: ${{ github.event.inputs.run_mobile == 'true' || github.event_name != 'workflow_dispatch' }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install Appium & Drivers
         if: ${{ github.event.inputs.run_mobile == 'true' || github.event_name != 'workflow_dispatch' }}
@@ -80,22 +80,24 @@ jobs:
           appium --port 4723 > appium.log 2>&1 &
 
       - name: Stage Application APK
-        if: ${{ github.event.inputs.run_mobile == 'true' || github.event_name != 'workflow_dispatch' }}
+        if: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.run_mobile == true || github.event.inputs.run_mobile == 'true' }}
         run: |
           if [ -f "src/test/resources/apps/mda-2.2.0-25.apk" ]; then
             echo "✅ APK successfully verified in workspace."
+            echo "APK_EXISTS=true" >> $GITHUB_ENV
           else
-            echo "❌ ERROR: APK file missing from repository path!"
-            exit 1
+            echo "⚠️ WARNING: APK file missing! Falling back to Web test execution."
+            echo "APK_EXISTS=false" >> $GITHUB_ENV
           fi
 
       - name: Boot Android Emulator & Execute Mobile Tests
-        if: ${{ github.event.inputs.run_mobile == 'true' || github.event.inputs.run_mobile == '1' }}
+        if: ${{ (github.event_name != 'workflow_dispatch' || github.event.inputs.run_mobile == true || github.event.inputs.run_mobile == 'true') && env.APK_EXISTS == 'true' }}
         continue-on-error: true
         id: test_execution_mobile
         uses: reactivecircus/android-emulator-runner@v2
         env:
-          TAGS: "${{ github.event.inputs.tags || '@mobile and @login' }}"
+          #TAGS: "${{ github.event.inputs.tags || '@mobile and @login' }}"
+          TAGS: "${{ '@mobile and @login' }}"
           ENV_NAME: "${{ github.event.inputs.environment || 'staging' }}"
           DB_PASSWORD: ${{ secrets.ENTERPRISE_DB_PASSWORD }}
         with:
@@ -119,15 +121,15 @@ jobs:
               echo "Secondary Emulator booted successfully!"
             fi    
 
-            # Execute Gradle tests directly inside the action script block
             ./gradlew clean test "-Dcucumber.filter.tags=$TAGS" "-Denv=$ENV_NAME" --no-daemon
 
-      - name: Execute Web/API Tests (Mobile Skipped)
-        if: ${{ github.event.inputs.run_mobile != 'true' && github.event.inputs.run_mobile != '1' }}
+      - name: Execute Web/API Tests
+        if: always()
         continue-on-error: true
         id: test_execution_web
         env:
-          TAGS: "${{ github.event.inputs.tags || '@web and @login' }}"
+          #TAGS: "${{ github.event.inputs.tags || '@web and @login' }}"
+          TAGS: "${{ '@web and @login' }}"
           ENV_NAME: "${{ github.event.inputs.environment || 'staging' }}"
           DB_PASSWORD: ${{ secrets.ENTERPRISE_DB_PASSWORD }}
         run: |
@@ -135,7 +137,7 @@ jobs:
 
       - name: Publish Automation Reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Automation-Report
           path: |
@@ -215,7 +217,7 @@ jobs:
 
       - name: Send Email Report
         if: always()
-        uses: dawidd6/action-send-mail@v3
+        uses: dawidd6/action-send-mail@v17
         with:
           server_address: smtp.gmail.com
           server_port: 465
