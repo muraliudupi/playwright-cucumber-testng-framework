@@ -145,7 +145,7 @@ pipeline {
                             start "" appium --port 4723
 
                             rem Launch Primary Emulator
-                            start "" "%ANDROID_SDK_WIN%\\emulator\\emulator.exe" -avd Pixel_6a -port 5554 -no-window -no-audio -no-snapshot
+                            start "" "%ANDROID_SDK_WIN%\\emulator\\emulator.exe" -avd Pixel_6a -port 5554 -no-window -no-audio -gpu host -snapshot
                         """
 
                         if (devCount >= 2) {
@@ -153,7 +153,7 @@ pipeline {
                                 @echo off
                                 set ANDROID_SDK_WIN=${winSdk}
                                 rem Launch Secondary Emulator
-                                start "" "%ANDROID_SDK_WIN%\\emulator\\emulator.exe" -avd Pixel_6a_2 -port 5556 -no-window -no-audio -no-snapshot
+                                start "" "%ANDROID_SDK_WIN%\\emulator\\emulator.exe" -avd Pixel_6a_2 -port 5556 -no-window -no-audio -gpu host -snapshot
                             """
                         }
 
