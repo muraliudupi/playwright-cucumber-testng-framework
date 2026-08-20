@@ -114,9 +114,9 @@ pipeline {
                     if (isUnix()) {
                         sh """
                             appium --port 4723 > appium.log 2>&1 &
-                            \$ANDROID_HOME/emulator/emulator -avd Pixel_6a -port 5554 -no-window -no-audio -no-snapshot > /dev/null 2>&1 &
+                            \$ANDROID_HOME/emulator/emulator -avd Pixel_6a_3 -port 5554 -no-window -no-audio -no-snapshot > /dev/null 2>&1 &
                             if [ "${devCount}" -ge 2 ]; then
-                                \$ANDROID_HOME/emulator/emulator -avd Pixel_6a_2 -port 5556 -no-window -no-audio -no-snapshot > /dev/null 2>&1 &
+                                \$ANDROID_HOME/emulator/emulator -avd Pixel_6a_4 -port 5556 -no-window -no-audio -no-snapshot > /dev/null 2>&1 &
                             fi
 
                             echo "Waiting for Primary Emulator (emulator-5554)..."
@@ -145,7 +145,7 @@ pipeline {
                             start "" appium --port 4723
 
                             rem Launch Primary Emulator
-                            start "" "%ANDROID_SDK_WIN%\\emulator\\emulator.exe" -avd Pixel_6a -port 5554 -no-window -no-audio -gpu host -snapshot
+                            start "" "%ANDROID_SDK_WIN%\\emulator\\emulator.exe" -avd Pixel_6a_3 -port 5554 -no-window -no-audio -no-snapshot
                         """
 
                         if (devCount >= 2) {
@@ -153,7 +153,7 @@ pipeline {
                                 @echo off
                                 set ANDROID_SDK_WIN=${winSdk}
                                 rem Launch Secondary Emulator
-                                start "" "%ANDROID_SDK_WIN%\\emulator\\emulator.exe" -avd Pixel_6a_2 -port 5556 -no-window -no-audio -gpu host -snapshot
+                                start "" "%ANDROID_SDK_WIN%\\emulator\\emulator.exe" -avd Pixel_6a_4 -port 5556 -no-window -no-audio -no-snapshot
                             """
                         }
 
