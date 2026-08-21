@@ -11,8 +11,8 @@ pipeline {
     parameters {
         string(
             name: 'CUCUMBER_TAGS',
-            defaultValue: '@mobile and @login',
-            description: '''Cucumber tags to filter test execution. Examples: '@web', '@mobile', '@sanity'.'''
+            defaultValue: '@web and @login',
+            description: '''Cucumber tags to filter test execution. Examples: '@web', '@mobile', '@sanity'. Note: mobile tags require RUN_MOBILE checked, or there's no Appium/emulator for them to run against.'''
         )
         choice(
             name: 'ENVIRONMENT',
@@ -33,11 +33,6 @@ pipeline {
             name: 'RUN_MOBILE',
             defaultValue: false,
             description: 'Check this to boot the Android emulator and run mobile/Appium tests.'
-        )
-        choice(
-            name: 'PARALLEL_DEVICES',
-            choices: ['2', '1'],
-            description: 'Number of Android Emulators to boot for parallel execution.'
         )
     }
 
@@ -108,7 +103,7 @@ pipeline {
             }
             steps {
                 script {
-                    def configFile = "src/test/resources/config.properties"
+                    def configFile = "src/test/resources/config/config.properties"
 
                     if (isUnix()) {
                         sh """
@@ -120,8 +115,12 @@ pipeline {
                             appium --port 4723 > appium.log 2>&1 &
 
                             # 3. Boot each emulator defined in the pool dynamically
-                            IFS=',' read -r -a EMULATOR_LIST <<< "\${DEVICE_POOL}"
-                            for DEVICE in "\${EMULATOR_LIST[@]}"; do
+                            OLD_IFS="\$IFS"
+                            IFS=','
+                            set -- \${DEVICE_POOL}
+                            IFS="\$OLD_IFS"
+
+                            for DEVICE in "\$@"; do
                                 PORT=\$(echo "\${DEVICE}" | sed -E 's/.*-([0-9]+)/\\1/')
                                 AVD_NAME="Pixel_6a_\${PORT}"
 
@@ -131,7 +130,7 @@ pipeline {
                             done
 
                             # 4. Wait for all emulators to complete boot cycle
-                            for DEVICE in "\${EMULATOR_LIST[@]}"; do
+                            for DEVICE in "\$@"; do
                                 echo "Waiting for \${DEVICE} boot completion..."
                                 \$ANDROID_HOME/platform-tools/adb -s "\${DEVICE}" wait-for-device
                                 while [ "\$(\$ANDROID_HOME/platform-tools/adb -s "\${DEVICE}" shell getprop sys.boot_completed 2>&1 | tr -d '\\r')" != "1" ]; do
@@ -230,14 +229,17 @@ pipeline {
                 // Cleanup Android Emulator instances based on config device pool
                 if (params.RUN_MOBILE) {
                     echo "Cleaning up Android Emulator instances..."
-                    def configFile = "src/test/resources/config.properties"
+                    def configFile = "src/test/resources/config/config.properties"
 
                     if (isUnix()) {
                         sh """
                 DEVICE_POOL=\$(grep -E "^mobile\\.local\\.device\\.pool=" "${configFile}" | cut -d'=' -f2 | tr -d ' \\r')
-                IFS=',' read -r -a EMULATOR_LIST <<< "\${DEVICE_POOL}"
+                OLD_IFS="\$IFS"
+                IFS=','
+                set -- \${DEVICE_POOL}
+                IFS="\$OLD_IFS"
 
-                for DEVICE in "\${EMULATOR_LIST[@]}"; do
+                for DEVICE in "\$@"; do
                     echo "Terminating emulator: \${DEVICE}"
                     \${ANDROID_HOME}/platform-tools/adb -s "\${DEVICE}" emu kill || true
                 done
@@ -330,7 +332,7 @@ pipeline {
                     emailext(
                         subject: "Automation Results: ${env.EMAIL_STATUS} | ${env.JOB_NAME} (Build #${env.BUILD_NUMBER})",
                         to: params.NOTIFICATION_EMAIL,
-                        from: 'Automation Framework Jenkins <${MAIL_USER}>',
+                        from: "Automation Framework Jenkins <${MAIL_USER}>",
                         mimeType: 'text/plain',
                         body: """Hi Team,
 

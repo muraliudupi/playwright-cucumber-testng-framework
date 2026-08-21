@@ -68,11 +68,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-playwright-
 
-      - name: Install Playwright Chromium (Java Native)
+      - name: Install Playwright Browsers (Java Native)
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: |
-          ./gradlew testClasses --no-daemon
-          ./gradlew run -Pargs="install chromium" --no-daemon || npx playwright install chromium
+          ./gradlew installPlaywrightBrowsers --no-daemon || npx playwright install chromium
 
       - name: Setup Node.js & Install Appium
         if: ${{ (github.event_name != 'workflow_dispatch' || github.event.inputs.run_mobile == true) && env.APK_EXISTS == 'true' }}
@@ -93,19 +92,20 @@ jobs:
         id: test_execution_mobile
         uses: reactivecircus/android-emulator-runner@v2
         env:
-          TAGS: "${{ '@mobile and @login' }}"
+          # TAGS: "${{ github.event.inputs.tags != '' && github.event.inputs.tags || '@mobile and @login' }}"
+          TAGS: "'@mobile and @login'"
           ENV_NAME: "${{ github.event.inputs.environment || 'staging' }}"
           DB_PASSWORD: ${{ secrets.ENTERPRISE_DB_PASSWORD }}
         with:
           api-level: 34
           target: default
-          arch: x86_64
+          arch: arm64-v8a
           profile: Pixel_6a
           ram-size: 4096M
           disable-animations: true
           script: |
             # 1. Read device pool from properties file (ignoring commented lines)
-            CONFIG_FILE="src/test/resources/config.properties"
+            CONFIG_FILE="src/test/resources/config/config.properties"
             DEVICE_POOL=$(grep -E "^mobile\.local\.device\.pool=" "$CONFIG_FILE" | cut -d'=' -f2 | tr -d ' \r')
             export MOBILE_LOCAL_DEVICE_POOL="$DEVICE_POOL"
           
@@ -125,7 +125,7 @@ jobs:
                 echo "✅ Primary Emulator $DEVICE is already running."
               else
                 echo "🚀 Booting background emulator $DEVICE on port $PORT..."
-                echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n "$AVD_NAME" -k "system-images;android-34;default;x86_64" --force
+                echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n "$AVD_NAME" -k "system-images;android-34;default;arm64-v8a" --force
                 $ANDROID_HOME/emulator/emulator -avd "$AVD_NAME" -port "$PORT" -no-window -no-audio -no-snapshot > /dev/null 2>&1 &
           
                 $ANDROID_HOME/platform-tools/adb -s "$DEVICE" wait-for-device
@@ -147,7 +147,8 @@ jobs:
         continue-on-error: true
         id: test_execution_web
         env:
-          TAGS: "${{ '@web and @login' }}"
+          ## TAGS: "${{ github.event.inputs.tags != '' && github.event.inputs.tags || '@web and @login' }}"
+          TAGS: "'@web and @login'"
           ENV_NAME: "${{ github.event.inputs.environment || 'staging' }}"
           DB_PASSWORD: ${{ secrets.ENTERPRISE_DB_PASSWORD }}
         run: |
