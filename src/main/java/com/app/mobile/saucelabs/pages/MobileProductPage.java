@@ -93,6 +93,7 @@ public class MobileProductPage extends MobileBasePage {
         ensureElementsInitialized();
         wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnMenu)).click();
         wait(shortWait()).until(ExpectedConditions.elementToBeClickable(btnMenuGeoLocation)).click();
+        mobileGeoLocationPage.grantLocationPermissionIfPrompted();
         return mobileGeoLocationPage;
     }
 
@@ -190,18 +191,18 @@ public class MobileProductPage extends MobileBasePage {
         wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnSort)).click();
     }
 
-    public java.util.List<String> getVisibleProductTitles() {
+    public List<String> getVisibleProductTitles() {
         ensureElementsInitialized();
         return driver().findElements(By.id("com.saucelabs.mydemoapp.android:id/titleTV"))
-                .stream().map(WebElement::getText).collect(java.util.stream.Collectors.toList());
+                .stream().map(WebElement::getText).collect(Collectors.toList());
     }
 
-    public java.util.List<Double> getVisibleProductPrices() {
+    public List<Double> getVisibleProductPrices() {
         ensureElementsInitialized();
         return driver().findElements(By.id("com.saucelabs.mydemoapp.android:id/priceTV"))
                 .stream()
                 .map(e -> Double.parseDouble(e.getText().replaceAll("[^0-9.]", "")))
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
     }
 
     public record ProductSummary(String title, double price) {

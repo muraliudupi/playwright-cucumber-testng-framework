@@ -3,17 +3,13 @@ package com.app.mobile.saucelabs.pages;
 import com.framework.models.Address;
 import com.framework.models.OrderItem;
 import com.framework.models.PaymentDetails;
+import com.framework.utils.MobileOrderRowUtils;
 import com.framework.utils.MobileScrollUtils;
 import io.appium.java_client.pagefactory.AndroidFindBy;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 public class MobileReviewPage extends MobileBasePage {
-
-    private static final String PRODUCT_TITLE_ID = "com.saucelabs.mydemoapp.android:id/titleTV";
-    private static final String PRODUCT_QTY_ID   = "com.saucelabs.mydemoapp.android:id/noTV";  //In Cart Review Page
-    private static final String COLOR_ICON_DESC  = "Displays color of selected product";
 
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/itemNumberTV")  private WebElement lblItemCount;
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/totalAmountTV") private WebElement lblTotalAmount;
@@ -49,24 +45,9 @@ public class MobileReviewPage extends MobileBasePage {
 
     private boolean isProductInOrderSummary(String productLabel) {
         try {
-            By productTitle = By.xpath(String.format(
-                    "//android.widget.TextView[@resource-id='%s' and @text='%s']",
-                    PRODUCT_TITLE_ID, productLabel));
-            return wait(existenceCheckTimeout()).until(ExpectedConditions.visibilityOfElementLocated(productTitle)).isDisplayed();
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private boolean quantityMatches(String productLabel, int expectedQuantity) {
-        try {
-            By quantityForProduct = By.xpath(String.format(
-                    "//android.widget.TextView[@text='%s']"
-                            + "/ancestor::android.view.ViewGroup[.//android.widget.TextView[@resource-id='%s']][1]"
-                            + "//android.widget.TextView[@resource-id='%s']",
-                    productLabel, PRODUCT_QTY_ID, PRODUCT_QTY_ID));
-            String actual = wait(existenceCheckTimeout()).until(ExpectedConditions.visibilityOfElementLocated(quantityForProduct)).getText();
-            return String.valueOf(expectedQuantity).equals(actual.trim());
+            return wait(existenceCheckTimeout())
+                    .until(ExpectedConditions.visibilityOfElementLocated(MobileOrderRowUtils.productTitleLocator(productLabel)))
+                    .isDisplayed();
         } catch (Exception e) {
             return false;
         }
@@ -74,12 +55,9 @@ public class MobileReviewPage extends MobileBasePage {
 
     private boolean isColorIndicatorDisplayedForProduct(String productLabel) {
         try {
-            By colorIcon = By.xpath(String.format(
-                    "//android.widget.TextView[@text='%s']"
-                            + "/ancestor::android.view.ViewGroup[.//android.widget.ImageView[@content-desc='%s']][1]"
-                            + "//android.widget.ImageView[@content-desc='%s']",
-                    productLabel, COLOR_ICON_DESC, COLOR_ICON_DESC));
-            return wait(existenceCheckTimeout()).until(ExpectedConditions.visibilityOfElementLocated(colorIcon)).isDisplayed();
+            return wait(existenceCheckTimeout())
+                    .until(ExpectedConditions.visibilityOfElementLocated(MobileOrderRowUtils.productColorIconLocator(productLabel)))
+                    .isDisplayed();
         } catch (Exception e) {
             return false;
         }

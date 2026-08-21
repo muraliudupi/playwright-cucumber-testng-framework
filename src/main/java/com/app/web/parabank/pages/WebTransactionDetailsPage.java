@@ -2,6 +2,8 @@ package com.app.web.parabank.pages;
 
 import com.framework.utils.ConfigReader;
 import com.microsoft.playwright.Locator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class WebTransactionDetailsPage extends WebBasePage {
 
@@ -20,7 +22,7 @@ public class WebTransactionDetailsPage extends WebBasePage {
 
     public String getTransactionIdFromUrl() {
         String url = page().url();
-        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("[?&]id=(\\d+)").matcher(url);
+        Matcher matcher = Pattern.compile("[?&]id=(\\d+)").matcher(url);
         if (!matcher.find()) {
             throw new IllegalStateException("Could not extract a transaction ID from the Transaction Details URL: " + url);
         }

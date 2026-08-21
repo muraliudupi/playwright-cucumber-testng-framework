@@ -58,4 +58,19 @@ public abstract class WebBasePage {
     public boolean isLoggedOut() {
         return page().locator("input[value='Log In']").isVisible();
     }
+
+    public void navigateTo(String relativePath) {
+        page().navigate(ConfigReader.get("baseUrl") + "parabank/" + relativePath);
+    }
+
+    public boolean isTextVisible(String text) {
+        Locator locator = page().getByText(text, new Page.GetByTextOptions().setExact(true));
+        try {
+            locator.first().waitFor(new Locator.WaitForOptions()
+                    .setTimeout(ConfigReader.getInt("web.confirmation.wait.timeout.ms", 20000)));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }
