@@ -227,31 +227,34 @@ pipeline {
     post {
         always {
             script {
-                // Kill all targeted emulator instances if started during build
+                // Cleanup Android Emulator instances based on config device pool
                 if (params.RUN_MOBILE) {
                     echo "Cleaning up Android Emulator instances..."
-                    def devCount = params.PARALLEL_DEVICES as Integer
+                    def configFile = "src/test/resources/config.properties"
 
                     if (isUnix()) {
                         sh """
-                            ${env.ANDROID_HOME}/platform-tools/adb -s emulator-5554 emu kill || true
-                        """
-                        if (devCount >= 2) {
-                            sh """
-                                ${env.ANDROID_HOME}/platform-tools/adb -s emulator-5556 emu kill || true
-                            """
-                        }
+                DEVICE_POOL=\$(grep -E "^mobile\\.local\\.device\\.pool=" "${configFile}" | cut -d'=' -f2 | tr -d ' \\r')
+                IFS=',' read -r -a EMULATOR_LIST <<< "\${DEVICE_POOL}"
+
+                for DEVICE in "\${EMULATOR_LIST[@]}"; do
+                    echo "Terminating emulator: \${DEVICE}"
+                    \${ANDROID_HOME}/platform-tools/adb -s "\${DEVICE}" emu kill || true
+                done
+            """
                     } else {
                         def winSdk = env.ANDROID_HOME.replace('/', '\\')
-                        bat """
-                            @echo off
-                            "${winSdk}\\platform-tools\\adb.exe" -s emulator-5554 emu kill 2>nul || exit /b 0
-                        """
-                        if (devCount >= 2) {
+                        def propFile = fileExists(configFile) ? readFile(configFile) : ""
+                        def devicePoolLine = propFile.split("\n").find { line -> line.trim().startsWith("mobile.local.device.pool=") }
+                        def devicePool = devicePoolLine ? devicePoolLine.split("=")[1].trim() : "emulator-5554,emulator-5556"
+                        def emulators = devicePool.split(",").collect { it.trim() }
+
+                        emulators.each { device ->
                             bat """
-                                @echo off
-                                "${winSdk}\\platform-tools\\adb.exe" -s emulator-5556 emu kill 2>nul || exit /b 0
-                            """
+                    @echo off
+                    echo Terminating emulator: ${device}
+                    "${winSdk}\\platform-tools\\adb.exe" -s ${device} emu kill 2>nul || exit /b 0
+                """
                         }
                     }
                 }
