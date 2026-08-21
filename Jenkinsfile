@@ -108,84 +108,90 @@ pipeline {
             }
             steps {
                 script {
-                    def winSdk = env.ANDROID_HOME.replace('/', '\\')
-                    def devCount = params.PARALLEL_DEVICES as Integer
+                    def configFile = "src/test/resources/config.properties"
 
                     if (isUnix()) {
                         sh """
+                            # 1. Parse device pool from properties file
+                            DEVICE_POOL=\$(grep -E "^mobile\\.local\\.device\\.pool=" "${configFile}" | cut -d'=' -f2 | tr -d ' \\r')
+                            echo "Parsed Device Pool from Config: \${DEVICE_POOL}"
+
+                            # 2. Start Appium in background
                             appium --port 4723 > appium.log 2>&1 &
-                            \$ANDROID_HOME/emulator/emulator -avd Pixel_6a_3 -port 5554 -no-window -no-audio -no-snapshot > /dev/null 2>&1 &
-                            if [ "${devCount}" -ge 2 ]; then
-                                \$ANDROID_HOME/emulator/emulator -avd Pixel_6a_4 -port 5556 -no-window -no-audio -no-snapshot > /dev/null 2>&1 &
-                            fi
 
-                            echo "Waiting for Primary Emulator (emulator-5554)..."
-                            \$ANDROID_HOME/platform-tools/adb -s emulator-5554 wait-for-device
-                            while [ "\$(\$ANDROID_HOME/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed 2>&1 | tr -d '\r')" != "1" ]; do
-                                sleep 3
+                            # 3. Boot each emulator defined in the pool dynamically
+                            IFS=',' read -r -a EMULATOR_LIST <<< "\${DEVICE_POOL}"
+                            for DEVICE in "\${EMULATOR_LIST[@]}"; do
+                                PORT=\$(echo "\${DEVICE}" | sed -E 's/.*-([0-9]+)/\\1/')
+                                AVD_NAME="Pixel_6a_\${PORT}"
+
+                                echo "🚀 Booting background emulator \${DEVICE} (AVD: \${AVD_NAME}) on port \${PORT}..."
+                                echo "no" | \$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n "\${AVD_NAME}" -k "system-images;android-34;default;x86_64" --force || true
+                                \$ANDROID_HOME/emulator/emulator -avd "\${AVD_NAME}" -port "\${PORT}" -no-window -no-audio -no-snapshot > /dev/null 2>&1 &
                             done
-                            echo "Primary Emulator booted!"
 
-                            if [ "${devCount}" -ge 2 ]; then
-                                echo "Waiting for Secondary Emulator (emulator-5556)..."
-                                \$ANDROID_HOME/platform-tools/adb -s emulator-5556 wait-for-device
-                                while [ "\$(\$ANDROID_HOME/platform-tools/adb -s emulator-5556 shell getprop sys.boot_completed 2>&1 | tr -d '\r')" != "1" ]; do
+                            # 4. Wait for all emulators to complete boot cycle
+                            for DEVICE in "\${EMULATOR_LIST[@]}"; do
+                                echo "Waiting for \${DEVICE} boot completion..."
+                                \$ANDROID_HOME/platform-tools/adb -s "\${DEVICE}" wait-for-device
+                                while [ "\$(\$ANDROID_HOME/platform-tools/adb -s "\${DEVICE}" shell getprop sys.boot_completed 2>&1 | tr -d '\\r')" != "1" ]; do
                                     sleep 3
-                                me
-                                echo "Secondary Emulator booted!"
-                            fi
-                            echo "All requested emulators booted successfully!"
+                                done
+                                echo "✅ Emulator \${DEVICE} booted successfully!"
+                            done
+
+                            echo "All pool emulators booted successfully!"
+                            \$ANDROID_HOME/platform-tools/adb devices
                         """
                     } else {
+                        def winSdk = env.ANDROID_HOME.replace('/', '\\')
+
+                        // Read config file safely
+                        def propFile = fileExists(configFile) ? readFile(configFile) : ""
+
+                        // Extract mobile.local.device.pool without slash-regex operator
+                        def devicePoolLine = propFile.split("\n").find { line ->
+                            line.trim().startsWith("mobile.local.device.pool=")
+                        }
+                        def devicePool = devicePoolLine ? devicePoolLine.split("=")[1].trim() : "emulator-5554,emulator-5556"
+
+                        // Split into list and collect trimmed entries
+                        def emulators = devicePool.split(",").collect { it.trim() }
+
+                        echo "Parsed Device Pool from Config (Windows): ${devicePool}"
+
+                        // Start Appium
                         bat """
                             @echo off
-                            set ANDROID_SDK_WIN=${winSdk}
-
-                            rem Always start Appium
                             start "" appium --port 4723
-
-                            rem Launch Primary Emulator
-                            start "" "%ANDROID_SDK_WIN%\\emulator\\emulator.exe" -avd Pixel_6a_3 -port 5554 -no-window -no-audio -no-snapshot
                         """
 
-                        if (devCount >= 2) {
+                        // Launch all emulators in background
+                        emulators.each { device ->
+                            def port = device.replaceAll(/.*-/, '')
+                            def avdName = "Pixel_6a_${port}"
                             bat """
                                 @echo off
                                 set ANDROID_SDK_WIN=${winSdk}
-                                rem Launch Secondary Emulator
-                                start "" "%ANDROID_SDK_WIN%\\emulator\\emulator.exe" -avd Pixel_6a_4 -port 5556 -no-window -no-audio -no-snapshot
+                                echo Launching background emulator ${device} on port ${port}...
+                                start "" "%ANDROID_SDK_WIN%\\emulator\\emulator.exe" -avd ${avdName} -port ${port} -no-window -no-audio -no-snapshot
                             """
                         }
 
-                        bat """
-                            @echo off
-                            set ANDROID_SDK_WIN=${winSdk}
-
-                            echo Waiting for Primary Emulator (emulator-5554) boot completion...
-                            "%ANDROID_SDK_WIN%\\platform-tools\\adb.exe" -s emulator-5554 wait-for-device
-                            :LOOP1
-                            for /f "tokens=*" %%a in ('"%ANDROID_SDK_WIN%\\platform-tools\\adb.exe" -s emulator-5554 shell getprop sys.boot_completed 2^>nul') do set BOOT_STATE1=%%a
-                            if not "%BOOT_STATE1%"=="1" (
-                                ping 127.0.0.1 -n 4 >nul
-                                goto LOOP1
-                            )
-                            echo Primary Emulator booted!
-                        """
-
-                        if (devCount >= 2) {
+                        // Poll boot completion for each device
+                        emulators.each { device ->
                             bat """
                                 @echo off
                                 set ANDROID_SDK_WIN=${winSdk}
-
-                                echo Waiting for Secondary Emulator (emulator-5556) boot completion...
-                                "%ANDROID_SDK_WIN%\\platform-tools\\adb.exe" -s emulator-5556 wait-for-device
-                                :LOOP2
-                                for /f "tokens=*" %%a in ('"%ANDROID_SDK_WIN%\\platform-tools\\adb.exe" -s emulator-5556 shell getprop sys.boot_completed 2^>nul') do set BOOT_STATE2=%%a
-                                if not "%BOOT_STATE2%"=="1" (
+                                echo Waiting for ${device} boot completion...
+                                "%ANDROID_SDK_WIN%\\platform-tools\\adb.exe" -s ${device} wait-for-device
+                                :LOOP_${device.replace('-', '_')}
+                                for /f "tokens=*" %%a in ('"%ANDROID_SDK_WIN%\\platform-tools\\adb.exe" -s ${device} shell getprop sys.boot_completed 2^>nul') do set BOOT_STATE=%%a
+                                if not "%BOOT_STATE%"=="1" (
                                     ping 127.0.0.1 -n 4 >nul
-                                    goto LOOP2
+                                    goto LOOP_${device.replace('-', '_')}
                                 )
-                                echo Secondary Emulator booted!
+                                echo ✅ Emulator ${device} booted successfully!
                             """
                         }
                     }
