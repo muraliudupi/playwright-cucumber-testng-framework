@@ -166,9 +166,9 @@ pipeline {
                         """
 
                         // Launch all emulators in background
-                        emulators.each { device ->
+                        emulators.eachWithIndex { device, idx ->
                             def port = device.replaceAll(/.*-/, '')
-                            def avdName = "Pixel_6a_${port}"
+                            def avdName = "Pixel_6a_${idx + 1}"
                             bat """
                                 @echo off
                                 set ANDROID_SDK_WIN=${winSdk}
