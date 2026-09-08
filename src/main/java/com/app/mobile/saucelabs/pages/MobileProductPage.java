@@ -19,11 +19,15 @@ public class MobileProductPage extends MobileBasePage {
     private final MobileGeoLocationPage mobileGeoLocationPage;
     private final MobileDrawingPage mobileDrawingPage;
     private final MobileWebViewPage mobileWebViewPage;
+    private final MobileAboutPage mobileAboutPage;
+    private final MobileResetAppPage mobileResetAppPage;
+    private final MobileFingerprintPage mobileFingerprintPage;
 
     public MobileProductPage(MobileLoginPage mobileLoginPage, MobileProductDetailPage mobileProductDetailPage,
                              MobileCartPage mobileCartPage, MobileQrScannerPage mobileQrScannerPage,
                              MobileGeoLocationPage mobileGeoLocationPage, MobileDrawingPage mobileDrawingPage,
-                             MobileWebViewPage mobileWebViewPage) {
+                             MobileWebViewPage mobileWebViewPage, MobileAboutPage mobileAboutPage,
+                             MobileResetAppPage mobileResetAppPage, MobileFingerprintPage mobileFingerprintPage) {
         super();
         this.mobileLoginPage = mobileLoginPage;
         this.mobileProductDetailPage = mobileProductDetailPage;
@@ -32,6 +36,9 @@ public class MobileProductPage extends MobileBasePage {
         this.mobileGeoLocationPage = mobileGeoLocationPage;
         this.mobileDrawingPage = mobileDrawingPage;
         this.mobileWebViewPage = mobileWebViewPage;
+        this.mobileAboutPage = mobileAboutPage;
+        this.mobileResetAppPage = mobileResetAppPage;
+        this.mobileFingerprintPage = mobileFingerprintPage;
     }
 
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/menuIV")
@@ -57,6 +64,15 @@ public class MobileProductPage extends MobileBasePage {
 
     @AndroidFindBy(uiAutomator = "new UiSelector().text(\"WebView\")")
     private WebElement btnMenuWebView;
+
+    @AndroidFindBy(uiAutomator = "new UiSelector().text(\"About\")")
+    private WebElement btnMenuAbout;
+
+    @AndroidFindBy(uiAutomator = "new UiSelector().text(\"Reset App State\")")
+    private WebElement btnMenuResetApp;
+
+    @AndroidFindBy(uiAutomator = "new UiSelector().text(\"FingerPrint\")")
+    private WebElement btnMenuFingerprint;
 
     @AndroidFindBy(id = "android:id/button1")
     //@iOSXCUITFindBy(accessibility = "Logout")
@@ -110,6 +126,27 @@ public class MobileProductPage extends MobileBasePage {
         wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnMenu)).click();
         wait(shortWait()).until(ExpectedConditions.elementToBeClickable(btnMenuWebView)).click();
         return mobileWebViewPage;
+    }
+
+    public MobileAboutPage openAbout() {
+        ensureElementsInitialized();
+        wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnMenu)).click();
+        wait(shortWait()).until(ExpectedConditions.elementToBeClickable(btnMenuAbout)).click();
+        return mobileAboutPage;
+    }
+
+    public MobileResetAppPage openResetAppState() {
+        ensureElementsInitialized();
+        wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnMenu)).click();
+        wait(shortWait()).until(ExpectedConditions.elementToBeClickable(btnMenuResetApp)).click();
+        return mobileResetAppPage;
+    }
+
+    public MobileFingerprintPage openFingerprint() {
+        ensureElementsInitialized();
+        wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnMenu)).click();
+        wait(shortWait()).until(ExpectedConditions.elementToBeClickable(btnMenuFingerprint)).click();
+        return mobileFingerprintPage;
     }
 
     public boolean verifyDashboard() {

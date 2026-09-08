@@ -11,8 +11,10 @@ pipeline {
     parameters {
         string(
             name: 'CUCUMBER_TAGS',
-            defaultValue: '(@web OR @mobile) AND @login',
-            description: '''Cucumber tags to filter test execution. Examples: '@web', '@mobile', '@sanity'. Note: mobile tags require RUN_MOBILE checked, or there's no Appium/emulator for them to run against.'''
+            defaultValue: '@web and @login',
+            description: '''Cucumber tags to filter test execution. Examples: '@web', '@mobile', '@sanity'.
+            RUN_MOBILE - Checked, then - (@web or @mobile) and @login. Else - @web and @login
+            Note: mobile tags require RUN_MOBILE checked, or there's no Appium/emulator for them to run against.'''
         )
         choice(
             name: 'ENVIRONMENT',
