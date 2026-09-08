@@ -35,5 +35,4 @@ done
 echo "List of connected ADB devices:"
 $ANDROID_HOME/platform-tools/adb devices
 
-# 3. Execute Mobile Tests with TestNG parallel thread runner
-./gradlew test --tests "com.framework.runners.MobileTestNGRunner" "-Dcucumber.filter.tags=$TAGS" "-Denv=$ENV_NAME" "-Dextent.reporter.spark.out=build/reports/extent/mobile-extent-report.html" --no-daemon
+./gradlew test --tests "com.framework.runners.MobileTestNGRunner" "-Dcucumber.filter.tags=$TAGS" "-Denv=$ENV_NAME" --no-daemon

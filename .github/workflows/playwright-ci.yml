@@ -103,7 +103,7 @@ jobs:
           ENV_NAME: "${{ github.event.inputs.environment || 'staging' }}"
           DB_PASSWORD: ${{ secrets.ENTERPRISE_DB_PASSWORD }}
         run: |
-          xvfb-run --auto-servernum ./gradlew clean test --tests "com.framework.runners.WebTestNGRunner" "-Dcucumber.filter.tags=$TAGS" "-Denv=$ENV_NAME" "-Dextent.reporter.spark.out=build/reports/extent/web-extent-report.html" --no-daemon
+          xvfb-run --auto-servernum ./gradlew test --tests "com.framework.runners.WebTestNGRunner" "-Dcucumber.filter.tags=$TAGS" "-Denv=$ENV_NAME" --no-daemon
 
       - name: Enable KVM group perms
         if: env.APK_EXISTS == 'true'
@@ -201,13 +201,13 @@ jobs:
         if: always()
         id: check_extent
         run: |
-          if compgen -G "build/reports/extent/*.html" > /dev/null; then
+          if [ -f "build/reports/extent/ExtentReport.html" ]; then
             echo "EXTENT_EXISTS=true" >> $GITHUB_ENV
-            echo "ATTACHMENT_PATH=build/reports/extent/*.html" >> $GITHUB_ENV
+            echo "ATTACHMENT_PATH=build/reports/extent/ExtentReport.html" >> $GITHUB_ENV
           else
             echo "EXTENT_EXISTS=false" >> $GITHUB_ENV
             echo "ATTACHMENT_PATH=" >> $GITHUB_ENV
-            echo "⚠️ WARNING: No Extent Report(s) were generated due to a compilation or early framework failure."
+            echo "⚠️ WARNING: No Extent Report was generated."
           fi
 
       - name: Send Email Report
