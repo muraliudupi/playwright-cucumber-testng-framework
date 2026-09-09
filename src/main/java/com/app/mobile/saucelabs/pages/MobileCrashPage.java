@@ -15,6 +15,11 @@ public class MobileCrashPage extends MobileBasePage {
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/cause_native_crash_button")
     private WebElement btnCauseNativeCrash;
 
+    // Deliberately no tap/click methods for the two buttons above: tapping
+    // either one crashes the app process by design, which would terminate
+    // the Appium session mid-scenario and destabilize the rest of the run.
+    // This page only verifies the screen and buttons are present.
+
     public boolean isCrashScreenDisplayed() {
         ensureElementsInitialized();
         try {
