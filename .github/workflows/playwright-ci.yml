@@ -68,8 +68,8 @@ jobs:
             fi
           fi
 
-      - name: Cache Playwright Browsers
-        uses: actions/cache@v5
+      - name: Restore Playwright Browser Cache
+        uses: actions/cache/restore@v5
         id: playwright-cache
         with:
           path: ${{ github.workspace }}/.playwright-browsers
@@ -214,6 +214,33 @@ jobs:
           echo "SKIPPED_COUNT=$SKIPPED_SCENARIOS" >> $GITHUB_ENV
           echo "EMAIL_STATUS=$STATUS_TEXT" >> $GITHUB_ENV
           echo "BUILD_STATUS=$BUILD_STATUS" >> $GITHUB_ENV
+
+      - name: Inspect Playwright Browser Cache Before Save
+        if: always()
+        run: |
+          echo "========================================="
+          echo "PLAYWRIGHT CACHE DIAGNOSTIC"
+          echo "========================================="
+          echo "PLAYWRIGHT_BROWSERS_PATH=$PLAYWRIGHT_BROWSERS_PATH"
+            
+          if [ -d "$PLAYWRIGHT_BROWSERS_PATH" ]; then
+            echo "✅ Browser directory exists."
+            echo "Directory size:"
+            du -sh "$PLAYWRIGHT_BROWSERS_PATH"
+          
+            echo "Contents:"
+            find "$PLAYWRIGHT_BROWSERS_PATH" -maxdepth 2 -type d | head -50
+          else
+            echo "❌ Browser directory does NOT exist."
+            exit 1
+          fi
+
+      - name: Save Playwright Browser Cache
+        if: always() && steps.playwright-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ github.workspace }}/.playwright-browsers
+          key: ${{ runner.os }}-playwright-${{ hashFiles('build.gradle') }}
 
       - name: Check if Extent Report Exists
         if: always()
