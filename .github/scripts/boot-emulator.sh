@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# 1. Read device pool from properties file (ignoring commented lines)
+# Read device pool from properties file (ignoring commented lines)
 CONFIG_FILE="src/test/resources/config/config.properties"
 DEVICE_POOL=$(grep -E "^mobile\.local\.device\.pool=" "$CONFIG_FILE" | cut -d'=' -f2 | tr -d ' \r')
 export MOBILE_LOCAL_DEVICE_POOL="$DEVICE_POOL"
@@ -10,9 +10,9 @@ echo "Parsed Device Pool from Config: $MOBILE_LOCAL_DEVICE_POOL"
 # Split comma-separated emulator names into array
 IFS=',' read -r -a EMULATOR_LIST <<< "$MOBILE_LOCAL_DEVICE_POOL"
 
-# 2. Boot each emulator defined in the pool dynamically
+# Boot each emulator defined in the pool dynamically
 for DEVICE in "${EMULATOR_LIST[@]}"; do
-   # Extract port number from device ID (e.g., emulator-5554 -> 5554)
+  # Extract port number from device ID (e.g., emulator-5554 -> 5554)
   PORT=$(echo "$DEVICE" | sed -E 's/.*-([0-9]+)/\1/')
   AVD_NAME="Pixel_6_${PORT}"
 
@@ -35,4 +35,5 @@ done
 echo "List of connected ADB devices:"
 $ANDROID_HOME/platform-tools/adb devices
 
-./gradlew test --tests "com.framework.runners.MobileTestNGRunner" "-Dcucumber.filter.tags=$TAGS" "-Denv=$ENV_NAME" "-Dextent.reporter.spark.out=build/reports/extent/mobile-extent-report.html" --no-daemon
+echo "✅ Emulator boot/setup complete."
+echo "Test execution is handled by the main GitHub Actions Gradle test step."

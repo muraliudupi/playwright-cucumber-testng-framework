@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       tags:
-        description: 'Cucumber tags to filter test execution (applies to both the web and mobile runs)'
+        description: 'Cucumber tags to filter test execution (applies to the test suite)'
         required: false
         default: ''
       environment:
@@ -106,16 +106,6 @@ jobs:
           appium driver install uiautomator2
           appium --port 4723 > appium.log 2>&1 &
 
-      - name: Execute Web Tests
-        continue-on-error: true
-        id: test_execution_web
-        env:
-          TAGS: "${{ github.event.inputs.tags != '' && github.event.inputs.tags || '@web and @login' }}"
-          ENV_NAME: "${{ github.event.inputs.environment || 'staging' }}"
-          DB_PASSWORD: ${{ secrets.ENTERPRISE_DB_PASSWORD }}
-        run: |
-          xvfb-run --auto-servernum ./gradlew test --tests "com.framework.runners.WebTestNGRunner" "-Dcucumber.filter.tags=$TAGS" "-Denv=$ENV_NAME" "-Dextent.reporter.spark.out=build/reports/extent/web-extent-report.html" --no-daemon
-
       - name: Enable KVM group perms
         if: env.APK_EXISTS == 'true'
         run: |
@@ -123,14 +113,12 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Boot Android Emulator & Execute Mobile Tests
+      - name: Boot Android Emulator
         if: env.APK_EXISTS == 'true'
         continue-on-error: true
-        id: test_execution_mobile
+        id: emulator_boot
         uses: reactivecircus/android-emulator-runner@v2
         env:
-          TAGS: "${{ github.event.inputs.tags != '' && github.event.inputs.tags || '@mobile and @login' }}"
-          ENV_NAME: "${{ github.event.inputs.environment || 'staging' }}"
           DB_PASSWORD: ${{ secrets.ENTERPRISE_DB_PASSWORD }}
         with:
           api-level: 34
@@ -141,6 +129,24 @@ jobs:
           disable-animations: true
           script: bash .github/scripts/boot-emulator.sh
 
+      - name: Execute Test Suite
+        continue-on-error: true
+        id: test_execution
+        env:
+          TAGS: "${{ github.event.inputs.tags != '' && github.event.inputs.tags || '(@web or @mobile) and @login' }}"
+          ENV_NAME: "${{ github.event.inputs.environment || 'staging' }}"
+          DB_PASSWORD: ${{ secrets.ENTERPRISE_DB_PASSWORD }}
+        run: |
+          mkdir -p build/reports/extent build/reports/cucumber
+          echo "Executing TestNG suite from testng.xml..."
+          echo "Cucumber tags: $TAGS"
+          echo "Environment: $ENV_NAME"
+
+          xvfb-run --auto-servernum ./gradlew test \
+            "-Dcucumber.filter.tags=$TAGS" \
+            "-Denv=$ENV_NAME" \
+            --no-daemon
+
       - name: Publish Automation Reports
         if: always()
         uses: actions/upload-artifact@v6
@@ -148,6 +154,7 @@ jobs:
           name: Automation-Report
           path: |
             build/reports/cucumber/*.html
+            build/reports/cucumber/*.json
             build/reports/extent/*.html
             build/reports/traces/*.zip
             build/reports/logs/*.log
@@ -208,40 +215,20 @@ jobs:
           echo "EMAIL_STATUS=$STATUS_TEXT" >> $GITHUB_ENV
           echo "BUILD_STATUS=$BUILD_STATUS" >> $GITHUB_ENV
 
-
-      - name: Check if Extent Reports Exist
+      - name: Check if Extent Report Exists
         if: always()
         id: check_extent
         run: |
-          ATTACHMENTS=""
-          
-          if [ -f "build/reports/extent/web-extent-report.html" ]; then
-            echo "✅ Web Extent Report found."
-            ATTACHMENTS="build/reports/extent/web-extent-report.html"
-          else
-            echo "⚠️ Web Extent Report not found."
-          fi
-          
-          if [ -f "build/reports/extent/mobile-extent-report.html" ]; then
-            echo "✅ Mobile Extent Report found."
-            if [ -n "$ATTACHMENTS" ]; then
-              ATTACHMENTS="$ATTACHMENTS,build/reports/extent/mobile-extent-report.html"
-            else
-              ATTACHMENTS="build/reports/extent/mobile-extent-report.html"
-            fi
-          else
-            echo "⚠️ Mobile Extent Report not found."
-          fi
-          
-          echo "ATTACHMENT_PATH=$ATTACHMENTS" >> "$GITHUB_ENV"
-          
-          if [ -n "$ATTACHMENTS" ]; then
+          REPORT_PATH="build/reports/extent/ExtentReport.html"
+
+          if [ -f "$REPORT_PATH" ]; then
+            echo "✅ Extent Report found: $REPORT_PATH"
             echo "EXTENT_EXISTS=true" >> "$GITHUB_ENV"
-            echo "📎 Reports to attach:"
-            echo "$ATTACHMENTS"
+            echo "ATTACHMENT_PATH=$REPORT_PATH" >> "$GITHUB_ENV"
           else
+            echo "⚠️ Extent Report not found: $REPORT_PATH"
             echo "EXTENT_EXISTS=false" >> "$GITHUB_ENV"
-            echo "⚠️ No Extent Reports were generated."
+            echo "ATTACHMENT_PATH=" >> "$GITHUB_ENV"
           fi
 
       - name: Send Email Report
@@ -278,7 +265,7 @@ jobs:
             - Triggered By: ${{ github.actor }}
             - Action Link:  https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-            ${{ env.EXTENT_EXISTS == 'true' && 'Please find the Web and/or Mobile interactive Extent Reports attached to this email.' || '⚠️ Note: No interactive Extent Reports were generated.' }}
+            ${{ env.EXTENT_EXISTS == 'true' && 'Please find the interactive ExtentReport.html attached to this email for full stack traces.' || '⚠️ Note: Interactive ExtentReport.html was not generated.' }}
 
             Regards,
             QA Automation
