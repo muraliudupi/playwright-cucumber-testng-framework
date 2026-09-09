@@ -68,6 +68,7 @@ jobs:
             fi
           fi
 
+
       - name: Restore Playwright Browser Cache
         uses: actions/cache/restore@v5
         id: playwright-cache
@@ -81,16 +82,6 @@ jobs:
           echo "Playwright browser cache miss - installing browsers..."
           ./gradlew installPlaywrightBrowsers --no-daemon
 
-      - name: Verify Playwright Browser Cache
-        run: |
-          echo "PLAYWRIGHT_BROWSERS_PATH=$PLAYWRIGHT_BROWSERS_PATH"
-          if [ -d "$PLAYWRIGHT_BROWSERS_PATH" ]; then
-            echo "✅ Playwright browser directory exists."
-            du -sh "$PLAYWRIGHT_BROWSERS_PATH" || true
-          else
-            echo "❌ Playwright browser directory does not exist."
-            exit 1
-          fi
 
       - name: Setup Node.js & Install Appium
         if: env.APK_EXISTS == 'true'
@@ -106,12 +97,14 @@ jobs:
           appium driver install uiautomator2
           appium --port 4723 > appium.log 2>&1 &
 
+
       - name: Enable KVM group perms
         if: env.APK_EXISTS == 'true'
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+
 
       - name: Boot Android Emulator
         if: env.APK_EXISTS == 'true'
@@ -146,6 +139,7 @@ jobs:
             "-Dcucumber.filter.tags=$TAGS" \
             "-Denv=$ENV_NAME" \
             --no-daemon
+
 
       - name: Publish Automation Reports
         if: always()
@@ -215,6 +209,7 @@ jobs:
           echo "EMAIL_STATUS=$STATUS_TEXT" >> $GITHUB_ENV
           echo "BUILD_STATUS=$BUILD_STATUS" >> $GITHUB_ENV
 
+
       - name: Inspect Playwright Browser Cache Before Save
         if: always()
         run: |
@@ -234,6 +229,7 @@ jobs:
             echo "❌ Browser directory does NOT exist."
             exit 1
           fi
+
 
       - name: Save Playwright Browser Cache
         if: always() && steps.playwright-cache.outputs.cache-hit != 'true'
@@ -257,6 +253,7 @@ jobs:
             echo "EXTENT_EXISTS=false" >> "$GITHUB_ENV"
             echo "ATTACHMENT_PATH=" >> "$GITHUB_ENV"
           fi
+
 
       - name: Send Email Report
         if: always()
