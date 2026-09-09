@@ -3,7 +3,6 @@ package com.app.mobile.saucelabs.stepdefinitions;
 import com.app.mobile.saucelabs.pages.MobileFingerprintPage;
 import com.app.mobile.saucelabs.pages.MobileProductPage;
 import com.framework.steps.BaseSteps;
-import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.testng.Assert;
@@ -23,8 +22,8 @@ public class MobileFingerprintSteps extends BaseSteps {
         mobileProductPage.openFingerprint();
     }
 
-    @And("the biometric unsupported alert should be displayed")
-    public void the_biometrics_unsupported_alert_should_be_displayed() {
+    @Then("the biometrics alert should be displayed")
+    public void the_biometrics_alert_should_be_displayed() {
         Assert.assertTrue(mobileFingerprintPage.isBiometricAlertDisplayed(),
                 "FingerPrint Failure: 'Biometrics' alert (title/message) was not displayed after opening the screen.");
     }

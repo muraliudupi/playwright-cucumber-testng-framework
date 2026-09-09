@@ -22,12 +22,15 @@ public class MobileProductPage extends MobileBasePage {
     private final MobileAboutPage mobileAboutPage;
     private final MobileResetAppPage mobileResetAppPage;
     private final MobileFingerprintPage mobileFingerprintPage;
+    private final MobileVirtualUsbPage mobileVirtualUsbPage;
+    private final MobileCrashPage mobileCrashPage;
 
     public MobileProductPage(MobileLoginPage mobileLoginPage, MobileProductDetailPage mobileProductDetailPage,
                              MobileCartPage mobileCartPage, MobileQrScannerPage mobileQrScannerPage,
                              MobileGeoLocationPage mobileGeoLocationPage, MobileDrawingPage mobileDrawingPage,
                              MobileWebViewPage mobileWebViewPage, MobileAboutPage mobileAboutPage,
-                             MobileResetAppPage mobileResetAppPage, MobileFingerprintPage mobileFingerprintPage) {
+                             MobileResetAppPage mobileResetAppPage, MobileFingerprintPage mobileFingerprintPage,
+                             MobileVirtualUsbPage mobileVirtualUsbPage, MobileCrashPage mobileCrashPage) {
         super();
         this.mobileLoginPage = mobileLoginPage;
         this.mobileProductDetailPage = mobileProductDetailPage;
@@ -39,6 +42,8 @@ public class MobileProductPage extends MobileBasePage {
         this.mobileAboutPage = mobileAboutPage;
         this.mobileResetAppPage = mobileResetAppPage;
         this.mobileFingerprintPage = mobileFingerprintPage;
+        this.mobileVirtualUsbPage = mobileVirtualUsbPage;
+        this.mobileCrashPage = mobileCrashPage;
     }
 
     @AndroidFindBy(id = "com.saucelabs.mydemoapp.android:id/menuIV")
@@ -73,6 +78,12 @@ public class MobileProductPage extends MobileBasePage {
 
     @AndroidFindBy(uiAutomator = "new UiSelector().text(\"FingerPrint\")")
     private WebElement btnMenuFingerprint;
+
+    @AndroidFindBy(uiAutomator = "new UiSelector().text(\"Virtual USB\")")
+    private WebElement btnMenuVirtualUsb;
+
+    @AndroidFindBy(uiAutomator = "new UiSelector().text(\"Crash app (debug)\")")
+    private WebElement btnMenuCrashApp;
 
     @AndroidFindBy(id = "android:id/button1")
     //@iOSXCUITFindBy(accessibility = "Logout")
@@ -147,6 +158,20 @@ public class MobileProductPage extends MobileBasePage {
         wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnMenu)).click();
         wait(shortWait()).until(ExpectedConditions.elementToBeClickable(btnMenuFingerprint)).click();
         return mobileFingerprintPage;
+    }
+
+    public MobileVirtualUsbPage openVirtualUsb() {
+        ensureElementsInitialized();
+        wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnMenu)).click();
+        wait(shortWait()).until(ExpectedConditions.elementToBeClickable(btnMenuVirtualUsb)).click();
+        return mobileVirtualUsbPage;
+    }
+
+    public MobileCrashPage openCrashApp() {
+        ensureElementsInitialized();
+        wait(longWait()).until(ExpectedConditions.elementToBeClickable(btnMenu)).click();
+        wait(shortWait()).until(ExpectedConditions.elementToBeClickable(btnMenuCrashApp)).click();
+        return mobileCrashPage;
     }
 
     public boolean verifyDashboard() {

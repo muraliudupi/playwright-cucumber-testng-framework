@@ -1,7 +1,7 @@
 Feature: Mobile Checkout Field Validation
 
   @mobile @checkout @negative @require_login
-  Scenario: Shipping form shows validation errors when submitted empty
+  Scenario: User Logged In: Shipping form shows validation errors when submitted empty
     When the user adds a product to the cart using data key "Cart_001" sheet "MobileCartData"
     And the user proceeds to checkout using the cart's current contents
     And the user submits the shipping form without entering any values
@@ -13,7 +13,7 @@ Feature: Mobile Checkout Field Validation
       | Please provide your            |
 
   @mobile @checkout @negative @require_login
-  Scenario: Payment form shows validation errors when submitted empty, billing same as shipping
+  Scenario: User Logged In: Payment form shows validation errors when submitted empty, billing same as shipping
     When the user adds a product to the cart using data key "Checkout_001" sheet "MobileCheckoutData"
     And the user proceeds to checkout using the cart's current contents
     And the user enters shipping details using data key "Checkout_001" sheet "MobileCheckoutData"
@@ -22,7 +22,7 @@ Feature: Mobile Checkout Field Validation
       | Value looks invalid. |
 
   @mobile @checkout @negative @require_login
-  Scenario: Payment form shows both card and billing address errors when billing differs and form is empty
+  Scenario: User Logged In: Payment form shows both card and billing address errors when billing differs and form is empty
     When the user adds a product to the cart using data key "Checkout_001" sheet "MobileCheckoutData"
     And the user proceeds to checkout using the cart's current contents
     And the user enters shipping details using data key "Checkout_001" sheet "MobileCheckoutData"

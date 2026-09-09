@@ -1,7 +1,7 @@
 Feature: Mobile - Customer Login
 
   @mobile @login
-  Scenario Outline: Successful mobile login using enterprise test data
+  Scenario Outline: Successful mobile login using enterprise data
     Given the user is on the mobile login screen
     When the mobile user logs into the mobile app using credentials from data key "<TestCaseID>" sheet "MobileLoginData"
     Then the mobile dashboard should be displayed
@@ -11,7 +11,7 @@ Feature: Mobile - Customer Login
       | Login_001  |
 
   @mobile @logout @require_login
-  Scenario: Successful logout from mobile app
+  Scenario: User Logged In: Successful logout from mobile app
     When the user logs out from the mobile app
     Then the login screen should be displayed
 
