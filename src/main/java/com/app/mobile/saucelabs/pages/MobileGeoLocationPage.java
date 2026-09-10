@@ -1,5 +1,7 @@
 package com.app.mobile.saucelabs.pages;
 
+import io.appium.java_client.Location;
+import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.pagefactory.AndroidFindBy;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -75,5 +77,29 @@ public class MobileGeoLocationPage extends MobileBasePage {
     public void startObserving() {
         ensureElementsInitialized();
         wait(shortWait()).until(ExpectedConditions.elementToBeClickable(btnStartObserving)).click();
+    }
+
+    public void setDeviceLocation(double latitude, double longitude) {
+        ((AndroidDriver) driver()).setLocation(new Location(latitude, longitude));
+    }
+
+    public boolean displayedCoordinatesMatch(double expectedLatitude, double expectedLongitude,
+                                              double tolerance, int timeoutSeconds) {
+        ensureElementsInitialized();
+        try {
+            wait(Duration.ofSeconds(timeoutSeconds)).until(d -> {
+                try {
+                    double actualLatitude = Double.parseDouble(getLatitude());
+                    double actualLongitude = Double.parseDouble(getLongitude());
+                    return Math.abs(actualLatitude - expectedLatitude) <= tolerance
+                            && Math.abs(actualLongitude - expectedLongitude) <= tolerance;
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+            });
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

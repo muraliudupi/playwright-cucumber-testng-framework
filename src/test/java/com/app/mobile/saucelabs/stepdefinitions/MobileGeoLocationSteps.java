@@ -11,6 +11,10 @@ import org.testng.Assert;
 
 public class MobileGeoLocationSteps extends BaseSteps {
 
+    // Tolerance for comparing injected vs. displayed coordinates — accounts for the app's display
+    // rounding, not environment variance, so it's a fixed constant rather than a config property.
+    private static final double COORDINATE_TOLERANCE_DEGREES = 0.0001;
+
     private final MobileProductPage mobileProductPage;
     private final MobileGeoLocationPage mobileGeoLocationPage;
 
@@ -45,5 +49,20 @@ public class MobileGeoLocationSteps extends BaseSteps {
     @And("the user starts observing the location")
     public void the_user_starts_observing_the_location() {
         mobileGeoLocationPage.startObserving();
+    }
+
+    @When("the device location is set to latitude {double} and longitude {double}")
+    public void the_device_location_is_set_to(double latitude, double longitude) {
+        mobileGeoLocationPage.setDeviceLocation(latitude, longitude);
+    }
+
+    @Then("the displayed coordinates should match latitude {double} and longitude {double}")
+    public void the_displayed_coordinates_should_match(double latitude, double longitude) {
+        int timeoutSeconds = ConfigReader.getInt("mobile.geolocation.coordinates.timeout.sec", 15);
+
+        Assert.assertTrue(
+                mobileGeoLocationPage.displayedCoordinatesMatch(latitude, longitude, COORDINATE_TOLERANCE_DEGREES, timeoutSeconds),
+                String.format("Geo Location Failure: displayed coordinates did not settle to latitude=%s, longitude=%s within %ds.",
+                        latitude, longitude, timeoutSeconds));
     }
 }
