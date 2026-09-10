@@ -23,26 +23,28 @@ public class WebUpdateContactPage extends WebBasePage {
         return this;
     }
 
+    private void fillContactFields(String firstNameVal, String lastNameVal, String addressVal,
+                                    String cityVal, String stateVal, String zipVal, String phoneVal) {
+        firstName().fill(firstNameVal);
+        lastName().fill(lastNameVal);
+        address().fill(addressVal);
+        city().fill(cityVal);
+        state().fill(stateVal);
+        zip().fill(zipVal);
+        phone().fill(phoneVal);
+    }
+
     public WebUpdateContactPage updateContactInfo(UpdateContactData updateContactData) {
-        firstName().fill(updateContactData.firstName());
-        lastName().fill(updateContactData.lastName());
-        address().fill(updateContactData.address().address());
-        city().fill(updateContactData.address().city());
-        state().fill(updateContactData.address().state());
-        zip().fill(updateContactData.address().zip());
-        phone().fill(updateContactData.phone());
+        fillContactFields(updateContactData.firstName(), updateContactData.lastName(),
+                updateContactData.address().address(), updateContactData.address().city(),
+                updateContactData.address().state(), updateContactData.address().zip(),
+                updateContactData.phone());
         updateProfileButton().click();
         return this;
     }
 
     public void clearAllFieldsAndSubmit() {
-        firstName().fill("");
-        lastName().fill("");
-        address().fill("");
-        city().fill("");
-        state().fill("");
-        zip().fill("");
-        phone().fill("");
+        fillContactFields("", "", "", "", "", "", "");
         updateProfileButton().click();
     }
 

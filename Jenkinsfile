@@ -36,14 +36,24 @@ pipeline {
             defaultValue: false,
             description: 'Check this to boot the Android emulator and run mobile/Appium tests.'
         )
+        string(
+            name: 'ANDROID_SDK_HOME',
+            defaultValue: 'C:/Users/mural/AppData/Local/Android/Sdk',
+            description: 'Path to the Android SDK on the Jenkins agent running this build. Override per-agent instead of editing the Jenkinsfile.'
+        )
+        string(
+            name: 'APK_PATH',
+            defaultValue: 'D:/Automation/playwright-cucumber-testng-framework/src/test/resources/apps/mda-2.2.0-25.apk',
+            description: 'Path to the mobile app APK on the Jenkins agent running this build. Override per-agent instead of editing the Jenkinsfile.'
+        )
     }
 
     environment {
         JAVA_HOME         = tool 'JDK-21'
         CUCUMBER_TAGS_ENV = "${params.CUCUMBER_TAGS}"
         TARGET_ENV        = "${params.ENVIRONMENT}"
-        ANDROID_HOME      = "C:/Users/mural/AppData/Local/Android/Sdk"
-        APP_PATH          = "D:/Automation/playwright-cucumber-testng-framework/src/test/resources/apps/mda-2.2.0-25.apk"
+        ANDROID_HOME      = "${params.ANDROID_SDK_HOME}"
+        APP_PATH          = "${params.APK_PATH}"
     }
 
     stages {

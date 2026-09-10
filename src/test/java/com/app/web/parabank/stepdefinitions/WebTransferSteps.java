@@ -64,7 +64,7 @@ public class WebTransferSteps extends BaseSteps {
 
     @And("the backend database ledger state must reflect a transaction status of {string}")
     public void the_backend_database_ledger_state_must_reflect_a_transaction_status_of(String expectedDbStatus) {
-        boolean isDbValidationActive = Boolean.parseBoolean(ConfigReader.get("db.validation.enabled"));
+        boolean isDbValidationActive = ConfigReader.getBoolean("db.validation.enabled", false);
         if (!isDbValidationActive) {
             LOG.warn("Database Audit Warning: 'db.validation.enabled' is false. Skipping transaction verification step.");
             return;

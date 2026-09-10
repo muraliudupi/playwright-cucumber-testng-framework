@@ -25,21 +25,45 @@ public class WebRegisterPage extends WebBasePage {
         return page().locator("p:has-text('Your account was created successfully. You are now logged in.')");
     }
 
+    private static final String DEFAULT_FIRST_NAME = "Test";
+    private static final String DEFAULT_LAST_NAME  = "User";
+    private static final String DEFAULT_ADDRESS    = "123 Test St";
+    private static final String DEFAULT_CITY       = "Testville";
+    private static final String DEFAULT_STATE      = "CA";
+    private static final String DEFAULT_ZIP        = "90000";
+    private static final String DEFAULT_PHONE      = "1234567890";
+    private static final String DEFAULT_SSN        = "123456789";
+    private static final String DEFAULT_PASSWORD   = "password1";
+
     public WebRegisterPage navigateToRegister() {
         registerLink().click();
         waitUntilReady(registerButton());
         return this;
     }
 
-    public void submitNewRegistration(RegisterData registerData, String ssnVal, String usernameVal) {
-        firstName().fill(registerData.firstName());
-        lastName().fill(registerData.lastName());
-        address().fill(registerData.address().address());
-        city().fill(registerData.address().city());
-        state().fill(registerData.address().state());
-        zip().fill(registerData.address().zip());
-        phone().fill(registerData.phone());
+    private void fillCommonRegistrationFields(String firstNameVal, String lastNameVal, String addressVal,
+                                               String cityVal, String stateVal, String zipVal,
+                                               String phoneVal, String ssnVal) {
+        firstName().fill(firstNameVal);
+        lastName().fill(lastNameVal);
+        address().fill(addressVal);
+        city().fill(cityVal);
+        state().fill(stateVal);
+        zip().fill(zipVal);
+        phone().fill(phoneVal);
         ssn().fill(ssnVal);
+    }
+
+    private void fillDefaultRegistrationFields(String ssnVal) {
+        fillCommonRegistrationFields(DEFAULT_FIRST_NAME, DEFAULT_LAST_NAME, DEFAULT_ADDRESS,
+                DEFAULT_CITY, DEFAULT_STATE, DEFAULT_ZIP, DEFAULT_PHONE, ssnVal);
+    }
+
+    public void submitNewRegistration(RegisterData registerData, String ssnVal, String usernameVal) {
+        fillCommonRegistrationFields(registerData.firstName(), registerData.lastName(),
+                registerData.address().address(), registerData.address().city(),
+                registerData.address().state(), registerData.address().zip(),
+                registerData.phone(), ssnVal);
         username().fill(usernameVal);
         password().fill(registerData.loginDetails().password());
         repeatedPassword().fill(registerData.loginDetails().password());
@@ -51,29 +75,15 @@ public class WebRegisterPage extends WebBasePage {
     }
 
     public void submitNewRegistration(String existingUsername) {
-        firstName().fill("Test");
-        lastName().fill("User");
-        address().fill("123 Test St");
-        city().fill("Testville");
-        state().fill("CA");
-        zip().fill("90000");
-        phone().fill("1234567890");
-        ssn().fill("123456789");
+        fillDefaultRegistrationFields(DEFAULT_SSN);
         username().fill(existingUsername);
-        password().fill("password1");
-        repeatedPassword().fill("password1");
+        password().fill(DEFAULT_PASSWORD);
+        repeatedPassword().fill(DEFAULT_PASSWORD);
         registerButton().click();
     }
 
     public void submitMismatchedPasswords(String password1, String password2) {
-        firstName().fill("Test");
-        lastName().fill("User");
-        address().fill("123 Test St");
-        city().fill("Testville");
-        state().fill("CA");
-        zip().fill("90000");
-        phone().fill("1234567890");
-        ssn().fill("123456789");
+        fillDefaultRegistrationFields(DEFAULT_SSN);
         username().fill("mismatchtest" + System.currentTimeMillis());
         password().fill(password1);
         repeatedPassword().fill(password2);

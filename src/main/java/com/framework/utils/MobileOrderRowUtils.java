@@ -11,6 +11,7 @@ public final class MobileOrderRowUtils {
     private static final String PRODUCT_QTY_PLUS_ID  = "com.saucelabs.mydemoapp.android:id/plusIV";
     private static final String PRODUCT_QTY_MINUS_ID = "com.saucelabs.mydemoapp.android:id/minusIV";
     private static final String COLOR_ICON_DESC  = "Displays color of selected product";
+    private static final String PRODUCT_REMOVE_BUTTON_ID = "com.saucelabs.mydemoapp.android:id/removeBt";
 
     public static By productTitleLocator(String productLabel) {
         return By.xpath(String.format(
@@ -48,5 +49,13 @@ public final class MobileOrderRowUtils {
                         + "/ancestor::android.view.ViewGroup[.//android.widget.ImageView[@content-desc='%s']][1]"
                         + "//android.widget.ImageView[@content-desc='%s']",
                 productLabel, COLOR_ICON_DESC, COLOR_ICON_DESC));
+    }
+
+    public static By productRemoveButtonLocator(String productLabel) {
+        return By.xpath(String.format(
+                "//android.widget.TextView[@text='%s']"
+                        + "/ancestor::android.view.ViewGroup[.//android.widget.TextView[@resource-id='%s']][1]"
+                        + "//android.widget.TextView[@resource-id='%s']",
+                productLabel, PRODUCT_REMOVE_BUTTON_ID, PRODUCT_REMOVE_BUTTON_ID));
     }
 }

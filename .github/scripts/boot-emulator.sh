@@ -22,7 +22,7 @@ for DEVICE in "${EMULATOR_LIST[@]}"; do
   else
     echo "🚀 Booting background emulator $DEVICE on port $PORT..."
     echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n "$AVD_NAME" -k "system-images;android-34;default;x86_64" --force
-    $ANDROID_HOME/emulator/emulator -avd "$AVD_NAME" -port "$PORT" -no-window -no-audio -no-snapshot > /dev/null 2>&1 &
+    $ANDROID_HOME/emulator/emulator -avd "$AVD_NAME" -port "$PORT" -no-window -no-audio -no-snapshot > "emulator-${PORT}.log" 2>&1 &
 
     $ANDROID_HOME/platform-tools/adb -s "$DEVICE" wait-for-device
     while [ "$($ANDROID_HOME/platform-tools/adb -s "$DEVICE" shell getprop sys.boot_completed 2>&1 | tr -d '\r')" != "1" ]; do

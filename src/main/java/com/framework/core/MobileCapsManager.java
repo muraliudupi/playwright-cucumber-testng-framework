@@ -16,7 +16,7 @@ public class MobileCapsManager {
         browserstackOptions.put("accessKey", ConfigReader.get("bs.access.key"));
         browserstackOptions.put("projectName", ConfigReader.get("bs.project.name"));
         browserstackOptions.put("buildName", ConfigReader.get("bs.build.name"));
-        browserstackOptions.put("local", Boolean.parseBoolean(ConfigReader.get("bs.local")));
+        browserstackOptions.put("local", ConfigReader.getBoolean("bs.local", false));
 
         String cleanPlatform = platform.trim().toLowerCase();
 

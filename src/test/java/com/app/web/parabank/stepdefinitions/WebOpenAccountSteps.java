@@ -53,7 +53,7 @@ public class WebOpenAccountSteps extends BaseSteps {
 
     @And("the backend account ledger table must confirm the new account type is {string}")
     public void the_backend_account_ledger_table_must_confirm_the_new_account_type(String expectedType) {
-        boolean isDbValidationActive = Boolean.parseBoolean(ConfigReader.get("db.validation.enabled"));
+        boolean isDbValidationActive = ConfigReader.getBoolean("db.validation.enabled", false);
         if (!isDbValidationActive) {
             LOG.warn("Database Audit Warning: 'db.validation.enabled' is false. Skipping account ledger verification step.");
             return;
