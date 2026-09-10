@@ -186,12 +186,30 @@ jobs:
             SKIPPED_SCENARIOS=$(echo "$RESULT" | jq -r '.skipped')
 
             if [ "$FAILED_SCENARIOS" -gt 0 ]; then
-              STATUS_TEXT="❌ FAILED ($FAILED_SCENARIOS Scenarios Failed)"
+              if [ "$FAILED_SCENARIOS" -eq 1 ]; then
+                STATUS_TEXT="❌ FAILED (1 Scenario - Failed)"
+              else
+                STATUS_TEXT="❌ FAILED ($FAILED_SCENARIOS Scenarios - Failed)"
+              fi
               BUILD_STATUS="FAILED"
+  
+            elif [ "$SKIPPED_SCENARIOS" -gt 0 ]; then
+              if [ "$SKIPPED_SCENARIOS" -eq 1 ] && [ "$PASSED_SCENARIOS" -eq 1 ]; then
+                STATUS_TEXT="⚠️ SKIPPED (1 Scenario - Skipped) & ✅ PASSED (1 Scenario - Passed)"
+              elif [ "$SKIPPED_SCENARIOS" -eq 1 ]; then
+                STATUS_TEXT="⚠️ SKIPPED (1 Scenario - Skipped) & ✅ PASSED ($PASSED_SCENARIOS Scenarios - Passed)"
+              elif [ "$PASSED_SCENARIOS" -eq 1 ]; then
+                STATUS_TEXT="⚠️ SKIPPED ($SKIPPED_SCENARIOS Scenarios - Skipped) & ✅ PASSED (1 Scenario - Passed)"
+              else
+                STATUS_TEXT="⚠️ SKIPPED ($SKIPPED_SCENARIOS Scenarios - Skipped) & ✅ PASSED ($PASSED_SCENARIOS Scenarios - Passed)"
+              fi
+              BUILD_STATUS="SUCCESS"
+  
             else
               STATUS_TEXT="✅ PASSED (All Scenarios Clean)"
               BUILD_STATUS="SUCCESS"
             fi
+          
           else
             echo "❌ CRITICAL: No Cucumber JSON report(s) found."
             TOTAL_SCENARIOS=0

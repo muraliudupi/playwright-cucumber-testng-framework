@@ -321,8 +321,37 @@ pipeline {
                         emailStatus = "⚠️ WARNING (0 Scenarios Matched — check CUCUMBER_TAGS or report parsing)"
                         currentBuild.result = 'UNSTABLE'
                     } else if (failedCount > 0) {
-                        emailStatus = "❌ FAILED (${failedCount} Scenarios Failed)"
-                    } else {
+                        if (failedCount == 1) {
+                            emailStatus = "❌ FAILED (1 Scenario - Failed)"
+                        }
+                        else{
+                            emailStatus = "❌ FAILED (${failedCount} Scenarios - Failed)"
+                        }
+                    } else if (skippedCount > 0) {
+                        if (passedCount > 0) {
+                            if (skippedCount == 1 && passedCount == 1){
+                                emailStatus = "⚠️ SKIPPED (1 Scenario - Skipped) & ✅ PASSED (1 Scenario - Passed)"
+                            }
+                            else if (skippedCount > 1 && passedCount == 1){
+                                emailStatus = "⚠️ SKIPPED (${skippedCount} Scenarios - Skipped) & ✅ PASSED (1 Scenario - Passed)"
+                            }
+                            else if  (skippedCount == 1 && passedCount > 1){
+                                emailStatus = "⚠️ SKIPPED (1 Scenario - Skipped) & ✅ PASSED (${passedCount} Scenarios - Passed)"
+                            }
+                            else{
+                                emailStatus = "⚠️ SKIPPED (${skippedCount} Scenarios - Skipped) & ✅ PASSED (${passedCount} Scenarios - Passed)"
+                            }
+                        }
+                        else{
+                            if (skippedCount == 1){
+                                emailStatus = "⚠️ SKIPPED (1 Scenario - Skipped)"
+                            }
+                            else{
+                                emailStatus = "⚠️ SKIPPED (${skippedCount} Scenarios - Skipped)"
+                            }
+                        }
+                    }
+                    else {
                         emailStatus = "✅ PASSED (All Scenarios Clean)"
                     }
                 }
