@@ -292,12 +292,20 @@ pipeline {
                         emulators.eachWithIndex { device, idx ->
 
                             def port = device.replaceAll(/.*-/, '')
-                            def avdName = "Pixel_6a_${idx + 1}"
+                            // Port-based naming, matching the Unix boot path's "Pixel_6a_${PORT}" convention.
+                            def avdName = "Pixel_6a_${port}"
 
                             bat """
                                 @echo off
 
                                 set ANDROID_SDK_WIN=${winSdk}
+
+                                echo Ensuring AVD ${avdName} exists...
+
+                                echo no| "%ANDROID_SDK_WIN%\\cmdline-tools\\latest\\bin\\avdmanager.bat" create avd ^
+                                    -n "${avdName}" ^
+                                    -k "system-images;android-34;google_apis_playstore;x86_64" ^
+                                    --force
 
                                 echo Launching background emulator ${device} on port ${port}...
 
