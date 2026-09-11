@@ -17,6 +17,12 @@ pipeline {
             Note: mobile tags require RUN_MOBILE checked, or there's no Appium/emulator for them to run against.'''
         )
 
+        booleanParam(
+            name: 'RUN_MOBILE',
+            defaultValue: false,
+            description: 'Check this to boot the Android emulator and run mobile/Appium tests.'
+        )
+
         choice(
             name: 'ENVIRONMENT',
             choices: ['staging', 'qa', 'dev', 'prod'],
@@ -35,12 +41,6 @@ pipeline {
             description: 'Recipient address for the test report email'
         )
 
-        booleanParam(
-            name: 'RUN_MOBILE',
-            defaultValue: false,
-            description: 'Check this to boot the Android emulator and run mobile/Appium tests.'
-        )
-
         string(
             name: 'ANDROID_SDK_HOME',
             defaultValue: 'C:/Users/mural/AppData/Local/Android/Sdk',
@@ -49,7 +49,7 @@ pipeline {
 
         string(
             name: 'APK_PATH',
-            defaultValue: 'D:/Automation/playwright-cucumber-testng-framework/src/test/resources/apps/mda-2.2.0-25.apk',
+            defaultValue: 'https://github.com/saucelabs/my-demo-app-android/releases/download/2.2.0/mda-2.2.0-25.apk',
             description: 'Path to the mobile app APK on the Jenkins agent running this build. Override per-agent instead of editing the Jenkinsfile.'
         )
     }
@@ -292,12 +292,20 @@ pipeline {
                         emulators.eachWithIndex { device, idx ->
 
                             def port = device.replaceAll(/.*-/, '')
-                            def avdName = "Pixel_6a_${idx + 1}"
+
+                            def avdName = "Pixel_6a_${port}"
 
                             bat """
                                 @echo off
 
                                 set ANDROID_SDK_WIN=${winSdk}
+
+                                echo Ensuring AVD ${avdName} exists...
+
+                                echo no| "%ANDROID_SDK_WIN%\\cmdline-tools\\latest\\bin\\avdmanager.bat" create avd ^
+                                    -n "${avdName}" ^
+                                    -k "system-images;android-34;default;x86_64" ^
+                                    --force
 
                                 echo Launching background emulator ${device} on port ${port}...
 
