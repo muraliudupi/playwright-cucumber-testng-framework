@@ -290,8 +290,14 @@ jobs:
 
               | ($scenarios | map(
                   (.steps // []) as $steps
+                  | (.before // []) as $beforeHooks
+                  | (.after // []) as $afterHooks
 
-                  | if ($steps | any(.result.status == "failed")) then
+                  | if (
+                      ($steps | any(.result.status == "failed"))
+                      or ($beforeHooks | any(.result.status == "failed"))
+                      or ($afterHooks | any(.result.status == "failed"))
+                    ) then
                       "failed"
 
                     elif ($steps | any(

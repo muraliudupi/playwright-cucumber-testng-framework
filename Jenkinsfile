@@ -521,9 +521,14 @@ pipeline {
                                         totalCount++
 
                                         def steps = element.steps ?: []
-
+                                        def beforeHooks = element.before ?: []
+                                        def afterHooks = element.after ?: []
 
                                         boolean hasFailed = steps.any {
+                                            it.result?.status == 'failed'
+                                        } || beforeHooks.any {
+                                            it.result?.status == 'failed'
+                                        } || afterHooks.any {
                                             it.result?.status == 'failed'
                                         }
 
@@ -708,7 +713,8 @@ pipeline {
                         'text/plain',
 
                         body:
-                        """Hi Team,
+                        """\
+                        Hi Team,
 
                         The automation test execution has completed.
 
@@ -732,7 +738,7 @@ pipeline {
 
                         Regards,
                         QA Automation
-                        """,
+                        """.stripIndent(),
 
                         attachmentsPattern:
                         attachmentPattern

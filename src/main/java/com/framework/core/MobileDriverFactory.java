@@ -66,7 +66,6 @@ public final class MobileDriverFactory {
                         Thread.currentThread().interrupt();
                         throw new IllegalStateException("Interrupted while waiting for an available local device.", e);
                     }
-                    ACQUIRED_LOCAL_DEVICE.set(deviceName);
                     LOG.info("[Thread-{}] Initializing local Android emulator instance: {}", threadId, deviceName);
 
                     UiAutomator2Options options = new UiAutomator2Options()
@@ -85,6 +84,7 @@ public final class MobileDriverFactory {
 
                     URL localUrl = URI.create("http://127.0.0.1:4723/").toURL();
                     driver = new AndroidDriver(localUrl, options);
+                    ACQUIRED_LOCAL_DEVICE.set(deviceName);
                 } else {
                     // CLOUD EXECUTION: BrowserStack Cloud
                     LOG.info("[Thread-{}] Spawning remote Appium session on BrowserStack for platform: {}", threadId, platform);
