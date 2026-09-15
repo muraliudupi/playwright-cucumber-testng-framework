@@ -3,8 +3,11 @@ package com.framework.core;
 import com.framework.utils.ConfigReader;
 import io.appium.java_client.AppiumBy;
 import io.appium.java_client.android.AndroidDriver;
+import io.appium.java_client.android.nativekey.AndroidKey;
+import io.appium.java_client.android.nativekey.KeyEvent;
 import io.appium.java_client.android.options.UiAutomator2Options;
 import org.openqa.selenium.By;
+import org.openqa.selenium.OutputType;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -13,6 +16,9 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -76,25 +82,37 @@ public final class MobileFingerprintEnroller {
 
         try {
             // 1. Fingerprint enrollment requires a backup credential — set a device PIN.
-            driver.executeScript("mobile: shell", Map.of(
+            Object pinResult = driver.executeScript("mobile: shell", Map.of(
                     "command", "locksettings",
                     "args", List.of("set-pin", DEVICE_PIN)
             ));
+            LOG.info("locksettings set-pin result on {}: {}", deviceName, pinResult);
 
             // 2. Jump straight to the enrollment wizard via intent, rather than tapping
-            //    through Settings > Security > Fingerprint by hand.
-            driver.executeScript("mobile: startActivity", Map.of(
-                    "intent", "android.settings.FINGERPRINT_ENROLL"
+            //    through Settings > Security > Fingerprint by hand. mobile:startActivity
+            //    expects appPackage/appActivity (for launching a specific app), not an
+            //    arbitrary intent action — `am start -a` via mobile:shell is the correct
+            //    way to launch a Settings sub-screen by action.
+            Object startResult = driver.executeScript("mobile: shell", Map.of(
+                    "command", "am",
+                    "args", List.of("start", "-a", "android.settings.FINGERPRINT_ENROLL")
             ));
+            LOG.info("am start -a FINGERPRINT_ENROLL result on {}: {}", deviceName, startResult);
 
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
 
-            // 3. The wizard opens on a "confirm your PIN" screen since a credential now
-            //    exists. Enter it via the standard AOSP lock-screen numeric keypad.
-            for (char digit : DEVICE_PIN.toCharArray()) {
-                WebElement key = wait.until(ExpectedConditions.presenceOfElementLocated(
-                        By.id("com.android.settings:id/key" + digit)));
-                key.click();
+            // 3. The wizard opens on a "Re-enter your PIN" screen since a credential now
+            //    exists — confirmed via captured page-source to be a single password
+            //    EditText (resource-id: password_entry), not a numeric keypad. Type the
+            //    PIN and press Enter to submit.
+            try {
+                WebElement pinField = wait.until(ExpectedConditions.presenceOfElementLocated(
+                        By.id("com.android.settings:id/password_entry")));
+                pinField.sendKeys(DEVICE_PIN);
+                driver.pressKey(new KeyEvent(AndroidKey.ENTER));
+            } catch (Exception e) {
+                captureDiagnostics(driver, deviceName, "pin-entry");
+                throw e;
             }
 
             // Some flows show an explicit confirmation button after PIN entry.
@@ -123,11 +141,35 @@ public final class MobileFingerprintEnroller {
                 LOG.info("Fingerprint enrollment provisioning complete on {}.", deviceName);
             } else {
                 LOG.warn("Fingerprint enrollment on {} did not report a completion screen within {} touches — "
-                        + "it may still have succeeded (screen text can vary), but this is unconfirmed.",
+                                + "it may still have succeeded (screen text can vary), but this is unconfirmed.",
                         deviceName, MAX_ENROLL_TOUCHES);
+                captureDiagnostics(driver, deviceName, "no-completion-screen");
             }
         } finally {
             driver.quit();
+        }
+    }
+
+    // Saves a screenshot + full page-source XML to build/reports/fingerprint-enrollment-debug/
+    // whenever the wizard doesn't match what this class expects, so a failure leaves real
+    // evidence of the actual on-screen element structure to fix locators against.
+    private static void captureDiagnostics(AndroidDriver driver, String deviceName, String stage) {
+        try {
+            Path dir = Paths.get("build", "reports", "fingerprint-enrollment-debug");
+            Files.createDirectories(dir);
+
+            String pageSource = driver.getPageSource();
+            Path xmlPath = dir.resolve(deviceName + "-" + stage + "-pagesource.xml");
+            Files.writeString(xmlPath, pageSource == null ? "" : pageSource);
+
+            byte[] screenshot = driver.getScreenshotAs(OutputType.BYTES);
+            Path pngPath = dir.resolve(deviceName + "-" + stage + "-screenshot.png");
+            Files.write(pngPath, screenshot);
+
+            LOG.warn("Saved enrollment failure diagnostics for {} ({}): {} , {}",
+                    deviceName, stage, xmlPath, pngPath);
+        } catch (Exception diagnosticFailure) {
+            LOG.warn("Could not capture enrollment diagnostics for {} ({}).", deviceName, stage, diagnosticFailure);
         }
     }
 
