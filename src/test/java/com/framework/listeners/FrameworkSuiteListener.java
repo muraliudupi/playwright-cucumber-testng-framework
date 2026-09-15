@@ -1,6 +1,7 @@
 package com.framework.listeners;
 
 import com.framework.core.MobileDriverFactory;
+import com.framework.core.MobileFingerprintEnroller;
 import com.framework.core.WebDriverFactory;
 import com.framework.utils.DatabaseUtil;
 import org.slf4j.Logger;
@@ -11,6 +12,12 @@ import org.testng.ISuiteListener;
 public final class FrameworkSuiteListener implements ISuiteListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(FrameworkSuiteListener.class);
+
+    @Override
+    public void onStart(ISuite suite) {
+        LOG.info("Suite '{}' starting — running one-time framework provisioning.", suite.getName());
+        MobileFingerprintEnroller.enrollAllPooledDevices();
+    }
 
     @Override
     public void onFinish(ISuite suite) {

@@ -44,4 +44,27 @@ public class MobileFingerprintSteps extends BaseSteps {
         Assert.assertTrue(mobileFingerprintPage.isBiometricToggleDisabled(),
                 "FingerPrint Failure: biometric toggle was expected to be disabled on this device but was enabled.");
     }
+
+    @Then("the biometric toggle should be enabled")
+    public void the_biometric_toggle_should_be_enabled() {
+        Assert.assertTrue(mobileFingerprintPage.isBiometricToggleEnabled(),
+                "FingerPrint Failure: biometric toggle was expected to be enabled (a print should already be "
+                        + "enrolled on this device by suite start) but was disabled.");
+    }
+
+    @When("the user enables the biometric toggle")
+    public void the_user_enables_the_biometric_toggle() {
+        mobileFingerprintPage.tapBiometricToggle();
+    }
+
+    @When("the user authenticates with the enrolled fingerprint")
+    public void the_user_authenticates_with_the_enrolled_fingerprint() {
+        mobileFingerprintPage.simulateFingerprintTouch();
+    }
+
+    @Then("the biometric toggle should be turned on")
+    public void the_biometric_toggle_should_be_turned_on() {
+        Assert.assertTrue(mobileFingerprintPage.isBiometricToggleOn(),
+                "FingerPrint Failure: biometric toggle did not turn on after simulated fingerprint authentication.");
+    }
 }

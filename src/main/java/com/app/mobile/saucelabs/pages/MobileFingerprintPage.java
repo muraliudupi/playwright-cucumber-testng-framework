@@ -1,5 +1,6 @@
 package com.app.mobile.saucelabs.pages;
 
+import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.pagefactory.AndroidFindBy;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -65,5 +66,24 @@ public class MobileFingerprintPage extends MobileBasePage {
     public boolean isBiometricToggleDisabled() {
         ensureElementsInitialized();
         return !wait(existenceCheckTimeout()).until(ExpectedConditions.visibilityOf(swBiometricToggle)).isEnabled();
+    }
+
+    public boolean isBiometricToggleEnabled() {
+        ensureElementsInitialized();
+        return wait(existenceCheckTimeout()).until(ExpectedConditions.visibilityOf(swBiometricToggle)).isEnabled();
+    }
+
+    public void tapBiometricToggle() {
+        ensureElementsInitialized();
+        wait(shortWait()).until(ExpectedConditions.elementToBeClickable(swBiometricToggle)).click();
+    }
+
+    public void simulateFingerprintTouch() {
+        ((AndroidDriver) driver()).fingerPrint(1);
+    }
+
+    public boolean isBiometricToggleOn() {
+        ensureElementsInitialized();
+        return wait(existenceCheckTimeout()).until(ExpectedConditions.visibilityOf(swBiometricToggle)).isSelected();
     }
 }

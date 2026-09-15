@@ -179,7 +179,7 @@ pipeline {
                             # 2. Start Appium in background
                             # -------------------------------------------------
 
-                            appium --port 4723 > appium.log 2>&1 &
+                            appium --port 4723 --allow-insecure=uiautomator2:adb_shell > appium.log 2>&1 &
 
 
                             # -------------------------------------------------
@@ -281,7 +281,7 @@ pipeline {
 
                         bat """
                             @echo off
-                            start "" appium --port 4723
+                            start "" appium --port 4723 --allow-insecure=uiautomator2:adb_shell
                         """
 
 
