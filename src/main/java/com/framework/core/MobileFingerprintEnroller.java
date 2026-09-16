@@ -119,6 +119,19 @@ public final class MobileFingerprintEnroller {
             clickIfPresent(driver, AppiumBy.androidUIAutomator(
                     "new UiSelector().textMatches(\"(?i)next|done|enter\")"));
 
+            // 3.5 Confirmed via captured page-source: before reaching the actual
+            //     touch-sensor screen, the wizard shows one or more informational/
+            //     consent screens (e.g. "Set up Pixel Imprint", advance button text
+            //     "MORE"). Click through however many of these appear.
+            for (int i = 0; i < 4; i++) {
+                boolean advanced = clickIfPresent(driver, AppiumBy.androidUIAutomator(
+                        "new UiSelector().textMatches(\"(?i)^(more|next|i agree|agree|got it|continue)$\")"));
+                if (!advanced) {
+                    break;
+                }
+                Thread.sleep(800);
+            }
+
             // 4. Touch the sensor repeatedly until the wizard reports enrollment complete.
             //    fingerPrint(id) is the SDK equivalent of `adb emu finger touch <id>`.
             boolean enrollmentConfirmed = false;
@@ -173,10 +186,12 @@ public final class MobileFingerprintEnroller {
         }
     }
 
-    private static void clickIfPresent(AndroidDriver driver, By locator) {
+    private static boolean clickIfPresent(AndroidDriver driver, By locator) {
         List<WebElement> matches = driver.findElements(locator);
         if (!matches.isEmpty()) {
             matches.get(0).click();
+            return true;
         }
+        return false;
     }
 }
