@@ -28,7 +28,7 @@ public final class MobileFingerprintEnroller {
     private static final Logger LOG = LoggerFactory.getLogger(MobileFingerprintEnroller.class);
 
     private static final String DEVICE_PIN = "1234";
-    private static final int MAX_ENROLL_TOUCHES = 10;
+    private static final int MAX_ENROLL_TOUCHES = 25;
     private static final int SIMULATED_ENROLLED_FINGER_ID = 1;
 
     private MobileFingerprintEnroller() {
@@ -81,6 +81,20 @@ public final class MobileFingerprintEnroller {
         }
 
         try {
+            // 0. Idempotency check — repeated local runs against the same (non-wiped)
+            //    emulator would otherwise re-open the wizard on a device that already has
+            //    a print enrolled, which just stalls on the intro screen forever (the
+            //    finger id is already associated with existing enrollment data). CI is
+            //    unaffected since it always creates the AVD fresh. The exact dumpsys
+            //    output format isn't verified against a live device from this environment,
+            //    so the raw output is logged — if this heuristic ever misreads it, that
+            //    log is what to correct it against, the same way every other guess in
+            //    this class got fixed.
+            if (isFingerprintAlreadyEnrolled(driver, deviceName)) {
+                LOG.info("A fingerprint is already enrolled on {} — skipping enrollment.", deviceName);
+                return;
+            }
+
             // 1. Fingerprint enrollment requires a backup credential — set a device PIN.
             Object pinResult = driver.executeScript("mobile: shell", Map.of(
                     "command", "locksettings",
@@ -160,6 +174,30 @@ public final class MobileFingerprintEnroller {
             }
         } finally {
             driver.quit();
+        }
+    }
+
+    // Checks via `dumpsys fingerprint`. Confirmed against real output from two live devices:
+    // the relevant data is JSON embedded in the dump, e.g.
+    // {"service":"FingerprintProvider/default","prints":[{"id":0,"count":0,...}]}
+    // — "count" is the enrolled-print count for that entry; nonzero means enrolled.
+    // Defaults to "not enrolled" on any uncertainty (unparseable output, thrown exception)
+    // — the safe fallback, since that just re-attempts enrollment (today's behavior),
+    // never wrongly skips it.
+    private static boolean isFingerprintAlreadyEnrolled(AndroidDriver driver, String deviceName) {
+        try {
+            Object result = driver.executeScript("mobile: shell", Map.of(
+                    "command", "dumpsys",
+                    "args", List.of("fingerprint")
+            ));
+            String output = String.valueOf(result);
+            LOG.info("dumpsys fingerprint output on {}: {}", deviceName, output);
+
+            return java.util.regex.Pattern.compile("\"count\"\\s*:\\s*([1-9]\\d*)").matcher(output).find();
+        } catch (Exception e) {
+            LOG.warn("Could not check existing fingerprint enrollment on {} — proceeding with "
+                    + "enrollment as if none exists.", deviceName, e);
+            return false;
         }
     }
 

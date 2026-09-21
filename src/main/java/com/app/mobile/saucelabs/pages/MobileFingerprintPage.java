@@ -2,8 +2,13 @@ package com.app.mobile.saucelabs.pages;
 
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.pagefactory.AndroidFindBy;
+import org.openqa.selenium.OutputType;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class MobileFingerprintPage extends MobileBasePage {
 
@@ -76,10 +81,45 @@ public class MobileFingerprintPage extends MobileBasePage {
     public void tapBiometricToggle() {
         ensureElementsInitialized();
         wait(shortWait()).until(ExpectedConditions.elementToBeClickable(swBiometricToggle)).click();
+        // The tap triggers the OS BiometricPrompt dialog, which takes a moment to render —
+        // capture what's actually on screen here for diagnosis if authentication still fails.
+        sleepBriefly();
+        captureAuthDiagnostics("after-toggle-tap");
     }
 
     public void simulateFingerprintTouch() {
         ((AndroidDriver) driver()).fingerPrint(1);
+        // Let the prompt process the simulated touch and any resulting UI transition settle
+        // before the caller checks the toggle state.
+        sleepBriefly();
+        captureAuthDiagnostics("after-touch");
+    }
+
+    private void sleepBriefly() {
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    // Best-effort diagnostics for the authentication flow, parallel to
+    // MobileFingerprintEnroller's own capture — same reasoning: this interacts with an OS-level
+    // biometric prompt, not app UI we fully control, so a failure here should leave real
+    // evidence of the actual screen state rather than just an assertion message.
+    private void captureAuthDiagnostics(String stage) {
+        try {
+            Path dir = Paths.get("build", "reports", "fingerprint-auth-debug");
+            Files.createDirectories(dir);
+
+            String pageSource = driver().getPageSource();
+            Files.writeString(dir.resolve(stage + "-pagesource.xml"), pageSource == null ? "" : pageSource);
+
+            byte[] screenshot = driver().getScreenshotAs(OutputType.BYTES);
+            Files.write(dir.resolve(stage + "-screenshot.png"), screenshot);
+        } catch (Exception ignored) {
+            // Diagnostics are best-effort only — never let capture failure affect the test.
+        }
     }
 
     public boolean isBiometricToggleOn() {
