@@ -6,6 +6,8 @@ import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.nativekey.AndroidKey;
 import io.appium.java_client.android.nativekey.KeyEvent;
 import io.appium.java_client.android.options.UiAutomator2Options;
+import io.cucumber.tagexpressions.Expression;
+import io.cucumber.tagexpressions.TagExpressionParser;
 import org.openqa.selenium.By;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.WebElement;
@@ -34,9 +36,24 @@ public final class MobileFingerprintEnroller {
     private MobileFingerprintEnroller() {
     }
 
+    // Tags on the one non-@wip fingerprint scenario that actually needs a print enrolled
+    // ("FingerPrint: fingerprint screen shows an enabled toggle once a print is enrolled").
+    // Used only to decide whether this run's tag filter could possibly select it — not a
+    // full simulation of Cucumber's own tag matching, just enough to safely skip a
+    // multi-second-per-device provisioning step on runs that plainly exclude it
+    // (e.g. "@web and @login", "@mobile and @login" with no @fingerprint scenarios).
+    private static final List<String> FINGERPRINT_SCENARIO_TAGS = List.of("@mobile", "@fingerprint", "@require_login");
+
     public static void enrollAllPooledDevices() {
         if (!"local".equalsIgnoreCase(ConfigReader.get("mobile.execution.mode"))) {
             LOG.info("Skipping fingerprint enrollment provisioning: mobile.execution.mode is not 'local'.");
+            return;
+        }
+
+        if (!couldFingerprintScenarioRun()) {
+            LOG.info("Skipping fingerprint enrollment provisioning: cucumber.filter.tags ('{}') excludes every "
+                    + "scenario tagged {} — nothing in this run needs a print enrolled.",
+                    System.getProperty("cucumber.filter.tags"), FINGERPRINT_SCENARIO_TAGS);
             return;
         }
 
@@ -57,6 +74,29 @@ public final class MobileFingerprintEnroller {
                 LOG.warn("Fingerprint enrollment provisioning failed on {} — the fingerprint scenario may fail "
                         + "later as a result, but this will not fail the suite here.", deviceName, e);
             }
+        }
+    }
+
+    // Evaluates the run's actual -Dcucumber.filter.tags expression (set by the Jenkinsfile /
+    // GH Actions workflow / local run config) against FINGERPRINT_SCENARIO_TAGS, using
+    // Cucumber's own tag-expression parser (already on the classpath via cucumber-core) —
+    // the same logic Cucumber itself uses to decide whether a scenario matches. Defaults to
+    // "could run" (provision anyway) whenever the filter is absent or fails to parse, so a
+    // surprising or malformed expression never silently skips provisioning that's actually
+    // needed — the only failure mode this allows is a few wasted seconds, never a missed
+    // enrollment.
+    private static boolean couldFingerprintScenarioRun() {
+        String tagExpression = System.getProperty("cucumber.filter.tags");
+        if (tagExpression == null || tagExpression.isBlank()) {
+            return true;
+        }
+        try {
+            Expression expression = TagExpressionParser.parse(tagExpression);
+            return expression.evaluate(FINGERPRINT_SCENARIO_TAGS);
+        } catch (Exception e) {
+            LOG.warn("Could not parse cucumber.filter.tags ('{}') to check whether fingerprint provisioning "
+                    + "is needed — provisioning anyway to be safe.", tagExpression, e);
+            return true;
         }
     }
 
