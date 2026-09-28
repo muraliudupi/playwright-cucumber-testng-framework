@@ -28,6 +28,7 @@ ext {
     hikariCPVersion   = '7.1.0'
     appiumVersion    = '10.1.1'
     seleniumVersion   = '4.46.0'
+    tagexpressionsVersion   = '11.0.1'
 }
 
 dependencies {
@@ -51,6 +52,8 @@ dependencies {
     implementation "org.seleniumhq.selenium:selenium-api:${seleniumVersion}"
     implementation "org.seleniumhq.selenium:selenium-remote-driver:${seleniumVersion}"
     implementation "org.seleniumhq.selenium:selenium-support:${seleniumVersion}"
+
+    implementation "io.cucumber:tag-expressions:${tagexpressionsVersion}"
 
     // Cucumber Engine & TestNG Integration with Picocontainer DI
     testImplementation "io.cucumber:cucumber-java:${cucumberVersion}"
